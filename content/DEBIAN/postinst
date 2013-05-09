@@ -1,0 +1,298 @@
+#!/bin/bash
+
+if [ $1 == "configure" ]; then
+
+	rm /home/xbian/update.log &>/dev/null
+
+	/usr/bin/splash --infinitebar --msgtxt="installing update..."
+
+	echo "3) Changing default overclock"
+
+	if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
+		sed -i 's/core_freq=375/core_freq=250/g' /boot/config.txt
+		if [ $(grep "core_freq=250" /boot/config.txt | wc -l) -eq 1 ];	then
+			echo "Success: changed core_freq to 250" >> /home/xbian/update.log; 
+		else
+			echo "Error: failed to set core_freq to 250" >> /home/xbian/update.log; 
+		fi
+	else
+		echo "Notice: core_freq 250 memsplit already set" >> /home/xbian/update.log; 
+	fi
+
+	echo "4) Changing fanartres"
+
+	if [ $(grep "<fanartres>540</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+		sed -i 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
+		if [ $(grep "<fanartres>720</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+			echo "Success: changed fanartres to 720" >> /home/xbian/update.log; 
+		else
+			echo "Error: failed to set fanartres to 720" >> /home/xbian/update.log; 
+		fi
+	else
+		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/update.log; 
+	fi
+
+	echo "5) Changing imagres"
+
+	if [ $(grep "<imageres>256</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+		sed -i 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
+		if [ $(grep "<imageres>540</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+			echo "Success: changed imageres to 540" >> /home/xbian/update.log; 
+		else
+			echo "Error: failed to set imageres to 540" >> /home/xbian/update.log; 
+		fi
+	else
+		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/update.log; 
+	fi
+
+	echo "6) Adding SuperRepo"
+
+	if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 0 ];	then
+        sed -i 's|<files>|<files>\n\t<default pathversion="1"></default>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion="1">http://use.superrepo.org/Frodo</path>|g' /home/xbian/.xbmc/userdata/sources.xml
+		if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 1 ];	then
+			echo "Success: changed Fusion to SuperRepo" >> /home/xbian/update.log; 
+		else
+			echo "Error: failed to change Fusion to SuperRepo" >> /home/xbian/update.log; 
+		fi
+	else
+		echo "Notice: Fusion already replaced by SuperRepo" >> /home/xbian/update.log; 
+	fi
+
+	echo "7) Modifying avahi-deamon defaults"
+
+	if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=1"  /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
+		sed -i 's:AVAHI_DAEMON_DETECT_LOCAL=1:AVAHI_DAEMON_DETECT_LOCAL=0:g' /etc/default/avahi-daemon
+		if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=0" /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
+			echo "Success: modified avahi-deamon defaults" >> /home/xbian/update.log; 
+		else
+			echo "Error: failed to modified avahi-deamon defaults" >> /home/xbian/update.log; 
+		fi
+	else
+		echo "Notice: avahi-deamon defaults already modified" >> /home/xbian/update.log; 
+	fi
+
+	echo "8) Disable watchdog"
+
+	if [ $(grep "run_watchdog=1"  /etc/default/watchdog| wc -l) -eq 1 ];	then
+		sed -i 's:run_watchdog=1:run_watchdog=0:g' /etc/default/watchdog
+        update-rc.d watchdog remove &>/dev/null
+        sed -i '/bcm2708_wdog/d' /etc/modules
+		if [ $(grep "run_watchdog=0" /etc/default/watchdog| wc -l) -eq 1 ];	then
+			echo "Success: disabled watchdog" >> /home/xbian/update.log; 
+		else
+			echo "Error: failed to disable watchdog" >> /home/xbian/update.log; 
+		fi
+	else
+		echo "Notice: watchdog already disabled" >> /home/xbian/update.log; 
+	fi
+
+    echo "9) Symlink /usr/lib/vfp to /opt/vc/lib"
+
+    if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
+        rm -r /usr/lib/vfp
+        if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
+            echo "Error: failed to remove /usr/lib/vfp" >> /home/xbian/update.log;
+        fi
+    fi
+
+    ln -s /opt/vc/lib /usr/lib/vfp
+    if [ -L "/usr/lib/vfp" ];	then
+        echo "Success: symlinked /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/update.log;
+    else
+        echo "Failed: to symlink /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/update.log;
+    fi
+
+    echo "10) Enable auto fsck on boot"
+
+    if [ $(grep "#FSCKFIX=no" /etc/default/rcS| wc -l) -eq 1 ];	then
+        sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
+        if [ $(grep "^FSCKFIX=yes" /etc/default/rcS| wc -l) -eq 1 ];	then
+            echo "Success: enable auto fsck on boot" >> /home/xbian/update.log;
+        else
+            echo "Error: enable auto fsck on boot" >> /home/xbian/update.log;
+        fi
+    else
+        echo "Notice: enable auto fsck on boot already set" >> /home/xbian/update.log;
+    fi
+
+    echo "11) Adjust wpa_supplicant functions.sh"
+
+    if [ $(grep 'WPA_SUP_PIDFILE="/var/run/' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
+        sed -i 's:WPA_SUP_PIDFILE="\/var\/run\/:WPA_SUP_PIDFILE="\/root\/:g' /etc/wpa_supplicant/functions.sh
+        if [ $(grep 'WPA_SUP_PIDFILE="/root' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
+            echo "Success: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
+        else
+            echo "Error: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
+        fi
+    else
+        echo "Notice: wpa_supplicant functions.sh already adjusted" >> /home/xbian/update.log;
+    fi
+
+    echo "12) Enable zram-swap init script"
+
+    if [ -f "/etc/init.d/zram-swap" ];	then
+        chmod +x /etc/init.d/zram-swap;
+        update-rc.d zram-swap defaults &>/dev/null;
+        echo "Success: enable zram-swap init script" >> /home/xbian/update.log;
+    else
+        echo "Error: enable zram-swap init script" >> /home/xbian/update.log;
+    fi
+
+    echo "13) Enable frandom"
+
+    if [ -f "/etc/init.d/frandom" ];	then
+        chmod +x /etc/init.d/frandom;
+        update-rc.d frandom defaults &>/dev/null;
+        echo "Success: enable frandom init script" >> /home/xbian/update.log;
+
+        if [ $(grep 'frandom' /etc/modules| wc -l) -eq 0 ];	then
+            echo "frandom" >> /etc/modules;
+            if [ $(grep 'frandom' /etc/modules| wc -l) -eq 1 ];	then
+                echo "Success: add frandom to /etc/modules" >> /home/xbian/update.log;
+            else
+                echo "Failed: add frandom to /etc/modules" >> /home/xbian/update.log;
+            fi
+        else
+            echo "Notice: frandom already present in /etc/modules" >> /home/xbian/update.log;
+        fi
+
+    else
+        echo "Error: enable frandom init script" >> /home/xbian/update.log;
+    fi
+
+    echo "14) Remove klogd & sysklogd from update-rc.d"
+    update-rc.d klogd remove &>/dev/null;
+    update-rc.d sysklogd remove &>/dev/null;
+
+    echo "15a) Removing swapfile from /etc/fstab"
+
+    if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 1 ];	then
+        sed -i '/\/var\/swapfile/d' /etc/fstab
+        if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 0 ];	then
+            echo "Success: removing swapfile from /etc/fstab" >> /home/xbian/update.log;
+
+            echo "15b) Removing /var/swapfile"
+
+            if [ -f "/var/swapfile" ];	then
+                swapoff /var/swapfile
+                rm /var/swapfile
+                if [ ! -f "/var/swapfile" ];	then
+                    echo "Success: removing /var/swapfile" >> /home/xbian/update.log;
+                else
+                    echo "Error: removing /var/swapfile" >> /home/xbian/update.log;
+                fi
+            else
+                echo "Notice: /var/swapfile already removed" >> /home/xbian/update.log;
+            fi
+
+        else
+            echo "Error: removing swapfile from /etc/fstab" >> /home/xbian/update.log;
+        fi
+    else
+            echo "Notice: swapfile already removed from /etc/fstab" >> /home/xbian/update.log;
+    fi
+
+
+	echo "16) Applying patches"
+
+cat <<\EOF > /tmp/001-tmpfs.patch
+--- a/etc/default/tmpfs
++++ b/etc/default/tmpfs
+@@ -8,25 +8,25 @@
+ # mount /run/lock as a tmpfs (separately from /run).  Defaults to yes;
+ # set to no to disable (/run/lock will then be part of the /run tmpfs,
+ # if available).
+-#RAMLOCK=yes
++RAMLOCK=yes
+ 
+ # mount /run/shm as a tmpfs (separately from /run).  Defaults to yes;
+ # set to no to disable (/run/shm will then be part of the /run tmpfs,
+ # if available).
+-#RAMSHM=yes
++RAMSHM=yes
+ 
+ # mount /tmp as a tmpfs.  Defaults to no; set to yes to enable (/tmp
+ # will be part of the root filesystem if disabled).  /tmp may also be
+ # configured to be a separate mount in /etc/fstab.
+-#RAMTMP=no
++RAMTMP=no
+ 
+ # Size limits.  Please see tmpfs(5) for details on how to configure
+ # tmpfs size limits.
+ #TMPFS_SIZE=20%VM
+-#RUN_SIZE=10%
+-#LOCK_SIZE=5242880 # 5MiB
+-#SHM_SIZE=
+-#TMP_SIZE=
++RUN_SIZE=10240
++LOCK_SIZE=5120
++SHM_SIZE=2048
++#TMP_SIZE=20480
+ 
+ # Mount tmpfs on /tmp if there is less than the limit size (in kiB) on
+ # the root filesystem (overriding RAMTMP).
+
+EOF
+
+	patch --dry-run /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
+	if [ $? == 0 ]; then
+		patch /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
+		echo "Success: applied 001-tmpfs.patch" >> /home/xbian/update.log;
+	else
+		echo "Notice: 001-tmpfs.patch already applied" >> /home/xbian/update.log;
+	fi;
+
+cat <<\EOF > /tmp/002-sysctl.patch
+--- a/etc/sysctl.conf	
++++ b/etc/sysctl.conf
+@@ -4,7 +4,7 @@
+ # See sysctl.conf (5) for information.
+ #
+ 
+-#kernel.domainname = example.com
++kernel.domainname = private
+ 
+ # Uncomment the following to stop low-level messages on console
+ kernel.printk = 3 4 1 3
+@@ -60,5 +60,9 @@
+ #
+ 
+ # rpi tweaks
+-vm.swappiness=1
+-vm.min_free_kbytes = 8192
++
++vm.swappiness=100
++vm.dirty_ratio = 40 
++vm.dirty_background_ratio = 35
++vm.vfs_cache_pressure = 250
++vm.min_free_kbytes = 16384
+
+EOF
+
+	patch --dry-run /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
+	if [ $? == 0 ]; then
+		patch /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
+		echo "Success: applied 002-sysctl.patch" >> /home/xbian/update.log;
+	else
+		echo "Notice: 002-sysctl.patch already applied" >> /home/xbian/update.log;
+	fi;
+
+	ldconfig &>/dev/null
+
+	if [ -f "/etc/init.d/bootlocal" ]; then
+		update-rc.d bootlocal remove &>/dev/null
+		rm -r "/etc/init.d/bootlocal";
+	fi
+
+	echo "!------------------------------------------------!"
+	echo "!                                                !"
+	echo "! System will automatically reboot in 30 seconds !"
+	echo "!                                                !"
+	echo "!------------------------------------------------!"
+
+	echo "---UPDATE LOG---"
+	cat "/home/xbian/update.log"
+	
+	$((/usr/bin/splash --infinitebar --msgtxt="reboot in 30 seconds..."; sleep 30; sudo reboot) &);
+	
+fi 
