@@ -128,16 +128,6 @@ if [ $1 == "configure" ]; then
         echo "Notice: wpa_supplicant functions.sh already adjusted" >> /home/xbian/update.log;
     fi
 
-    echo "12) Enable zram-swap init script"
-
-    if [ -f "/etc/init.d/zram-swap" ];	then
-        chmod +x /etc/init.d/zram-swap;
-        update-rc.d zram-swap defaults &>/dev/null;
-        echo "Success: enable zram-swap init script" >> /home/xbian/update.log;
-    else
-        echo "Error: enable zram-swap init script" >> /home/xbian/update.log;
-    fi
-
     echo "13) Enable frandom"
 
     if [ -f "/etc/init.d/frandom" ];	then
@@ -283,17 +273,26 @@ EOF
 		update-rc.d bootlocal remove &>/dev/null
 		rm -r "/etc/init.d/bootlocal";
 	fi
+	
+	cp -av --remove-destination /etcupstart/init/* /etc/init/
+	cp -av --remove-destination /etcupstart/init.d/* /etc/init.d/
+	for f in $(ls /etcupstart/to_remove); do 
+		rm -v /etc/rc?.d/???$f
+	done
+
+	rm -fr /etcupstart	
 
 	echo "!------------------------------------------------!"
 	echo "!                                                !"
-	echo "! System will automatically reboot in 30 seconds !"
+	echo "! System will automatically reboot in 2 minutes  !"
 	echo "!                                                !"
 	echo "!------------------------------------------------!"
 
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/update.log"
 	
-	$((/usr/bin/splash --infinitebar --msgtxt="reboot in 30 seconds..."; sleep 30; sudo reboot) &);
+	splash --infinitebar --msgtxt="reboot in 30 seconds..."
+	shutdown -r +2
 	
 fi 
 
