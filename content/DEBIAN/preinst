@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mountpoint -q /boot || mount /boot
+
 if [ $1 == "install" ]; then
 
 	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-0.5" ]; then
