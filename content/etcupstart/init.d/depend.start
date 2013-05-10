@@ -1,0 +1,9 @@
+TARGETS = ifplugd dbus nscd nslcd iguanaIR killprocs bootlogs ssh sudo ntp avahi-daemon lirc exim4 cron atd single rpcbind nfs-common rc.local
+INTERACTIVE =
+avahi-daemon: dbus
+lirc: iguanaIR
+exim4: nslcd
+cron: nslcd nscd
+atd: nslcd
+single: killprocs bootlogs
+rc.local: ifplugd avahi-daemon dbus lirc rpcbind nfs-common nscd nslcd exim4 cron atd iguanaIR bootlogs ssh sudo ntp

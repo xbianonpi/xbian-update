@@ -1,0 +1,12 @@
+TARGETS = rmnologin sysstat plymouth openbsd-inetd nfs-kernel-server motd ifplugd nscd nslcd urandom avahi-daemon lirc exim4 atd sysklogd iguanaIR sendsigs umountnfs.sh rpcbind nfs-common networking umountfs umountroot halt reboot
+sysklogd: lirc nscd nslcd openbsd-inetd atd exim4
+iguanaIR: lirc
+sendsigs: ifplugd lirc plymouth sysklogd nscd nslcd openbsd-inetd nfs-kernel-server atd exim4 iguanaIR
+umountnfs.sh: sendsigs ifplugd lirc plymouth sysklogd nscd nslcd openbsd-inetd nfs-kernel-server atd exim4 iguanaIR
+rpcbind: umountnfs.sh nfs-kernel-server
+nfs-common: umountnfs.sh nfs-kernel-server
+networking: ifplugd sysklogd rpcbind umountnfs.sh exim4
+umountfs: urandom ifplugd lirc plymouth sysklogd networking rpcbind umountnfs.sh nscd nslcd openbsd-inetd nfs-kernel-server atd exim4 iguanaIR
+umountroot: umountfs
+halt: umountroot
+reboot: umountroot
