@@ -290,7 +290,7 @@ EOF
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/update.log"
 	
-	splash --infinitebar --msgtxt="reboot in 30 seconds..."
+	splash --infinitebar --msgtxt="reboot in 2 minutes..."
 	shutdown -r +2
 	
 fi 
