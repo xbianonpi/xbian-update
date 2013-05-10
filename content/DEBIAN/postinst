@@ -277,7 +277,8 @@ EOF
 	cp -av --remove-destination /etcupstart/init/* /etc/init/
 	cp -av --remove-destination /etcupstart/init.d/* /etc/init.d/
 	for f in $(ls /etcupstart/to_remove); do 
-		rm -v /etc/rc?.d/???$f
+		update-rc.d $f remove
+		rm /etc/init.d/$f
 	done
 
 	rm -fr /etcupstart	
