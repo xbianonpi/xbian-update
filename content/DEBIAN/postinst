@@ -281,7 +281,48 @@ EOF
 	fi;
 
 	ldconfig &>/dev/null
+
+cat <<\EOF > /tmp/003-umount.patch
+--- 00_create_model_symlink.old	2013-05-12 00:31:58.269228030 +0200
++++ 00_create_model_symlink	2013-05-12 00:28:47.526487224 +0200
+@@ -19,7 +19,7 @@
+ UM_MODEL=`echo "$UM_MODEL" | sed 's/ /_/g; s/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._-]//g'`
+ 
+ # Exit if both vendor and model name are empty.
+-test -n "$UM_VENDOR" || test -n "$UM_MODEL" || exit 0
++test -n "$UM_VENDOR" || test -n "$UM_MODEL" || test -n "$ID_FS_LABEL" || test -n "$ID_FS_UUID" || exit 0
+ 
+ # Build symlink name.
+ if test -n "$UM_VENDOR" && test -n "$UM_MODEL"; then
+@@ -29,11 +29,17 @@
+ fi
+ 
+ # Append partition number, if any, to the symlink name.
+-partition=`echo "$UM_DEVICE" | sed 's/^.*[^0123456789]\([0123456789]*\)/\1/'`
++partition=`echo "$ID_FS_UUID"`
+ if test -n "$partition"; then
+     name="${name}_$partition"
+ fi
+ 
++# Append label number, if any, to the symlink name.
++label=`echo "$ID_FS_LABEL"`
++if test -n "$label"; then
++    name="${name}_$label"
++fi
++
+ # If the symlink does not yet exist, create it.
+ test -e "/var/run/usbmount/$name" || ln -sf "$UM_MOUNTPOINT" "/var/run/usbmount/$name"
+ 
+EOF
 	
+	patch --dry-run /etc/usbmount/mount.d/00_create_model_symlink < /tmp/003-umount.patch 2>/dev/null >/dev/null
+	if [ $? == 0 ]; then
+		patch /etc/usbmount/mount.d/00_create_model_symlink < /tmp/003-umount.patch 2>/dev/null >/dev/null
+		echo "Success: applied 003-umount.patch" >> /home/xbian/update.log
+	else
+		echo "Notice: 003-umount.patch already applied" >> /home/xbian/update.log
+	fi
+
 	cp -av --remove-destination /etcupstart/init/* /etc/init/
 	cp -av --remove-destination /etcupstart/init.d/* /etc/init.d/
 	for f in $(ls /etcupstart/to_remove); do 
@@ -289,10 +330,10 @@ EOF
 		rm /etc/init.d/$f
 	done
 
-	mv /etc/init.d/depend.start /etc/init.d/.depend.start
-	mv /etc/init.d/depend.stop /etc/init.d/.depend.stop
-	mv /etc/init.d/depend.boot /etc/init.d/.depend.boot
-	rm -fr /etcupstart	
+#	mv /etc/init.d/depend.start /etc/init.d/.depend.start
+#	mv /etc/init.d/depend.stop /etc/init.d/.depend.stop
+#	mv /etc/init.d/depend.boot /etc/init.d/.depend.boot
+	rm -fr /etcupstart
 
 	echo "17) Changing /home/xbian/.bashrc"
 	
