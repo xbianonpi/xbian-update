@@ -115,18 +115,18 @@ if [ $1 == "configure" ]; then
         echo "Notice: enable auto fsck on boot already set" >> /home/xbian/update.log;
     fi
 
-    echo "11) Adjust wpa_supplicant functions.sh"
-
-    if [ $(grep 'WPA_SUP_PIDFILE="/var/run/' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
-        sed -i 's:WPA_SUP_PIDFILE="\/var\/run\/:WPA_SUP_PIDFILE="\/root\/:g' /etc/wpa_supplicant/functions.sh
-        if [ $(grep 'WPA_SUP_PIDFILE="/root' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
-            echo "Success: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
-        else
-            echo "Error: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
-        fi
-    else
-        echo "Notice: wpa_supplicant functions.sh already adjusted" >> /home/xbian/update.log;
-    fi
+#    echo "11) Adjust wpa_supplicant functions.sh"
+#
+#    if [ $(grep 'WPA_SUP_PIDFILE="/var/run/' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
+#        sed -i 's:WPA_SUP_PIDFILE="\/var\/run\/:WPA_SUP_PIDFILE="\/root\/:g' /etc/wpa_supplicant/functions.sh
+#        if [ $(grep 'WPA_SUP_PIDFILE="/root' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
+#            echo "Success: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
+#        else
+#            echo "Error: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
+#        fi
+#    else
+#        echo "Notice: wpa_supplicant functions.sh already adjusted" >> /home/xbian/update.log;
+#    fi
 
     echo "13) Enable frandom"
 
