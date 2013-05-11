@@ -17,6 +17,7 @@
 
 case "$1" in
   start)
+	test -e /dev/frandom || exit 1
 	if [ ! -f /dev/urandom.orig ]; then
 		mv /dev/urandom /dev/urandom.orig
 	else
@@ -24,6 +25,7 @@ case "$1" in
 	fi
 	ln -s /dev/frandom /dev/urandom
 
+	test -e /dev/erandom || exit 1
 	if [ ! -f /dev/random.orig ]; then
 		mv /dev/random /dev/random.orig
 	else
@@ -32,8 +34,8 @@ case "$1" in
 	ln -s /dev/erandom /dev/random
 	;;
   stop)
-	mv /dev/urandom.orig /dev/urandom
-	mv /dev/random.orig /dev/random
+	test -e /dev/urandom.orig && mv /dev/urandom.orig /dev/urandom
+	test -e /dev/random.orig && mv /dev/random.orig /dev/random
 	;;
   restart)
 	stop
