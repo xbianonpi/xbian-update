@@ -182,6 +182,19 @@ if [ $1 == "configure" ]; then
             echo "Notice: swapfile already removed from /etc/fstab" >> /home/xbian/update.log;
     fi
 
+    echo "15b) Adding /boot to /etc/fstab"
+
+    if [ $(grep '/boot' /etc/fstab| wc -l) -eq 1 ];	then
+        echo "/dev/mmcblk0p1	/boot	vfat	defaults	0	0" >> /etc/fstab
+        if [ $(grep '/boot' /etc/fstab| wc -l) -eq 0 ];	then
+            echo "Success: adding /boot to /etc/fstab" >> /home/xbian/update.log;
+
+        else
+            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/update.log;
+        fi
+    else
+            echo "Notice: /boot already present in /etc/fstab" >> /home/xbian/update.log;
+    fi
 
 	echo "16) Applying patches"
 
