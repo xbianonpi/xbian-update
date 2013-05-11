@@ -185,7 +185,7 @@ if [ $1 == "configure" ]; then
     echo "15b) Adding /boot to /etc/fstab"
 
     if [ $(grep -c /boot /etc/fstab) -eq 0 ];	then
-        echo "/dev/mmcblk0p1	/boot	vfat	defaults	0	0" >> /etc/fstab
+        echo "/dev/mmcblk0p1	/boot	vfat	defaults,noauto	0	0" >> /etc/fstab
         if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
             echo "Success: adding /boot to /etc/fstab" >> /home/xbian/update.log;
 
