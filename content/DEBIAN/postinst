@@ -184,9 +184,9 @@ if [ $1 == "configure" ]; then
 
     echo "15b) Adding /boot to /etc/fstab"
 
-    if [ $(grep '/boot' /etc/fstab| wc -l) -eq 1 ];	then
+    if [ $(grep -c /boot /etc/fstab) -eq 0 ];	then
         echo "/dev/mmcblk0p1	/boot	vfat	defaults	0	0" >> /etc/fstab
-        if [ $(grep '/boot' /etc/fstab| wc -l) -eq 0 ];	then
+        if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
             echo "Success: adding /boot to /etc/fstab" >> /home/xbian/update.log;
 
         else
@@ -296,7 +296,7 @@ EOF
 
 	echo "17) Changing /home/xbian/.bashrc"
 	
-	if [ $(grep ^"#sudo xbian-config" /home/xbian/.bashrc) ]; then
+	if [ $(grep -c ^"#sudo xbian-config" /home/xbian/.bashrc) -eq 1 ]; then
 		echo 0 > /home/xbian/.xbian-config-start
 	else
 		echo 1 > /home/xbian/.xbian-config-start
@@ -306,8 +306,7 @@ EOF
 	echo "if [ $(cat /home/xbian/.xbian-config-start) -eq '1' ]; then sudo xbian-config; fi" >> /home/xbian/.bashrc.new
 	mv /home/xbian/.bashrc.new /home/xbian/.bashrc
 
-	if [ $(grep 'then sudo xbian-config' /home/xbian/.bashrc) ]
-	then
+	if [ $(grep -c "then sudo xbian-config" /home/xbian/.bashrc) -eq 1 ]; then
 		echo "Success: changing .bashrc" >> /home/xbian/update.log;
 	else
 		echo "Error: changing .bashrc" >> /home/xbian/update.log;
