@@ -53,7 +53,7 @@ cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/checkroot.sh.overrid
 cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/mountnfs.sh.override
 45f92f87edcf4a31b5a10f554127ec2b  ./content/lib/udev/rules.d/10-frandom.rules
 86fdbf3de1387a12a4286177dc0f00b5  ./content/boot/cmdline.txt
-739907e07d8143f24f296ec4fbf11fd7  ./content/etc/init.d/frandom
+92404932d0d015f77dc95c8cfea22403  ./content/etc/init.d/frandom
 9381562252b4b41f3e631e55e483b7c2  ./content/etc/default/console-setup
 da86d4b6f9688fddd822e62e0b805f20  ./content/etc/default/zram-swap
 dc97f24b6d6e02b7e2d513773961421d  ./content/etc/motd
