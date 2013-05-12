@@ -352,6 +352,7 @@ EOF
 
 fi
 
+chown -Rc xbian:xbian /home/xbian
 mountpoint -q /boot && umount /boot
 
 exit 0
