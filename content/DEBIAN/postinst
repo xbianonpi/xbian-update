@@ -115,18 +115,18 @@ if [ $1 == "configure" ]; then
         echo "Notice: enable auto fsck on boot already set" >> /home/xbian/xbian-update.log;
     fi
 
-#    echo "11) Adjust wpa_supplicant functions.sh"
-#
-#    if [ $(grep 'WPA_SUP_PIDFILE="/var/run/' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
-#        sed -i 's:WPA_SUP_PIDFILE="\/var\/run\/:WPA_SUP_PIDFILE="\/root\/:g' /etc/wpa_supplicant/functions.sh
-#        if [ $(grep 'WPA_SUP_PIDFILE="/root' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
-#            echo "Success: Adjust wpa_supplicant functions.sh" >> /home/xbian/xbian-update.log;
-#        else
-#            echo "Error: Adjust wpa_supplicant functions.sh" >> /home/xbian/xbian-update.log;
-#        fi
-#    else
-#        echo "Notice: wpa_supplicant functions.sh already adjusted" >> /home/xbian/xbian-update.log;
-#    fi
+    echo "11) Disabling nologin service"
+
+    if [ $(grep ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ] || [ $(grep ^"#DELAYLOGIN=no" /etc/default/rcS) -eq 1 ];	then
+        echo "Notice: already disabled" >> /home/xbian/xbian-update.log
+    else
+        sed -i 's/DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
+        if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 0 ] && [ $(grep ^"#DELAYLOGIN=no" /etc/default/rcS) -eq 0 ]; then
+            echo "DELAYLOGIN=no" >> /etc/default/rcS
+        fi
+
+        echo "Success: disabled" >> /home/xbian/xbian-update.log;
+    fi
 
     echo "13) Enable frandom"
 
@@ -324,13 +324,14 @@ EOF
 		echo "Notice: 003-umount.patch already applied" >> /home/xbian/xbian-update.log
 	fi
 
-	cp -a --remove-destination /etcupstart/init/* /etc/init/ > /dev/null 2>&1
-	cp -a --remove-destination /etcupstart/init.d/* /etc/init.d/ > /dev/null 2>&1
-	for f in $(ls /etcupstart/init.d); do insserv -d /etc/init.d/$f; done
-	for f in $(ls /etcupstart/to_remove); do rm /etc/init.d/$f > /dev/null 2>&1; insserv -r /etc/init.d/$f > /dev/null 2>&1; done
+	cp -a --remove-destination /tmp/init/* /etc/init/ > /dev/null 2>&1
+	cp -a --remove-destination /tmp/init.d/* /etc/init.d/ > /dev/null 2>&1
+	for f in $(ls /tmp/init.d); do insserv -d /etc/init.d/$f; done
+	for f in $(ls /tmp/to_remove); do rm /etc/init.d/$f > /dev/null 2>&1; insserv -r /etc/init.d/$f > /dev/null 2>&1; done
 	insserv -d
 
-	rm -fr /etcupstart
+        rm -f /etc/inittab
+        rm -f /etc/nologin
 
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/xbian-update.log"
