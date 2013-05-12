@@ -2,7 +2,7 @@
 
 if [ $1 == "configure" ]; then
 
-	rm /home/xbian/update.log >/dev/null 2>&1
+	rm /home/xbian/xbian-update.log >/dev/null 2>&1
 
 	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
@@ -11,12 +11,12 @@ if [ $1 == "configure" ]; then
 	if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
 		sed -i 's/core_freq=375/core_freq=250/g' /boot/config.txt
 		if [ $(grep "core_freq=250" /boot/config.txt | wc -l) -eq 1 ];	then
-			echo "Success: changed core_freq to 250" >> /home/xbian/update.log; 
+			echo "Success: changed core_freq to 250" >> /home/xbian/xbian-update.log; 
 		else
-			echo "Error: failed to set core_freq to 250" >> /home/xbian/update.log; 
+			echo "Error: failed to set core_freq to 250" >> /home/xbian/xbian-update.log; 
 		fi
 	else
-		echo "Notice: core_freq 250 memsplit already set" >> /home/xbian/update.log; 
+		echo "Notice: core_freq 250 memsplit already set" >> /home/xbian/xbian-update.log; 
 	fi
 
 	echo "4) Changing fanartres"
@@ -24,12 +24,12 @@ if [ $1 == "configure" ]; then
 	if [ $(grep "<fanartres>540</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 		sed -i 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
 		if [ $(grep "<fanartres>720</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
-			echo "Success: changed fanartres to 720" >> /home/xbian/update.log; 
+			echo "Success: changed fanartres to 720" >> /home/xbian/xbian-update.log; 
 		else
-			echo "Error: failed to set fanartres to 720" >> /home/xbian/update.log; 
+			echo "Error: failed to set fanartres to 720" >> /home/xbian/xbian-update.log; 
 		fi
 	else
-		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/update.log; 
+		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/xbian-update.log; 
 	fi
 
 	echo "5) Changing imagres"
@@ -37,12 +37,12 @@ if [ $1 == "configure" ]; then
 	if [ $(grep "<imageres>256</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 		sed -i 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
 		if [ $(grep "<imageres>540</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
-			echo "Success: changed imageres to 540" >> /home/xbian/update.log; 
+			echo "Success: changed imageres to 540" >> /home/xbian/xbian-update.log; 
 		else
-			echo "Error: failed to set imageres to 540" >> /home/xbian/update.log; 
+			echo "Error: failed to set imageres to 540" >> /home/xbian/xbian-update.log; 
 		fi
 	else
-		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/update.log; 
+		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/xbian-update.log; 
 	fi
 
 	echo "6) Adding SuperRepo"
@@ -50,12 +50,12 @@ if [ $1 == "configure" ]; then
 	if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 0 ];	then
         sed -i 's|<files>|<files>\n\t<default pathversion="1"></default>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion="1">http://use.superrepo.org/Frodo</path>|g' /home/xbian/.xbmc/userdata/sources.xml
 		if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 1 ];	then
-			echo "Success: changed Fusion to SuperRepo" >> /home/xbian/update.log; 
+			echo "Success: changed Fusion to SuperRepo" >> /home/xbian/xbian-update.log; 
 		else
-			echo "Error: failed to change Fusion to SuperRepo" >> /home/xbian/update.log; 
+			echo "Error: failed to change Fusion to SuperRepo" >> /home/xbian/xbian-update.log; 
 		fi
 	else
-		echo "Notice: Fusion already replaced by SuperRepo" >> /home/xbian/update.log; 
+		echo "Notice: Fusion already replaced by SuperRepo" >> /home/xbian/xbian-update.log; 
 	fi
 
 	echo "7) Modifying avahi-deamon defaults"
@@ -63,12 +63,12 @@ if [ $1 == "configure" ]; then
 	if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=1"  /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
 		sed -i 's:AVAHI_DAEMON_DETECT_LOCAL=1:AVAHI_DAEMON_DETECT_LOCAL=0:g' /etc/default/avahi-daemon
 		if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=0" /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
-			echo "Success: modified avahi-deamon defaults" >> /home/xbian/update.log; 
+			echo "Success: modified avahi-deamon defaults" >> /home/xbian/xbian-update.log; 
 		else
-			echo "Error: failed to modified avahi-deamon defaults" >> /home/xbian/update.log; 
+			echo "Error: failed to modified avahi-deamon defaults" >> /home/xbian/xbian-update.log; 
 		fi
 	else
-		echo "Notice: avahi-deamon defaults already modified" >> /home/xbian/update.log; 
+		echo "Notice: avahi-deamon defaults already modified" >> /home/xbian/xbian-update.log; 
 	fi
 
 	echo "8) Disable watchdog"
@@ -78,12 +78,12 @@ if [ $1 == "configure" ]; then
         update-rc.d watchdog remove >/dev/null 2>&1
         sed -i '/bcm2708_wdog/d' /etc/modules
 		if [ $(grep "run_watchdog=0" /etc/default/watchdog| wc -l) -eq 1 ];	then
-			echo "Success: disabled watchdog" >> /home/xbian/update.log; 
+			echo "Success: disabled watchdog" >> /home/xbian/xbian-update.log; 
 		else
-			echo "Error: failed to disable watchdog" >> /home/xbian/update.log; 
+			echo "Error: failed to disable watchdog" >> /home/xbian/xbian-update.log; 
 		fi
 	else
-		echo "Notice: watchdog already disabled" >> /home/xbian/update.log; 
+		echo "Notice: watchdog already disabled" >> /home/xbian/xbian-update.log; 
 	fi
 
     echo "9) Symlink /usr/lib/vfp to /opt/vc/lib"
@@ -91,15 +91,15 @@ if [ $1 == "configure" ]; then
     if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
         rm -r /usr/lib/vfp
         if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
-            echo "Error: failed to remove /usr/lib/vfp" >> /home/xbian/update.log;
+            echo "Error: failed to remove /usr/lib/vfp" >> /home/xbian/xbian-update.log;
         fi
     fi
 
     ln -s /opt/vc/lib /usr/lib/vfp
     if [ -L "/usr/lib/vfp" ];	then
-        echo "Success: symlinked /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/update.log;
+        echo "Success: symlinked /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/xbian-update.log;
     else
-        echo "Failed: to symlink /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/update.log;
+        echo "Failed: to symlink /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/xbian-update.log;
     fi
 
     echo "10) Enable auto fsck on boot"
@@ -107,12 +107,12 @@ if [ $1 == "configure" ]; then
     if [ $(grep "#FSCKFIX=no" /etc/default/rcS| wc -l) -eq 1 ];	then
         sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
         if [ $(grep "^FSCKFIX=yes" /etc/default/rcS| wc -l) -eq 1 ];	then
-            echo "Success: enable auto fsck on boot" >> /home/xbian/update.log;
+            echo "Success: enable auto fsck on boot" >> /home/xbian/xbian-update.log;
         else
-            echo "Error: enable auto fsck on boot" >> /home/xbian/update.log;
+            echo "Error: enable auto fsck on boot" >> /home/xbian/xbian-update.log;
         fi
     else
-        echo "Notice: enable auto fsck on boot already set" >> /home/xbian/update.log;
+        echo "Notice: enable auto fsck on boot already set" >> /home/xbian/xbian-update.log;
     fi
 
 #    echo "11) Adjust wpa_supplicant functions.sh"
@@ -120,12 +120,12 @@ if [ $1 == "configure" ]; then
 #    if [ $(grep 'WPA_SUP_PIDFILE="/var/run/' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
 #        sed -i 's:WPA_SUP_PIDFILE="\/var\/run\/:WPA_SUP_PIDFILE="\/root\/:g' /etc/wpa_supplicant/functions.sh
 #        if [ $(grep 'WPA_SUP_PIDFILE="/root' /etc/wpa_supplicant/functions.sh| wc -l) -eq 1 ];	then
-#            echo "Success: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
+#            echo "Success: Adjust wpa_supplicant functions.sh" >> /home/xbian/xbian-update.log;
 #        else
-#            echo "Error: Adjust wpa_supplicant functions.sh" >> /home/xbian/update.log;
+#            echo "Error: Adjust wpa_supplicant functions.sh" >> /home/xbian/xbian-update.log;
 #        fi
 #    else
-#        echo "Notice: wpa_supplicant functions.sh already adjusted" >> /home/xbian/update.log;
+#        echo "Notice: wpa_supplicant functions.sh already adjusted" >> /home/xbian/xbian-update.log;
 #    fi
 
     echo "13) Enable frandom"
@@ -133,21 +133,21 @@ if [ $1 == "configure" ]; then
     if [ -f "/etc/init.d/frandom" ];	then
         chmod +x /etc/init.d/frandom;
         update-rc.d frandom defaults >/dev/null 2>&1;
-        echo "Success: enable frandom init script" >> /home/xbian/update.log;
+        echo "Success: enable frandom init script" >> /home/xbian/xbian-update.log;
 
         if [ $(grep 'frandom' /etc/modules| wc -l) -eq 0 ];	then
             echo "frandom" >> /etc/modules;
             if [ $(grep 'frandom' /etc/modules| wc -l) -eq 1 ];	then
-                echo "Success: add frandom to /etc/modules" >> /home/xbian/update.log;
+                echo "Success: add frandom to /etc/modules" >> /home/xbian/xbian-update.log;
             else
-                echo "Failed: add frandom to /etc/modules" >> /home/xbian/update.log;
+                echo "Failed: add frandom to /etc/modules" >> /home/xbian/xbian-update.log;
             fi
         else
-            echo "Notice: frandom already present in /etc/modules" >> /home/xbian/update.log;
+            echo "Notice: frandom already present in /etc/modules" >> /home/xbian/xbian-update.log;
         fi
 
     else
-        echo "Error: enable frandom init script" >> /home/xbian/update.log;
+        echo "Error: enable frandom init script" >> /home/xbian/xbian-update.log;
     fi
 
     echo "14) Remove klogd & sysklogd from update-rc.d"
@@ -159,7 +159,7 @@ if [ $1 == "configure" ]; then
     if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 1 ];	then
         sed -i '/\/var\/swapfile/d' /etc/fstab
         if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 0 ];	then
-            echo "Success: removing swapfile from /etc/fstab" >> /home/xbian/update.log;
+            echo "Success: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
 
             echo "15b) Removing /var/swapfile"
 
@@ -167,19 +167,19 @@ if [ $1 == "configure" ]; then
                 swapoff /var/swapfile
                 rm /var/swapfile
                 if [ ! -f "/var/swapfile" ];	then
-                    echo "Success: removing /var/swapfile" >> /home/xbian/update.log;
+                    echo "Success: removing /var/swapfile" >> /home/xbian/xbian-update.log;
                 else
-                    echo "Error: removing /var/swapfile" >> /home/xbian/update.log;
+                    echo "Error: removing /var/swapfile" >> /home/xbian/xbian-update.log;
                 fi
             else
-                echo "Notice: /var/swapfile already removed" >> /home/xbian/update.log;
+                echo "Notice: /var/swapfile already removed" >> /home/xbian/xbian-update.log;
             fi
 
         else
-            echo "Error: removing swapfile from /etc/fstab" >> /home/xbian/update.log;
+            echo "Error: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
         fi
     else
-            echo "Notice: swapfile already removed from /etc/fstab" >> /home/xbian/update.log;
+            echo "Notice: swapfile already removed from /etc/fstab" >> /home/xbian/xbian-update.log;
     fi
 
     echo "15b) Adding /boot to /etc/fstab"
@@ -188,13 +188,13 @@ if [ $1 == "configure" ]; then
         grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
         echo "/dev/mmcblk0p1	/boot	vfat	defaults,noauto	0	0" >> /etc/fstab
         if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
-            echo "Success: adding /boot to /etc/fstab" >> /home/xbian/update.log;
+            echo "Success: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
 
         else
-            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/update.log;
+            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
         fi
     else
-            echo "Notice: /boot already present in /etc/fstab" >> /home/xbian/update.log;
+            echo "Notice: /boot already present in /etc/fstab" >> /home/xbian/xbian-update.log;
     fi
 
 	echo "16) Applying patches"
@@ -241,9 +241,9 @@ EOF
 	patch --dry-run /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
 	if [ $? == 0 ]; then
 		patch /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
-		echo "Success: applied 001-tmpfs.patch" >> /home/xbian/update.log;
+		echo "Success: applied 001-tmpfs.patch" >> /home/xbian/xbian-update.log;
 	else
-		echo "Notice: 001-tmpfs.patch already applied" >> /home/xbian/update.log;
+		echo "Notice: 001-tmpfs.patch already applied" >> /home/xbian/xbian-update.log;
 	fi;
 
 cat <<\EOF > /tmp/002-sysctl.patch
@@ -276,9 +276,9 @@ EOF
 	patch --dry-run /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
 	if [ $? == 0 ]; then
 		patch /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
-		echo "Success: applied 002-sysctl.patch" >> /home/xbian/update.log;
+		echo "Success: applied 002-sysctl.patch" >> /home/xbian/xbian-update.log;
 	else
-		echo "Notice: 002-sysctl.patch already applied" >> /home/xbian/update.log;
+		echo "Notice: 002-sysctl.patch already applied" >> /home/xbian/xbian-update.log;
 	fi
 
 	ldconfig >/dev/null 2>&1
@@ -319,9 +319,9 @@ EOF
 	patch --dry-run /etc/usbmount/mount.d/00_create_model_symlink < /tmp/003-umount.patch 2>/dev/null >/dev/null
 	if [ $? == 0 ]; then
 		patch /etc/usbmount/mount.d/00_create_model_symlink < /tmp/003-umount.patch 2>/dev/null >/dev/null
-		echo "Success: applied 003-umount.patch" >> /home/xbian/update.log
+		echo "Success: applied 003-umount.patch" >> /home/xbian/xbian-update.log
 	else
-		echo "Notice: 003-umount.patch already applied" >> /home/xbian/update.log
+		echo "Notice: 003-umount.patch already applied" >> /home/xbian/xbian-update.log
 	fi
 
 	cp -a --remove-destination /etcupstart/init/* /etc/init/ > /dev/null 2>&1
@@ -339,7 +339,7 @@ EOF
 	echo "!------------------------------------------------!"
 
 	echo "---UPDATE LOG---"
-	cat "/home/xbian/update.log"
+	cat "/home/xbian/xbian-update.log"
 
 	echo "1.0b1" > /etc/xbian_version
 	
