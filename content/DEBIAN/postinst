@@ -342,11 +342,21 @@ EOF
 	cat "/home/xbian/xbian-update.log"
 
 	echo "1.0b1" > /etc/xbian_version
-	
-	splash --infinitebar --msgtxt="reboot in 2 minutes..."
-	shutdown -r +5
-	
-fi 
+
+cat << \EOF > /tmp/xbian-update-reboot
+#!/bin/sh
+
+set +e
+while pgrep apt-get > /dev/null; do sleep 5; done
+splash --msgtxt="Update finished. Reboot in 2 minutes" --infinitebar
+shutdown -r +2
+
+EOF
+
+	chmod +x /tmp/xbian-update-reboot
+	start-stop-daemon -b --start --exec /tmp/xbian-update-reboot
+
+fi
 
 mountpoint -q /boot && umount /boot
 
