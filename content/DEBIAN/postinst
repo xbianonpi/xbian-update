@@ -358,6 +358,8 @@ EOF
 
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/update.log"
+
+	echo "1.0b1" > /etc/xbian_version
 	
 	splash --infinitebar --msgtxt="reboot in 2 minutes..."
 	shutdown -r +5
