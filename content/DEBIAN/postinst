@@ -332,12 +332,6 @@ EOF
 
 	rm -fr /etcupstart
 
-	echo "!------------------------------------------------!"
-	echo "!                                                !"
-	echo "! System will automatically reboot in 2 minutes  !"
-	echo "!                                                !"
-	echo "!------------------------------------------------!"
-
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/xbian-update.log"
 
