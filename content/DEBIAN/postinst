@@ -2,7 +2,7 @@
 
 if [ $1 == "configure" ]; then
 
-	rm /home/xbian/update.log &>/dev/null
+	rm /home/xbian/update.log >/dev/null 2>&1
 
 	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
@@ -75,7 +75,7 @@ if [ $1 == "configure" ]; then
 
 	if [ $(grep "run_watchdog=1"  /etc/default/watchdog| wc -l) -eq 1 ];	then
 		sed -i 's:run_watchdog=1:run_watchdog=0:g' /etc/default/watchdog
-        update-rc.d watchdog remove &>/dev/null
+        update-rc.d watchdog remove >/dev/null 2>&1
         sed -i '/bcm2708_wdog/d' /etc/modules
 		if [ $(grep "run_watchdog=0" /etc/default/watchdog| wc -l) -eq 1 ];	then
 			echo "Success: disabled watchdog" >> /home/xbian/update.log; 
@@ -132,7 +132,7 @@ if [ $1 == "configure" ]; then
 
     if [ -f "/etc/init.d/frandom" ];	then
         chmod +x /etc/init.d/frandom;
-        update-rc.d frandom defaults &>/dev/null;
+        update-rc.d frandom defaults >/dev/null 2>&1;
         echo "Success: enable frandom init script" >> /home/xbian/update.log;
 
         if [ $(grep 'frandom' /etc/modules| wc -l) -eq 0 ];	then
@@ -151,8 +151,8 @@ if [ $1 == "configure" ]; then
     fi
 
     echo "14) Remove klogd & sysklogd from update-rc.d"
-    update-rc.d klogd remove &>/dev/null;
-    update-rc.d sysklogd remove &>/dev/null;
+    update-rc.d klogd remove >/dev/null 2>&1;
+    update-rc.d sysklogd remove >/dev/null 2>&1;
 
     echo "15a) Removing swapfile from /etc/fstab"
 
@@ -279,9 +279,9 @@ EOF
 		echo "Success: applied 002-sysctl.patch" >> /home/xbian/update.log;
 	else
 		echo "Notice: 002-sysctl.patch already applied" >> /home/xbian/update.log;
-	fi;
+	fi
 
-	ldconfig &>/dev/null
+	ldconfig >/dev/null 2>&1
 
 cat <<\EOF > /tmp/003-umount.patch
 --- 00_create_model_symlink.old	2013-05-12 00:31:58.269228030 +0200
@@ -324,11 +324,11 @@ EOF
 		echo "Notice: 003-umount.patch already applied" >> /home/xbian/update.log
 	fi
 
-	cp -av --remove-destination /etcupstart/init/* /etc/init/
-	cp -av --remove-destination /etcupstart/init.d/* /etc/init.d/
+	cp -a --remove-destination /etcupstart/init/* /etc/init/ > /dev/null 2>&1
+	cp -a --remove-destination /etcupstart/init.d/* /etc/init.d/ > /dev/null 2>&1
 	for f in $(ls /etcupstart/to_remove); do 
-		update-rc.d $f remove
-		rm /etc/init.d/$f
+		update-rc.d $f remove > /dev/null 2>&1
+		rm /etc/init.d/$f > /dev/null 2>&1
 	done
 
 #	mv /etc/init.d/depend.start /etc/init.d/.depend.start
@@ -364,8 +364,10 @@ EOF
 	cat "/home/xbian/update.log"
 	
 	splash --infinitebar --msgtxt="reboot in 2 minutes..."
-	shutdown -r +2
+	shutdown -r +2 
 	
 fi 
 
 mountpoint -q /boot && umount /boot
+
+exit 0
