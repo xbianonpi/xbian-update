@@ -1,6 +1,8 @@
 ebdcd7d0e2d05978e06da0b9f21ed8d8  ./content/etcupstart/to_remove/mountdevsubfs.sh
 289709c3a76bfd9f59a0f071670f01a0  ./content/etcupstart/to_remove/mountnfs.sh
 74457ecf8bd853fe1a2ba758053735dc  ./content/etcupstart/to_remove/checkfs.sh
+ac349aeb0669dceb1b7fce3ecb354df9  ./content/etcupstart/to_remove/udev-mtab
+df8b4a53c9a18b748543891a2c792de7  ./content/etcupstart/to_remove/mtab.sh
 c48bb675e4ec69ba98b87114861e6c45  ./content/etcupstart/to_remove/progress25
 efc13158c7d643b5d4baaf68c984dcd1  ./content/etcupstart/to_remove/checkroot.sh
 8a995e21ab7f4f58926b8ef05d80892e  ./content/etcupstart/to_remove/mountkernfs.sh
@@ -17,18 +19,14 @@ cb0cdedbeddcad7b1f07e936e7a0b09e  ./content/etcupstart/to_remove/progress50
 c76162eaa9ba1e35ce4c675d7dcbc93f  ./content/etcupstart/init.d/lirc
 c942e10fdd528ea6a93b2a5cd849bd50  ./content/etcupstart/init.d/checkroot-bootclean.sh
 df1ee285359cc5b29d2c74fb68fedf68  ./content/etcupstart/init.d/iguanaIR
-e83dd1a1e3be8e8582e3431d68de44e0  ./content/etcupstart/init.d/depend.stop
+4b628a220063be7f40cdb2e20e16e791  ./content/etcupstart/init.d/urandom
 5247cf4b1462192f9ac4f2b6d0d9a5c7  ./content/etcupstart/init.d/hdparm
 bfe86e663766e0338407190b052535a9  ./content/etcupstart/init.d/umountfs
-f470643adadbe489fe68220e958030d9  ./content/etcupstart/init.d/depend.start
-00cdfb6277e68b9d6ce4da94400188f7  ./content/etcupstart/init.d/depend.boot
 e536884da37a7d56701da3947dfbb004  ./content/etcupstart/init.d/umountroot
 edd19d23313c6fa1d0709d81500d48f8  ./content/etcupstart/init.d/udev
 960b9ab587429faf16634c09d589561f  ./content/etcupstart/init.d/keyboard-setup
-739907e07d8143f24f296ec4fbf11fd7  ./content/etcupstart/init.d/frandom
 b73035489651ca1fb839ab9ded135588  ./content/etcupstart/init.d/avahi-daemon
 029490e9e68e63ab52317afdddcb1945  ./content/etcupstart/init.d/networking
-02fc35995f238b0ae18b471fb2c40f3d  ./content/etcupstart/init.d/keymap.sh
 50bb01b7818d569c929490ab85b1679c  ./content/etcupstart/init.d/procps
 8e37cdd73e7e9bc330176ee0d2439ba3  ./content/etcupstart/init/xbmc-preload.conf
 d2713834350b39b5bbdae7e01de3e24c  ./content/etcupstart/init/progress-services.conf
@@ -37,7 +35,6 @@ cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/mtab.sh.override
 c1e5ee1a92cda633920f870ea24f734f  ./content/etcupstart/init/xbmc-exits.conf
 cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/mountdevsubfs.sh.override
 cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/mountall.sh.override
-65f24fff71e7d95a0ba093f00b8817ae  ./content/etcupstart/init/zram-swap.conf
 cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/mountnfs-bootclean.sh.override
 cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/mountall-bootclean.sh.override
 cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/tty5.override
@@ -53,7 +50,6 @@ cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/checkroot.sh.overrid
 cf3f2a865fbea819dadd439586eaee31  ./content/etcupstart/init/mountnfs.sh.override
 45f92f87edcf4a31b5a10f554127ec2b  ./content/lib/udev/rules.d/10-frandom.rules
 86fdbf3de1387a12a4286177dc0f00b5  ./content/boot/cmdline.txt
-92404932d0d015f77dc95c8cfea22403  ./content/etc/init.d/frandom
+4a7022649424e22f78284df3e6f048f8  ./content/etc/init.d/frandom
 9381562252b4b41f3e631e55e483b7c2  ./content/etc/default/console-setup
-da86d4b6f9688fddd822e62e0b805f20  ./content/etc/default/zram-swap
 dc97f24b6d6e02b7e2d513773961421d  ./content/etc/motd
