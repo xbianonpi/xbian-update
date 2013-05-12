@@ -326,14 +326,10 @@ EOF
 
 	cp -a --remove-destination /etcupstart/init/* /etc/init/ > /dev/null 2>&1
 	cp -a --remove-destination /etcupstart/init.d/* /etc/init.d/ > /dev/null 2>&1
-	for f in $(ls /etcupstart/to_remove); do 
-		update-rc.d $f remove > /dev/null 2>&1
-		rm /etc/init.d/$f > /dev/null 2>&1
-	done
+	for f in $(ls /etcupstart/init.d); do insserv -d /etc/init.d/$f; done
+	for f in $(ls /etcupstart/to_remove); do rm /etc/init.d/$f > /dev/null 2>&1; insserv -r /etc/init.d/$f > /dev/null 2>&1; done
+	insserv -d
 
-#	mv /etc/init.d/depend.start /etc/init.d/.depend.start
-#	mv /etc/init.d/depend.stop /etc/init.d/.depend.stop
-#	mv /etc/init.d/depend.boot /etc/init.d/.depend.boot
 	rm -fr /etcupstart
 
 	echo "17) Changing /home/xbian/.bashrc"
@@ -345,7 +341,7 @@ EOF
 	fi
  
 	grep -v "sudo xbian-config" /home/xbian/.bashrc  > /home/xbian/.bashrc.new
-	echo "if [ $(cat /home/xbian/.xbian-config-start) -eq '1' ]; then sudo xbian-config; fi" >> /home/xbian/.bashrc.new
+	echo "if [ \$(cat /home/xbian/.xbian-config-start) -eq '1' ]; then sudo xbian-config; fi" >> /home/xbian/.bashrc.new
 	mv /home/xbian/.bashrc.new /home/xbian/.bashrc
 
 	if [ $(grep -c "then sudo xbian-config" /home/xbian/.bashrc) -eq 1 ]; then
@@ -364,7 +360,7 @@ EOF
 	cat "/home/xbian/update.log"
 	
 	splash --infinitebar --msgtxt="reboot in 2 minutes..."
-	shutdown -r +2 
+	shutdown -r +5
 	
 fi 
 
