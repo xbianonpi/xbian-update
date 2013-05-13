@@ -1,1 +1,6 @@
-d41d8cd98f00b204e9800998ecf8427e  -
+45f92f87edcf4a31b5a10f554127ec2b  ./content/lib/udev/rules.d/10-frandom.rules
+54499201a8ec94d0b6d6276d4738322d  ./content/boot/cmdline.txt
+4a7022649424e22f78284df3e6f048f8  ./content/etc/init.d/frandom
+9381562252b4b41f3e631e55e483b7c2  ./content/etc/default/console-setup
+dc97f24b6d6e02b7e2d513773961421d  ./content/etc/motd
+2ff4dbb45e1d8629edc57875861eb5af  ./content/tmp1.tar

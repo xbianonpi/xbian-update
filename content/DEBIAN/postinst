@@ -117,15 +117,16 @@ if [ $1 == "configure" ]; then
 
     echo "11) Disabling nologin service"
 
-    if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ] || [ $(grep -c ^"#DELAYLOGIN=no" /etc/default/rcS) -eq 1 ];	then
+    if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ]; then
         echo "Notice: already disabled" >> /home/xbian/xbian-update.log
     else
         sed -i 's/DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
-        if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 0 ] && [ $(grep -c ^"#DELAYLOGIN=no" /etc/default/rcS) -eq 0 ]; then
+        sed -i 's/#DELAYLOGIN=no/DELAYLOGIN=no/g' /etc/default/rcS
+        if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 0 ]; then
             echo "DELAYLOGIN=no" >> /etc/default/rcS
         fi
 
-        echo "Success: disabled" >> /home/xbian/xbian-update.log;
+        echo "Success: disabled DELAYLOGIN" >> /home/xbian/xbian-update.log;
     fi
 
     echo "13) Enable frandom"
