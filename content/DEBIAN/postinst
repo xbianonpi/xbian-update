@@ -346,7 +346,7 @@ cat << \EOF > /tmp/xbian-update-reboot
 
 while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 1; done
 splash --msgtxt="Update finished. Rebooting now." --infinitebar
-shutdown -r now 
+reboot
 
 EOF
 
