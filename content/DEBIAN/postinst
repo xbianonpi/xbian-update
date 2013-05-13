@@ -4,7 +4,7 @@ if [ $1 == "configure" ]; then
 
 	rm /home/xbian/xbian-update.log >/dev/null 2>&1
 
-#	/usr/bin/splash --infinitebar --msgtxt="installing update..."
+	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
 	echo "3) Changing default overclock"
 
