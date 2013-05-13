@@ -115,18 +115,19 @@ if [ $1 == "configure" ]; then
         echo "Notice: enable auto fsck on boot already set" >> /home/xbian/xbian-update.log;
     fi
 
-    echo "11) Disabling nologin service"
+    echo "11) Disabling DELAYLOGIN service"
 
     if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ]; then
-        echo "Notice: already disabled" >> /home/xbian/xbian-update.log
+        echo "Notice: DELAYLOGIN already disabled" >> /home/xbian/xbian-update.log
     else
         sed -i 's/DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
         sed -i 's/#DELAYLOGIN=no/DELAYLOGIN=no/g' /etc/default/rcS
+        sed -i 's/#DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
         if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 0 ]; then
             echo "DELAYLOGIN=no" >> /etc/default/rcS
         fi
 
-        echo "Success: disabled DELAYLOGIN" >> /home/xbian/xbian-update.log;
+        echo "Success: disabled DELAYLOGIN" >> /home/xbian/xbian-update.log
     fi
 
     echo "13) Enable frandom"
@@ -303,13 +304,13 @@ cat <<\EOF > /tmp/003-umount.patch
 -partition=`echo "$UM_DEVICE" | sed 's/^.*[^0123456789]\([0123456789]*\)/\1/'`
 +partition=`echo "$ID_FS_UUID"`
  if test -n "$partition"; then
-     name="${name}_$partition"
+     name="$partition"
  fi
  
 +# Append label number, if any, to the symlink name.
 +label=`echo "$ID_FS_LABEL"`
 +if test -n "$label"; then
-+    name="${name}_$label"
++    name="${name}_($label)"
 +fi
 +
  # If the symlink does not yet exist, create it.
@@ -325,17 +326,15 @@ EOF
 	fi
 	echo "003-umount.patch done"
 
-	mkdir tmp;cd /tmp; tar -xf ../tmp1.tar; cd ..
-	rm -fr ../tmp1.tar
-	
-	cp -a --remove-destination /tmp/init/* /etc/init/ > /dev/null 2>&1
-	cp -a --remove-destination /tmp/init.d/* /etc/init.d/ > /dev/null 2>&1
-	for f in $(ls /tmp/init.d); do insserv -d /etc/init.d/$f; done
-	for f in $(ls /tmp/to_remove); do rm /etc/init.d/$f > /dev/null 2>&1; insserv -r /etc/init.d/$f > /dev/null 2>&1; done
+	cp -a --remove-destination /var/tmp/init/* /etc/init/ > /dev/null 2>&1
+	cp -a --remove-destination /var/tmp/init.d/* /etc/init.d/ > /dev/null 2>&1
+	for f in $(ls /var/tmp/to_remove); do rm /etc/init.d/$f > /dev/null 2>&1; insserv -r /etc/init.d/$f > /dev/null 2>&1; done
+	for f in $(ls /var/tmp/init.d); do insserv -d /etc/init.d/$f; done
 	insserv -d
 
-        rm -f /etc/inittab
+        test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
         rm -f /etc/nologin
+        rm -fr /var/tmp/{init,init.d,to_remove} 
 
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/xbian-update.log"
@@ -345,19 +344,18 @@ EOF
 cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
-set +e
-while pgrep apt-get > /dev/null; do sleep 5; done
-splash --msgtxt="Update finished. Reboot in 2 minutes" --infinitebar
-shutdown -r +3
+while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 1; done
+splash --msgtxt="Update finished. Rebooting now." --infinitebar
+shutdown -r now 
 
 EOF
 
+	chown -Rc xbian:xbian /home/xbian
 	chmod +x /tmp/xbian-update-reboot
-	start-stop-daemon -b --start --exec /tmp/xbian-update-reboot
+	/tmp/xbian-update-reboot &
 
 fi
 
-chown -Rc xbian:xbian /home/xbian
 mountpoint -q /boot && umount /boot
 
 exit 0
