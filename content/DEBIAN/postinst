@@ -342,8 +342,6 @@ EOF
 	echo "1.0b1" > /etc/xbian_version
 
 	chown -Rc xbian:xbian /home/xbian
-	
-	splash --msgtxt="Update finished. Please reboot..." --infinitebar
 
 fi
 
