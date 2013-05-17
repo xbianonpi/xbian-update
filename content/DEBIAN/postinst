@@ -339,7 +339,7 @@ EOF
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/xbian-update.log"
 
-	echo "1.0 Beta 1" > /etc/xbian_version
+	echo "1.0Beta1" > /etc/xbian_version
 
 	chown -Rc xbian:xbian /home/xbian
 
