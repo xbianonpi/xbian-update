@@ -345,9 +345,10 @@ cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
 while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 1; done
-pkill splash
+/usr/bin/splash --infinitebar --msgtxt="update finished, rebooting..."
 sync
-reboot
+sleep 5
+reboot -f
 
 EOF
 
