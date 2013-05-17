@@ -341,7 +341,19 @@ EOF
 
 	echo "1.0Beta1" > /etc/xbian_version
 
+cat << \EOF > /tmp/xbian-update-reboot
+#!/bin/sh
+
+while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 1; done
+pkill splash
+sync
+reboot
+
+EOF
+
 	chown -Rc xbian:xbian /home/xbian
+	chmod +x /tmp/xbian-update-reboot
+	/tmp/xbian-update-reboot &
 
 fi
 
