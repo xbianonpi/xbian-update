@@ -341,19 +341,9 @@ EOF
 
 	echo "1.0b1" > /etc/xbian_version
 
-cat << \EOF > /tmp/xbian-update-reboot
-#!/bin/sh
-
-while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 1; done
-splash --msgtxt="Update finished. Rebooting now." --infinitebar
-sync
-reboot
-
-EOF
-
 	chown -Rc xbian:xbian /home/xbian
-	chmod +x /tmp/xbian-update-reboot
-	/tmp/xbian-update-reboot &
+	
+	splash --msgtxt="Update finished. Please reboot..." --infinitebar
 
 fi
 
