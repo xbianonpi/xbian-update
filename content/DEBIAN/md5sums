@@ -1,4 +1,4 @@
-04237729aa12e663aaf7d5c038f2bfbc  ./content/boot/cmdline.txt
+0c0f161f8eaa87ce63bd2d8e298e710c  ./content/boot/cmdline.txt
 9381562252b4b41f3e631e55e483b7c2  ./content/etc/default/console-setup
 cf3f2a865fbea819dadd439586eaee31  ./content/etc/init/checkfs.sh.override
 cf3f2a865fbea819dadd439586eaee31  ./content/etc/init/checkroot.sh.override
