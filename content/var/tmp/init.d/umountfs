@@ -116,6 +116,7 @@ do_stop () {
 			log_end_msg $?
 		fi
 	fi
+	splash --percentagebar --msgtxt="powered off..."
 }
 
 case "$1" in
