@@ -326,11 +326,13 @@ EOF
 	fi
 	echo "003-umount.patch done"
 
+	echo "17) updating sysv init scripts and adapting system"
+	
 	cp -a --remove-destination /var/tmp/init/* /etc/init/ > /dev/null 2>&1
 	cp -a --remove-destination /var/tmp/init.d/* /etc/init.d/ > /dev/null 2>&1
-	for f in $(ls /var/tmp/to_remove); do rm /etc/init.d/$f > /dev/null 2>&1; insserv -r /etc/init.d/$f > /dev/null 2>&1; done
-	for f in $(ls /var/tmp/init.d); do insserv -d /etc/init.d/$f; done
-	insserv -d
+	for f in $(ls /var/tmp/to_remove); do  insserv -r /etc/init.d/$f > /dev/null 2>&1; rm /etc/init.d/$f > /dev/null 2>&1; done
+	for f in $(ls /var/tmp/init.d); do insserv /etc/init.d/$f; done
+	insserv 
 
         test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
         rm -f /etc/nologin
@@ -344,11 +346,12 @@ EOF
 cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
-while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 1; done
+while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 5; done
 /usr/bin/splash --infinitebar --msgtxt="stopping services..."
 for f in $(ls /etc/rc2.d/S* | sort -r); do
 	[ -x $f ] && $f stop
 done
+apt-get clean
 sleep 5
 sync
 /usr/bin/splash --infinitebar --msgtxt="rebooting..."
