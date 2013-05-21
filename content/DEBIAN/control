@@ -11,4 +11,3 @@ Conflicts: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, librasp
 Architecture: armhf
 Maintainer: Koenkk <development@xbian.org>
 Description: Updates XBian 1.0 Alpha 5 to Beta 1.
-Installed-Size: 356
