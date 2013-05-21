@@ -9,6 +9,6 @@ Depends: xbian-package-zram-swap
 Replaces: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit
 Conflicts: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit
 Architecture: armhf
-Installed-Size: 2320
 Maintainer: Koenkk <development@xbian.org>
 Description: Updates XBian 1.0 Alpha 5 to Beta 1.
+Installed-Size: 356
