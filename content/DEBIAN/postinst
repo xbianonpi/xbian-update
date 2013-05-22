@@ -244,7 +244,7 @@ EOF
 		patch /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
 		echo "Success: applied 001-tmpfs.patch" >> /home/xbian/xbian-update.log;
 	else
-		echo "Notice: 001-tmpfs.patch already applied" >> /home/xbian/xbian-update.log;
+		echo "Error: 001-tmpfs.patch can't be applied" >> /home/xbian/xbian-update.log;
 	fi
 	echo "001-tmpfs.patch done"
 
@@ -279,7 +279,7 @@ EOF
 		patch /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
 		echo "Success: applied 002-sysctl.patch" >> /home/xbian/xbian-update.log;
 	else
-		echo "Notice: 002-sysctl.patch already applied" >> /home/xbian/xbian-update.log;
+		echo "Error: 002-sysctl.patch can't be applied" >> /home/xbian/xbian-update.log;
 	fi
 	echo "002-sysctl.patch done"
 
@@ -322,7 +322,7 @@ EOF
 		patch /etc/usbmount/mount.d/00_create_model_symlink < /tmp/003-umount.patch 2>/dev/null >/dev/null
 		echo "Success: applied 003-umount.patch" >> /home/xbian/xbian-update.log
 	else
-		echo "Notice: 003-umount.patch already applied" >> /home/xbian/xbian-update.log
+		echo "Error: 003-umount.patch can't be applied" >> /home/xbian/xbian-update.log
 	fi
 	echo "003-umount.patch done"
 
