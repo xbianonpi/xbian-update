@@ -285,47 +285,6 @@ EOF
 
 	ldconfig >/dev/null 2>&1
 
-cat <<\EOF > /tmp/003-umount.patch
---- 00_create_model_symlink.old	2013-05-12 00:31:58.269228030 +0200
-+++ 00_create_model_symlink	2013-05-12 00:28:47.526487224 +0200
-@@ -19,7 +19,7 @@
- UM_MODEL=`echo "$UM_MODEL" | sed 's/ /_/g; s/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._-]//g'`
- 
- # Exit if both vendor and model name are empty.
--test -n "$UM_VENDOR" || test -n "$UM_MODEL" || exit 0
-+test -n "$UM_VENDOR" || test -n "$UM_MODEL" || test -n "$ID_FS_LABEL" || test -n "$ID_FS_UUID" || exit 0
- 
- # Build symlink name.
- if test -n "$UM_VENDOR" && test -n "$UM_MODEL"; then
-@@ -29,11 +29,17 @@
- fi
- 
- # Append partition number, if any, to the symlink name.
--partition=`echo "$UM_DEVICE" | sed 's/^.*[^0123456789]\([0123456789]*\)/\1/'`
-+partition=`echo "$ID_FS_UUID"`
- if test -n "$partition"; then
-     name="$partition"
- fi
- 
-+# Append label number, if any, to the symlink name.
-+label=`echo "$ID_FS_LABEL"`
-+if test -n "$label"; then
-+    name="${name}_($label)"
-+fi
-+
- # If the symlink does not yet exist, create it.
- test -e "/var/run/usbmount/$name" || ln -sf "$UM_MOUNTPOINT" "/var/run/usbmount/$name"
-EOF
-	
-	patch --dry-run /etc/usbmount/mount.d/00_create_model_symlink < /tmp/003-umount.patch 2>/dev/null >/dev/null
-	if [ $? == 0 ]; then
-		patch /etc/usbmount/mount.d/00_create_model_symlink < /tmp/003-umount.patch 2>/dev/null >/dev/null
-		echo "Success: applied 003-umount.patch" >> /home/xbian/xbian-update.log
-	else
-		echo "Error: 003-umount.patch can't be applied" >> /home/xbian/xbian-update.log
-	fi
-	echo "003-umount.patch done"
-
 	echo "17) updating sysv init scripts and adapting system"
 	
 	cp -a --remove-destination /var/tmp/init/* /etc/init/ > /dev/null 2>&1
@@ -337,6 +296,12 @@ EOF
         test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
         rm -f /etc/nologin
         rm -fr /var/tmp/{init,init.d,to_remove} 
+	echo "Success: sysvinit and initctl updated" >> /home/xbian/xbian-update.log
+
+	echo "18) removing obsolete files"
+	rm -f /usr/local/lib/libtag.a
+	rm -f /usr/local/lib/libtag_c.a
+	echo "Success: files removed" >> /home/xbian/xbian-update.log
 
 	echo "---UPDATE LOG---"
 	cat "/home/xbian/xbian-update.log"
