@@ -267,7 +267,7 @@ cat <<\EOF > /tmp/002-sysctl.patch
 -vm.swappiness=1
 -vm.min_free_kbytes = 8192
 +
-+vm.swappiness=100
++vm.swappiness=60
 +vm.dirty_ratio = 60 
 +vm.dirty_background_ratio = 35
 +vm.vfs_cache_pressure = 250
