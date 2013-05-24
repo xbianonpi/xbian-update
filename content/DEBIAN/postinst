@@ -186,7 +186,7 @@ if [ $1 == "configure" ]; then
 
     echo "15b) Adding /boot to /etc/fstab"
 
-    if [ $(grep /boot /etc/fstab | grep "noauto,user,uid=0,gid=0") -eq 0 ];	then
+    if [ $(grep /boot /etc/fstab | grep -c "noauto,user,uid=0,gid=0") -eq 0 ];	then
         grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
         echo "/dev/mmcblk0p1	/boot	vfat	defaults,noauto,user,gid=0,uid=0	0	0" >> /etc/fstab
         if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
