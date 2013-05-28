@@ -260,21 +260,20 @@ cat <<\EOF > /tmp/002-sysctl.patch
  
  # Uncomment the following to stop low-level messages on console
  kernel.printk = 3 4 1 3
-@@ -60,5 +60,9 @@
+@@ -60,5 +60,11 @@
  #
  
  # rpi tweaks
 -vm.swappiness=1
 -vm.min_free_kbytes = 8192
-+
-vm.swappiness = 70
-vm.dirty_ratio = 45
-vm.dirty_background_ratio = 30
-vm.vfs_cache_pressure = 200
-vm.min_free_kbytes = 16384
-kernel.msgmax = 65536
-kernel.msgmnb = 65536
-kernel.sem = 250 256000 32 1024
++vm.swappiness = 70
++vm.dirty_ratio = 45
++vm.dirty_background_ratio = 30
++vm.vfs_cache_pressure = 200
++vm.min_free_kbytes = 16384
++kernel.msgmax = 65536
++kernel.msgmnb = 65536
++kernel.sem = 250 256000 32 1024
 EOF
 
 	patch --dry-run /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
