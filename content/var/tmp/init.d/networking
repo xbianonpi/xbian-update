@@ -1,7 +1,7 @@
 #!/bin/sh -e
 ### BEGIN INIT INFO
 # Provides:          networking ifupdown
-# Required-Start:    $local_fs urandom
+# Required-Start:    $local_fs frandom
 # Required-Stop:     $local_fs
 # Default-Start:     S
 # Default-Stop:      0 6

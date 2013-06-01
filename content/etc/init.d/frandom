@@ -1,9 +1,9 @@
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          frandom
-# Required-Start:    $remote_fs
-# Required-Stop:     $remote_fs
-# Default-Start:     2 3 4 5
+# Required-Start:    kmod
+# Required-Stop:     
+# Default-Start:     S 
 # Default-Stop:      0 1 6
 # Short-Description: Initialize frandom and erandom
 # Description:
@@ -17,35 +17,33 @@
 
 case "$1" in
   start)
-	test -e /dev/frandom || exit 1
-	if [ ! -f /dev/urandom.orig ]; then
-		mv /dev/urandom /dev/urandom.orig
-	else
-		rm /dev/urandom
-	fi
+	test -e /dev/frandom || { log_error_msg "failed"; exit 1; }
+	[ ! -e /dev/urandom.orig ] && mv /dev/urandom /dev/urandom.orig || true
+	[ -e /dev/urandom ] && rm /dev/urandom || true
 	ln -s /dev/frandom /dev/urandom
 
-	test -e /dev/erandom || exit 1
-	if [ ! -f /dev/random.orig ]; then
-		mv /dev/random /dev/random.orig
-	else
-		rm /dev/random
-	fi
+	test -e /dev/erandom || { log_error_msg "failed"; exit 1; }
+	[ ! -e /dev/random.orig ] && mv /dev/random /dev/random.orig || true
+	[ -e /dev/random ] && rm /dev/random || true
 	ln -s /dev/erandom /dev/random
+        log_success_msg "frandom loaded"
 	;;
   stop)
 	test -e /dev/urandom.orig && mv /dev/urandom.orig /dev/urandom
 	test -e /dev/random.orig && mv /dev/random.orig /dev/random
+        log_success_msg "frandom unloaded"
 	;;
   restart)
 	stop
 	sleep 1
 	start
+        log_success_msg "frandom restarted"
 	;;
   *)
-	echo "Usage: /etc/init.d/frandom {start|stop}" >&2
+	log_warning_msg "Usage: /etc/init.d/frandom {start|stop|restart}" >&2
 	exit 3
 	;;
 esac
 
-:
+exit 0
+
