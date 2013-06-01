@@ -294,6 +294,7 @@ EOF
 	for f in $(ls /var/tmp/to_remove); do  insserv -r /etc/init.d/$f > /dev/null 2>&1; rm /etc/init.d/$f > /dev/null 2>&1; done
 	for f in $(ls /var/tmp/init.d); do insserv -d /etc/init.d/$f; done
 	insserv -r /etc/init.d/urandom
+	insserv -r /etc/init.d/hdparm
 	insserv 
 
         test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
