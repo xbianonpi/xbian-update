@@ -6,6 +6,18 @@ if [ $1 == "configure" ]; then
 
 	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
+	echo "2) Turning off rainbow screen"
+
+	if grep -q "disable_splash=1" /boot/config.txt;	then
+	        echo "Notice: rainbow already off" >> /home/xbian/xbian-update.log;
+        else
+                echo -e "\ndisable_splash=1\n" >> /boot/config.txt
+		if grep -q "disable_splash=1" /boot/config.txt; then
+			echo "Success: rainbow off" >> /home/xbian/xbian-update.log; 
+		else
+			echo "Error: rainbow off" >> /home/xbian/xbian-update.log; 
+		fi
+	fi
 	echo "3) Changing default overclock"
 
 	if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
