@@ -178,7 +178,7 @@ if [ $1 == "configure" ]; then
 
     if [ $(grep /boot /etc/fstab | grep -c "noauto,user,uid=0,gid=0") -eq 0 ];	then
         grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
-        echo "/dev/mmcblk0p1	/boot	vfat	defaults,noauto,user,gid=0,uid=0	0	0" >> /etc/fstab
+        echo "UUID=8B12-9112	/boot	vfat	defaults,noauto,user,gid=0,uid=0	0	0" >> /etc/fstab
         if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
             echo "Success: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
 
@@ -188,6 +188,7 @@ if [ $1 == "configure" ]; then
     else
             echo "Notice: /boot already present in /etc/fstab" >> /home/xbian/xbian-update.log;
     fi
+    mountpoint -q /boot && mount -o remount /boot
 
 	echo "16) Applying patches"
 
