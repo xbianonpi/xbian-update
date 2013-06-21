@@ -142,28 +142,6 @@ if [ $1 == "configure" ]; then
         echo "Success: disabled DELAYLOGIN" >> /home/xbian/xbian-update.log
     fi
 
-    echo "13) Enable frandom"
-
-    if [ -f "/etc/init.d/frandom" ];	then
-        chmod +x /etc/init.d/frandom;
-        update-rc.d frandom defaults >/dev/null 2>&1;
-        echo "Success: enable frandom init script" >> /home/xbian/xbian-update.log;
-
-        if [ $(grep 'frandom' /etc/modules| wc -l) -eq 0 ];	then
-            echo "frandom" >> /etc/modules;
-            if [ $(grep 'frandom' /etc/modules| wc -l) -eq 1 ];	then
-                echo "Success: add frandom to /etc/modules" >> /home/xbian/xbian-update.log;
-            else
-                echo "Failed: add frandom to /etc/modules" >> /home/xbian/xbian-update.log;
-            fi
-        else
-            echo "Notice: frandom already present in /etc/modules" >> /home/xbian/xbian-update.log;
-        fi
-
-    else
-        echo "Error: enable frandom init script" >> /home/xbian/xbian-update.log;
-    fi
-
     echo "14) Remove klogd & sysklogd from update-rc.d"
     update-rc.d klogd remove >/dev/null 2>&1;
     update-rc.d sysklogd remove >/dev/null 2>&1;
