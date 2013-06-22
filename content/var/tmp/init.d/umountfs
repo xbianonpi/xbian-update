@@ -87,36 +87,27 @@ do_stop () {
 		if [ "$VERBOSE" = no ]
 		then
 			log_action_begin_msg "Unmounting weak filesystems"
-			fstab-decode umount -r -d $WEAK_MTPTS
+			fstab-decode umount -l -r -d $WEAK_MTPTS
 			log_action_end_msg $?
 		else
 			log_daemon_msg "Will now unmount weak filesystems"
-			fstab-decode umount -v -r -d $WEAK_MTPTS
+			fstab-decode umount -l -v -r -d $WEAK_MTPTS
 			log_end_msg $?
 		fi
 	fi
 	if [ "$REG_MTPTS" ]
 	then
+		log_action_begin_msg "Unmounting local filesystems"
 		if [ "$VERBOSE" = no ]
 		then
-                        log_action_begin_msg "Sync local filesystems part 1"
-                        sync
-                        log_action_begin_msg "Sync local filesystems part 2"
-                        sync
-			log_action_begin_msg "Unmounting local filesystems"
 			fstab-decode umount -f -r -d $REG_MTPTS
-			log_action_end_msg $?
 		else
-                        log_action_begin_msg "Sync local filesystems part 1"
-                        sync
-                        log_action_begin_msg "Sync local filesystems part 2"
-                        sync
 			log_daemon_msg "Will now unmount local filesystems"
 			fstab-decode umount -f -v -r -d $REG_MTPTS
-			log_end_msg $?
 		fi
+		log_action_end_msg $?
 	fi
-	splash --percentagebar --msgtxt="powered off..."
+	splash --percentagebar --percentage=97 --msgtxt="powered off..."
 }
 
 case "$1" in
