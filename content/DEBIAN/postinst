@@ -18,6 +18,9 @@ if [ $1 == "configure" ]; then
 			echo "Error: rainbow off" >> /home/xbian/xbian-update.log; 
 		fi
 	fi
+
+	tune2fs -L xbian-root-btrfs $(findmnt -n -o SOURCE /)
+
 	echo "3) Changing default overclock"
 
 	if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
