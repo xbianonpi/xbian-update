@@ -1,13 +1,13 @@
 Origin: XBian
 Package: xbian-update
-Version: 1.0-1
+Version: 1.0-1.1
 Section: update
 Essential: Yes
 Priority: optional
-Pre-Depends: kbd, xbian-package-lirc (>=1.4), xbian-package-config-xbmc (>=1.1), xbian-package-xbmc (>=2.3), xbian-package-kernel (>=1.1), xbian-package-lirc (>=1.4), libc-bin (>=2.13-38+rpi2), libc-dev-bin (>=2.13-38+rpi2), libc6 (>=2.13-38+rpi2), libc6-dev (>=2.13-38+rpi2), udisks, libnfs-dev, nfs-common, samba-common-bin, avahi-daemon, xbian-package-usbmount, ntfs-3g, wireless-tools, libjasper-dev, libass-dev, fbset, libplist1, pv, exfat-fuse, bc, usbutils, libbluray-dev, libafpclient0, python-sqlite, btrfs-tools, libcurl3, hfsplus, hfsprogs, hfsutils, libva1, upstart, mountall, plymouth, btrfs-tools
-Depends: xbian-package-zram-swap
+Pre-Depends: kbd, xbian-package-lirc (>=1.4), xbian-package-config-xbmc (>=1.1), xbian-package-xbmc (>=2.3), xbian-package-kernel (>=1.1), xbian-package-lirc (>=1.4), libc-bin (>=2.13-38+rpi2), libc-dev-bin (>=2.13-38+rpi2), libc6 (>=2.13-38+rpi2), libc6-dev (>=2.13-38+rpi2), udisks, libnfs-dev, nfs-common, samba-common-bin, avahi-daemon, xbian-package-usbmount, ntfs-3g, wireless-tools, libjasper-dev, libass-dev, fbset, libplist1, pv, exfat-fuse, bc, usbutils, libbluray-dev, libafpclient0, python-sqlite, btrfs-tools, libcurl3, hfsplus, hfsprogs, hfsutils, libva1, upstart, mountall, plymouth, btrfs-tools, libmad0, libtiff4
+Depends: xbian-package-zram-swap, xbian-update (=1.0-1)
 Replaces: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit
 Conflicts: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit
 Architecture: armhf
 Maintainer: Koenkk <development@xbian.org>
-Description: Updates XBian 1.0 Alpha 5 to Beta 1.
+Description: Hotfix update for XBian 1.0 Beta 1

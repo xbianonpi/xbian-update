@@ -4,10 +4,10 @@ mountpoint -q /boot || mount /boot
 
 if [ $1 == "install" ]; then
 
-	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-0.5" ]; then
+	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1" ]; then
 		echo "!-------------------------------------------------!"
 		echo "!                                                 !"
-		echo "! Please install this update on XBian 1.0 Alpha 5 !"
+		echo "! Please install this update on XBian 1.0 Beta 1 !"
 		echo "!                                                 !"
 		echo "!-------------------------------------------------!"
 		exit 1;
@@ -17,10 +17,10 @@ fi
 
 if [ $1 == "upgrade" ]; then
 
-	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1" -a $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-0.5" ]; then
+	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1" -a $(dpkg-query -W -f='${Version}\n' "xbian-update") != “1.0-1” ]; then
 		echo "!-------------------------------------------------!"
 		echo "!                                                 !"
-		echo "! Please install this update on XBian 1.0 Alpha 5 !"
+		echo "! Please install this update on XBian 1.0 Beta 1  !"
 		echo "!    or use it to reinstall XBian 1.0 Beta 1      !"
 		echo "!                                                 !"
 		echo "!-------------------------------------------------!"
@@ -34,49 +34,6 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 	echo "1) Stopping XBMC";
 	/etc/init.d/xbmc stop 1>/dev/null 2>/dev/null >/dev/null
 
-	if [ ! -d "/boot" ]; then
-		mkdir -p "/boot";
-	fi
-
-	if [ ! -d "/etc" ]; then
-		mkdir -p "/etc";
-	fi
-
-	if [ ! -d "/etc/default" ]; then
-		mkdir -p "/etc/default";
-	fi
-
-	if [ ! -d "/etc/init.d" ]; then
-		mkdir -p "/etc/init.d";
-	fi
-
-	if [ ! -d "/etc/lirc" ]; then
-		mkdir -p "/etc/lirc";
-	fi
-
-	if [ ! -d "/etc/lirc/hardware" ]; then
-		mkdir -p "/etc/lirc/hardware";
-	fi
-
-	if [ ! -d "/etc/lirc/remotes" ]; then
-		mkdir -p "/etc/lirc/remotes";
-	fi
-
-	if [ ! -d "/lib/firmware" ]; then
-		mkdir -p "/lib/firmware";
-	fi
-
-	if [ ! -d "/usr/bin" ]; then
-		mkdir -p "/usr/bin";
-	fi
-
-	if [ ! -d "/usr/sbin" ]; then
-		mkdir -p "/usr/sbin";
-	fi
-
-    if [ -f "/boot/cmdline.txt" ]; then
-        mv /boot/cmdline.txt /boot/cmdline.txt.old
-    fi
-
 	echo "2) Installing new files"
+	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 fi
