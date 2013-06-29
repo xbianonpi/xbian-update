@@ -3,6 +3,22 @@
 if [ $1 == "configure" ]; then
 
 	rm /home/xbian/xbian-update.log >/dev/null 2>&1
+	
+cat << \EOF > /tmp/xbian-update-reboot
+#!/bin/sh
+
+while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 5; done
+/usr/bin/splash --infinitebar --msgtxt="stopping services..."
+for f in $(ls /etc/rc2.d/S* | sort -r); do
+	[ -x $f ] && $f stop
+done
+apt-get clean
+sleep 5
+sync
+/usr/bin/splash --infinitebar --msgtxt="rebooting..."
+reboot -f
+
+EOF
 
 	chown -Rc xbian:xbian /home/xbian
 	chmod +x /tmp/xbian-update-reboot
