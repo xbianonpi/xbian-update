@@ -4,6 +4,8 @@ if [ $1 == "configure" ]; then
 
 	rm /home/xbian/xbian-update.log >/dev/null 2>&1
 	
+	echo "1.0Beta1.1" > /etc/xbian_version
+	
 cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
