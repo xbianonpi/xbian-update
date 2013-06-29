@@ -23,8 +23,9 @@ reboot -f
 EOF
 
 	chown -Rc xbian:xbian /home/xbian
-	chmod +x /tmp/xbian-update-reboot
+	chmod +x /tmp/xbian-update-reboot >/dev/null 2>&1
 	/tmp/xbian-update-reboot &
+	echo "Update installed, rebooting..."
 
 fi
 
