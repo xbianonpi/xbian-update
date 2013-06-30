@@ -2,10 +2,17 @@
 
 if [ $1 == "configure" ]; then
 
-	rm /home/xbian/xbian-update.log >/dev/null 2>&1
-	
 	echo "1.0Beta1.1" > /etc/xbian_version
 	
+	insserv /etc/init.d/rpcbind
+	insserv /etc/init.d/nfs-common
+
+	chown -Rc xbian:xbian /home/xbian
+	cp -a --remove-destination /var/tmp/etc/profiles /etc/profiles
+	cp -a --remove-destination /var/tmp/default/nfs-common /etc/default/nfs-common
+	locale-gen
+
+	if [ ! -e /tmp/xbian-update-reboot ]; then
 cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
@@ -22,13 +29,12 @@ reboot -f
 
 EOF
 
-	chown -Rc xbian:xbian /home/xbian
-	chmod +x /tmp/xbian-update-reboot >/dev/null 2>&1
-	/tmp/xbian-update-reboot &
-	echo "Update installed, rebooting..."
+		chmod +x /tmp/xbian-update-reboot >/dev/null 2>&1
+		/tmp/xbian-update-reboot &
+	fi
 
 fi
 
-mountpoint -q /boot && umount /boot
+mountpoint -q /boot && umount /boot || true
 
 exit 0
