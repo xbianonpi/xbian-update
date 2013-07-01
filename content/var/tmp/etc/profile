@@ -6,7 +6,6 @@ if [ "`id -u`" -eq 0 ]; then
 else
   PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
 fi
-echo -ne '\e%G\e[?47h\e%G\e[?47l'
 export PATH
 
 if [ "$PS1" ]; then
