@@ -4,13 +4,13 @@ mountpoint -q /boot || mount /boot
 
 if [ $1 == "install" ]; then
 
-	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1" ]; then
+	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1" -a $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1.2" ]; then
 		echo "!-------------------------------------------------!"
 		echo "!                                                 !"
 		echo "! Please install this update on XBian 1.0 Beta 1 !"
 		echo "!                                                 !"
 		echo "!-------------------------------------------------!"
-		exit 1;
+#		exit 1;
 	fi
 
 fi
@@ -24,7 +24,7 @@ if [ $1 == "upgrade" ]; then
 		echo "!    or use it to reinstall XBian 1.0 Beta 1.1      !"
 		echo "!                                                 !"
 		echo "!-------------------------------------------------!"
-		exit 1;
+#		exit 1;
 	fi
 
 fi
@@ -32,7 +32,7 @@ fi
 if [ $1 == "install" -o $1 == "upgrade" ]; then
 
 	echo "1) Stopping XBMC";
-	/etc/init.d/xbmc stop 1>/dev/null 2>/dev/null >/dev/null
+	stop xbmc >/dev/null 2>&1|| service xbmc stop >/dev/null 2>&1||true
 
 	echo "2) Installing new files"
 	/usr/bin/splash --infinitebar --msgtxt="installing update..."
