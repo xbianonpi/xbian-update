@@ -17,11 +17,11 @@ fi
 
 if [ $1 == "upgrade" ]; then
 
-	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1" -a $(dpkg-query -W -f='${Version}\n' "xbian-update") != “1.0-1” ]; then
+	if [ $(dpkg-query -W -f='${Version}\n' "xbian-update") != "1.0-1" -a $(dpkg-query -W -f='${Version}\n' "xbian-update") != “1.0-1.1” ]; then
 		echo "!-------------------------------------------------!"
 		echo "!                                                 !"
 		echo "! Please install this update on XBian 1.0 Beta 1  !"
-		echo "!    or use it to reinstall XBian 1.0 Beta 1      !"
+		echo "!    or use it to reinstall XBian 1.0 Beta 1.1      !"
 		echo "!                                                 !"
 		echo "!-------------------------------------------------!"
 		exit 1;
