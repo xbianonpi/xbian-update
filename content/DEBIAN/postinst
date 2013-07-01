@@ -6,7 +6,9 @@ if [ $1 == "configure" ]; then
 	
 	insserv /etc/init.d/rpcbind
 	insserv /etc/init.d/nfs-common
-        insserv
+	insserv -rf /etc/init.d/avahi-daemon
+	insserv -rf /etc/init.d/dbus
+	insserv -d
 
 	chown -Rc xbian:xbian /home/xbian
 	cp -a --remove-destination /var/tmp/etc/profile /etc/profile
