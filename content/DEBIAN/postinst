@@ -6,7 +6,7 @@ if [ $1 == "configure" ]; then
 
 	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
-	echo "2) Turning off rainbow screen"
+	echo "3) Turning off rainbow screen"
 
 	if grep -q "disable_splash=1" /boot/config.txt;	then
 	        echo "Notice: rainbow already off" >> /home/xbian/xbian-update.log;
@@ -21,7 +21,7 @@ if [ $1 == "configure" ]; then
 
 	tune2fs -L xbian-root-btrfs $(findmnt -n -o SOURCE /)
 
-	echo "3) Changing default overclock"
+	echo "4) Changing default overclock"
 
 	if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
 		sed -i 's/core_freq=375/core_freq=275/g' /boot/config.txt
@@ -34,7 +34,7 @@ if [ $1 == "configure" ]; then
 		echo "Notice: core_freq 275 already set" >> /home/xbian/xbian-update.log; 
 	fi
 
-	echo "4) Changing fanartres"
+	echo "5) Changing fanartres"
 
 	if [ $(grep "<fanartres>540</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 		sed -i 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
@@ -47,7 +47,7 @@ if [ $1 == "configure" ]; then
 		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/xbian-update.log; 
 	fi
 
-	echo "5) Changing imagres"
+	echo "6) Changing imagres"
 
 	if [ $(grep "<imageres>256</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 		sed -i 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
@@ -60,7 +60,7 @@ if [ $1 == "configure" ]; then
 		echo "Notice: detected a manual fanartres setting, not changing" >> /home/xbian/xbian-update.log; 
 	fi
 
-	echo "6) Adding SuperRepo"
+	echo "7) Adding SuperRepo"
 
 	if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 0 ];	then
         sed -i 's|<files>|<files>\n\t<default pathversion="1"></default>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion="1">http://use.superrepo.org/Frodo</path>|g' /home/xbian/.xbmc/userdata/sources.xml
@@ -73,7 +73,7 @@ if [ $1 == "configure" ]; then
 		echo "Notice: Fusion already replaced by SuperRepo" >> /home/xbian/xbian-update.log; 
 	fi
 
-	echo "7) Modifying avahi-deamon defaults"
+	echo "8) Modifying avahi-deamon defaults"
 
 	if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=1"  /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
 		sed -i 's:AVAHI_DAEMON_DETECT_LOCAL=1:AVAHI_DAEMON_DETECT_LOCAL=0:g' /etc/default/avahi-daemon
@@ -86,7 +86,7 @@ if [ $1 == "configure" ]; then
 		echo "Notice: avahi-deamon defaults already modified" >> /home/xbian/xbian-update.log; 
 	fi
 
-	echo "8) Disable watchdog"
+	echo "9) Disable watchdog"
 
 	if [ $(grep "run_watchdog=1"  /etc/default/watchdog| wc -l) -eq 1 ];	then
 		sed -i 's:run_watchdog=1:run_watchdog=0:g' /etc/default/watchdog
@@ -101,7 +101,7 @@ if [ $1 == "configure" ]; then
 		echo "Notice: watchdog already disabled" >> /home/xbian/xbian-update.log; 
 	fi
 
-    echo "9) Symlink /usr/lib/vfp to /opt/vc/lib"
+    echo "10) Symlink /usr/lib/vfp to /opt/vc/lib"
 
     if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
         rm -r /usr/lib/vfp
@@ -117,7 +117,7 @@ if [ $1 == "configure" ]; then
         echo "Failed: to symlink /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/xbian-update.log;
     fi
 
-    echo "10) Enable auto fsck on boot"
+    echo "11) Enable auto fsck on boot"
 
     if [ $(grep "#FSCKFIX=no" /etc/default/rcS| wc -l) -eq 1 ];	then
         sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
@@ -130,7 +130,7 @@ if [ $1 == "configure" ]; then
         echo "Notice: enable auto fsck on boot already set" >> /home/xbian/xbian-update.log;
     fi
 
-    echo "11) Disabling DELAYLOGIN service"
+    echo "12) Disabling DELAYLOGIN service"
 
     if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ]; then
         echo "Notice: DELAYLOGIN already disabled" >> /home/xbian/xbian-update.log
@@ -145,11 +145,11 @@ if [ $1 == "configure" ]; then
         echo "Success: disabled DELAYLOGIN" >> /home/xbian/xbian-update.log
     fi
 
-    echo "14) Remove klogd & sysklogd from update-rc.d"
+    echo "13) Remove klogd & sysklogd from update-rc.d"
     update-rc.d klogd remove >/dev/null 2>&1;
     update-rc.d sysklogd remove >/dev/null 2>&1;
 
-    echo "15a) Removing swapfile from /etc/fstab"
+    echo "14a) Removing swapfile from /etc/fstab"
 
     if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 1 ];	then
         sed -i '/\/var\/swapfile/d' /etc/fstab
@@ -177,7 +177,7 @@ if [ $1 == "configure" ]; then
             echo "Notice: swapfile already removed from /etc/fstab" >> /home/xbian/xbian-update.log;
     fi
 
-    echo "15b) Adding /boot to /etc/fstab"
+    echo "14b) Adding /boot to /etc/fstab"
 
     if [ $(grep /boot /etc/fstab | grep -c "noauto,user,uid=0,gid=0") -eq 0 ];	then
         grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
@@ -193,7 +193,7 @@ if [ $1 == "configure" ]; then
     fi
     mountpoint -q /boot && mount -o remount /boot
 
-	echo "16) Applying patches"
+	echo "15) Applying patches"
 
 cat <<\EOF > /tmp/001-tmpfs.patch
 --- a/etc/default/tmpfs
@@ -290,7 +290,7 @@ EOF
 
 	ldconfig >/dev/null 2>&1
 
-	echo "17) updating sysv init scripts and adapting system"
+	echo "16) updating sysv init scripts and adapting system"
 	
 	cp -a --remove-destination /var/tmp/init/* /etc/init/ > /dev/null 2>&1
 	cp -a --remove-destination /var/tmp/default/* /etc/default/ > /dev/null 2>&1
@@ -319,7 +319,7 @@ EOF
         rm -fr /var/tmp/{init,init.d,to_remove,etc} 
 	echo "Success: sysvinit and initctl updated" >> /home/xbian/xbian-update.log
 
-	echo "18) removing obsolete files"
+	echo "17) removing obsolete files"
 	rm -f /usr/local/lib/libtag.a
 	rm -f /usr/local/lib/libtag_c.a
 	echo "Success: files removed" >> /home/xbian/xbian-update.log
