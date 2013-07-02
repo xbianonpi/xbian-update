@@ -156,7 +156,7 @@ if [ $1 == "configure" ]; then
         if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 0 ];	then
             echo "Success: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
 
-            echo "15b) Removing /var/swapfile"
+            echo "14b) Removing /var/swapfile"
 
             if [ -f "/var/swapfile" ];	then
                 swapoff /var/swapfile
@@ -177,7 +177,7 @@ if [ $1 == "configure" ]; then
             echo "Notice: swapfile already removed from /etc/fstab" >> /home/xbian/xbian-update.log;
     fi
 
-    echo "14b) Adding /boot to /etc/fstab"
+    echo "15) Adding /boot to /etc/fstab"
 
     if [ $(grep /boot /etc/fstab | grep -c "noauto,user,uid=0,gid=0") -eq 0 ];	then
         grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
@@ -193,7 +193,7 @@ if [ $1 == "configure" ]; then
     fi
     mountpoint -q /boot && mount -o remount /boot
 
-	echo "15) Applying patches"
+	echo "16) Applying patches"
 
 cat <<\EOF > /tmp/001-tmpfs.patch
 --- a/etc/default/tmpfs
@@ -290,7 +290,7 @@ EOF
 
 	ldconfig >/dev/null 2>&1
 
-	echo "16) updating sysv init scripts and adapting system"
+	echo "17) updating sysv init scripts and adapting system"
 	
 	cp -a --remove-destination /var/tmp/init/* /etc/init/ > /dev/null 2>&1
 	cp -a --remove-destination /var/tmp/default/* /etc/default/ > /dev/null 2>&1
@@ -319,7 +319,7 @@ EOF
         rm -fr /var/tmp/{init,init.d,to_remove,etc} 
 	echo "Success: sysvinit and initctl updated" >> /home/xbian/xbian-update.log
 
-	echo "17) removing obsolete files"
+	echo "18) removing obsolete files"
 	rm -f /usr/local/lib/libtag.a
 	rm -f /usr/local/lib/libtag_c.a
 	echo "Success: files removed" >> /home/xbian/xbian-update.log
