@@ -19,7 +19,7 @@ if [ $1 == "configure" ]; then
 		fi
 	fi
 
-	tune2fs -L xbian-root-btrfs $(findmnt -n -o SOURCE /)
+	grep "rootfstype=ext4" /proc/cmdline && tune2fs -L xbian-root-btrfs $(findmnt -n -o SOURCE /)
 
 	echo "4) Changing default overclock"
 
@@ -312,6 +312,8 @@ EOF
 	insserv -fr /etc/init.d/sudo
 	insserv -rf /etc/init.d/avahi-daemon
 	insserv -rf /etc/init.d/dbus
+	insserv -rf /etc/init.d/udev
+	insserv -rf /etc/init.d/ntp
 	insserv -d
 
         test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
@@ -324,12 +326,22 @@ EOF
 	rm -f /usr/local/lib/libtag_c.a
 	echo "Success: files removed" >> /home/xbian/xbian-update.log
 
-	echo "---UPDATE LOG---"
-	cat "/home/xbian/xbian-update.log"
+	#echo "---UPDATE LOG---"
+	#cat "/home/xbian/xbian-update.log"
 
 	echo "1.0Beta1.1" > /etc/xbian_version
 
 	locale-gen
+
+    if [ $(grep /boot /etc/fstab | grep -c "noauto") -eq 1 ];	then
+        grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
+        echo "UUID=8B12-9112	/boot	vfat	defaults 	0	0" >> /etc/fstab
+        if [ $(grep -c /boot /etc/fstab ) -eq 0 ]; then
+            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log
+        fi
+    fi
+    mountpoint -q /boot && mount -o remount /boot
+
 
 	cd /usr/share/polkit-1/actions
 
@@ -349,8 +361,6 @@ EOF
 
 	if patch -N --dry-run ./org.freedesktop.udisks.policy < /tmp/udisks.patch > /dev/null 2>&1; then
 	    patch -s ./org.freedesktop.udisks.policy < /tmp/udisks.patch
-	else
-	    echo "Patch failed!"
 	fi
 	rm -fr /tmp/udisks.patch
 
