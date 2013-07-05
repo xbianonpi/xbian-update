@@ -368,6 +368,7 @@ cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
 while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 5; done
+echo "XBian update completed, rebooting..."
 /usr/bin/splash --infinitebar --msgtxt="stopping services..."
 for f in $(ls /etc/rc2.d/S* | sort -r); do
 	[ -x $f ] && $f stop
@@ -380,7 +381,7 @@ reboot -f
 
 EOF
 
-	chown -Rc xbian:xbian /home/xbian
+	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
 	chmod +x /tmp/xbian-update-reboot
 	/tmp/xbian-update-reboot &
 
