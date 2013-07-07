@@ -314,7 +314,7 @@ EOF
 	insserv -rf /etc/init.d/dbus
 	insserv -rf /etc/init.d/udev
 	insserv -rf /etc/init.d/ntp
-	insserv -d
+	insserv
 
         test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
         rm -f /etc/nologin
