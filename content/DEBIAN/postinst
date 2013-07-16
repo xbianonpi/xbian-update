@@ -6,6 +6,8 @@ if [ $1 == "configure" ]; then
 
 	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
+        version1011() {
+
 	echo "3) Turning off rainbow screen"
 
 	if grep -q "disable_splash=1" /boot/config.txt;	then
@@ -279,15 +281,6 @@ EOF
 	fi
 	echo "002-sysctl.patch done"
 
-cat <<\EOF > /etc/modules
-# /etc/modules: kernel modules to load at boot time.
-#
-# This file contains the names of kernel modules that should be loaded
-# at boot time, one per line. Lines beginning with "#" are ignored.
-# Parameters can be specified after the module name.
-
-EOF
-
 	ldconfig >/dev/null 2>&1
 
 	echo "17) updating sysv init scripts and adapting system"
@@ -363,7 +356,73 @@ EOF
 	    patch -s ./org.freedesktop.udisks.policy < /tmp/udisks.patch
 	fi
 	rm -fr /tmp/udisks.patch
+        
+        }
+############################## 1.0-1.1 END   ###################################
 
+        version1012() {
+            cp -ar --remove-destination /var/tmp/* / > /dev/null 2>&1
+
+            #rcS.d
+            insserv -rf /etc/init.d/checkroot-bootclean.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/hostname.sh > /dev/null 2>&1
+            insserv -rf /etc/init.d/networking > /dev/null 2>&1
+            insserv -fr /etc/init.d/kmod > /dev/null 2>&1
+            insserv -fr /etc/init.d/procps > /dev/null 2>&1
+            insserv -fr /etc/init.d/bootmisc.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/screen-cleanup > /dev/null 2>&1
+
+            #rc2.d
+            insserv -fr /etc/init.d/cron > /dev/null 2>&1
+            insserv -fr /etc/init.d/ntp > /dev/null 2>&1
+            insserv -fr /etc/init.d/ssh > /dev/null 2>&1
+            insserv -fr nrg-tools > /dev/null 2>&1
+            insserv -fr cron > /dev/null 2>&1
+            insserv -fr anacron > /dev/null 2>&1
+            insserv -fr iguanaIR > /dev/null 2>&1
+            insserv -fr rsync > /dev/null 2>&1
+
+            #rc6.d
+            insserv -fr /etc/init.d/kexec > /dev/null 2>&1
+            insserv -fr /etc/init.d/kexec-load > /dev/null 2>&1
+
+	    insserv -f /etc/init.d/kbd  > /dev/null 2>&1
+
+            insserv -f > /dev/null 2>&1
+
+	    grep -q frandom /etc/modules || echo frandom >> /etc/modules  
+	    grep -q bcm2708-rng /etc/modules || echo bcm2708-rng >> /etc/modules  
+
+            grep -iv "AddressFamily inet" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new
+            grep -iv "UseDNS no" /etc/ssh/sshd_config.new > /etc/ssh/sshd_config.new.2
+            rm -f /etc/ssh/sshd_config.new
+            echo "AddressFamily inet" >> /etc/ssh/sshd_config.new.2
+            echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
+            mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
+
+            if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
+                :
+            else
+                echo "auto eth0" > /etc/network/interfaces.new
+                cat /etc/network/interfaces >> /etc/network/interfaces.new
+                mv /etc/network/interfaces.new /etc/network/interfaces
+            fi
+
+        }
+
+############################## 1.0-1.2 END   ###################################
+        
+        version=$(dpkg-query -W -f='${Version}\n' "xbian-update" | sed 's/[\.-]//g')
+        while test $(($version / 1000)) -eq 0; do version=$(($version *10)); done
+
+        [ $version -lt 1011 ] && { echo "installing update to 1.0-1.1"; version1011; }
+        [ $version -lt 1012 -o $version -eq 1012 ] && { echo "installing update to 1.0-1.2"; version1012; }
+
+###############################################################################
+
+	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
+
+	if [ $version -lt 1011 ]; then
 cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
@@ -380,10 +439,11 @@ sync
 reboot -f
 
 EOF
-
-	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
-	chmod +x /tmp/xbian-update-reboot
-	/tmp/xbian-update-reboot &
+	    chmod +x /tmp/xbian-update-reboot
+	    /tmp/xbian-update-reboot &
+	else
+	    start -n xbian-update-reboot
+	fi
 
 fi
 

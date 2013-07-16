@@ -1,0 +1,3 @@
+# already started during initramfs
+
+start on xbian or startup ON_BOOT=
