@@ -1,0 +1,15 @@
+--- /etc/sysctl.conf	2013-07-17 21:15:37.716566538 +0200
++++ sysctl.conf.new	2013-07-17 21:15:55.115919710 +0200
+@@ -59,12 +59,3 @@
+ #net.ipv4.conf.all.log_martians = 1
+ #
+ 
+-# rpi tweaks
+-vm.swappiness = 70
+-vm.dirty_ratio = 65
+-vm.dirty_background_ratio = 40
+-vm.vfs_cache_pressure = 150
+-vm.min_free_kbytes = 16384
+-kernel.msgmax = 65536
+-kernel.msgmnb = 65536
+-kernel.sem = 250 256000 32 1024

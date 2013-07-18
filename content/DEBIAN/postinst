@@ -285,10 +285,6 @@ EOF
 
 	echo "17) updating sysv init scripts and adapting system"
 	
-	cp -a --remove-destination /var/tmp/init/* /etc/init/ > /dev/null 2>&1
-	cp -a --remove-destination /var/tmp/default/* /etc/default/ > /dev/null 2>&1
-	cp -a --remove-destination /var/tmp/init.d/* /etc/init.d/ > /dev/null 2>&1
-	cp -a --remove-destination /var/tmp/etc/profile /etc/profile  > /dev/null 2>&1
 	insserv -fr /etc/init.d/urandom
 	insserv -fr /etc/init.d/hdparm
 	insserv -fr /etc/init.d/rmnologin
@@ -353,7 +349,7 @@ cat << \EOF > /tmp/udisks.patch
 EOF
 
 	if patch -N --dry-run ./org.freedesktop.udisks.policy < /tmp/udisks.patch > /dev/null 2>&1; then
-	    patch -s ./org.freedesktop.udisks.policy < /tmp/udisks.patch
+	    patch -s ./org.freedesktop.udisks.policy < /tmp/udisks.patch || echo "udisks patch failed" >> /home/xbian/xbian-update.log
 	fi
 	rm -fr /tmp/udisks.patch
         
@@ -361,16 +357,19 @@ EOF
 ############################## 1.0-1.1 END   ###################################
 
         version1012() {
-            cp -ar --remove-destination /var/tmp/* / > /dev/null 2>&1
+            cp -ar --remove-destination /var/tmp/xbian_update/files_to_overwrite/* / > /dev/null 2>&1
 
             #rcS.d
             insserv -rf /etc/init.d/checkroot-bootclean.sh > /dev/null 2>&1
             insserv -fr /etc/init.d/hostname.sh > /dev/null 2>&1
-            insserv -rf /etc/init.d/networking > /dev/null 2>&1
             insserv -fr /etc/init.d/kmod > /dev/null 2>&1
             insserv -fr /etc/init.d/procps > /dev/null 2>&1
             insserv -fr /etc/init.d/bootmisc.sh > /dev/null 2>&1
             insserv -fr /etc/init.d/screen-cleanup > /dev/null 2>&1
+            insserv -fr /etc/init.d/rpcbind > /dev/null 2>&1
+            insserv -fr /etc/init.d/nfs-common > /dev/null 2>&1
+            rm -fr /etc/init.d/rpcbind
+            rm -fr /etc/init.d/nfs-common
 
             #rc2.d
             insserv -fr /etc/init.d/cron > /dev/null 2>&1
@@ -385,8 +384,8 @@ EOF
             #rc6.d
             insserv -fr /etc/init.d/kexec > /dev/null 2>&1
             insserv -fr /etc/init.d/kexec-load > /dev/null 2>&1
-
-	    insserv -f /etc/init.d/kbd  > /dev/null 2>&1
+            insserv -f /etc/init.d/kbd  > /dev/null 2>&1
+            insserv -f /etc/init.d/unmountnfs.sh > /dev/null 2>&1
 
             insserv -f > /dev/null 2>&1
 
@@ -408,6 +407,12 @@ EOF
                 mv /etc/network/interfaces.new /etc/network/interfaces
             fi
 
+            for f in $(ls /var/tmp/xbian_update/diffs/*_1012); do
+                if patch -s -N --dry-run -p0 < $f > /dev/null 2>&1; then
+                    patch -s -p0 < $f || echo "patch $f failed" >> /home/xbian/xbian-update.log
+                fi
+            fi
+
         }
 
 ############################## 1.0-1.2 END   ###################################
@@ -421,6 +426,8 @@ EOF
 ###############################################################################
 
 	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
+	rm -fr /var/tmp/xbian_update
+
 
 	if [ $version -lt 1011 ]; then
 cat << \EOF > /tmp/xbian-update-reboot

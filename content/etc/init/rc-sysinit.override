@@ -1,1 +1,1 @@
-start on started xbmc-done or failsafe-boot
+start on (filesystem and static-network-up) and started ntp or failsafe-boot
