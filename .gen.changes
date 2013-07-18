@@ -2,25 +2,25 @@
 
 for f in $(find ./content/boot  -printf '%P\n' -iname \* | grep -v DEBIAN); do
         [ -d ./content/boot/$f ] && continue
-        [ -e /boot/$f ] || rm -f ./content/boot/$f
-        [ -h ./content/boot/$f ] && { cp -d -a --remove-destination $1 /boot/$f ./content/boot/$f 2>/dev/null; continue; }
+        [ -e /boot/$f ] || { rm -vf ./content/boot/$f; continue; }
+        [ -h ./content/boot/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /boot/$f ./content/boot/$f 2>/dev/null; continue; }
         if ! diff -q ./content/boot/$f /boot/$f > /dev/null; then
-                cp -av  --remove-destination $1 /boot/$f ./content/boot/$f
+                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /boot/$f ./content/boot/$f
         fi
 done
 for f in $(find ./content/etc  -printf '%P\n' -iname \* | grep -v DEBIAN); do
         [ -d ./content/etc/$f ] && continue
-        [ -e /etc/$f ] || rm -f ./content/etc/$f
-        [ -h ./content/etc/$f ] && { cp -d -a --remove-destination $1 /etc/$f ./content/etc/$f 2>/dev/null; continue; }
+        [ -e /etc/$f ] || { rm -v -f ./content/etc/$f; continue; }
+        [ -h ./content/etc/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /etc/$f ./content/etc/$f 2>/dev/null; continue; }
         if ! diff -q ./content/etc/$f /etc/$f > /dev/null; then
-                cp -av  --remove-destination $1 /etc/$f ./content/etc/$f
+                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /etc/$f ./content/etc/$f
         fi
 done
-for f in $(find ./content/var/tmp  -printf '%P\n' -iname \* | grep -v DEBIAN); do
-        [ -d ./content/var/tmp/$f ] && continue
-        [ -e /$f ] || rm -f ./content/vat/tmp/$f
-        [ -h ./content/var/tmp/$f ] && { cp -d -a  --remove-destination $1 /$f ./content/var/tmp/$f 2>/dev/null; continue; }
-        if ! diff -q ./content/var/tmp/$f /$f > /dev/null; then
-                cp -va --remove-destination $1 /$f ./content/var/tmp/$f
+for f in $(find ./content/var/tmp/xbian_update/files_to_overwrite  -printf '%P\n' -iname \* | grep -v DEBIAN); do
+        [ -d ./content/var/tmp/xbian_update/files_to_overwrite/$f ] && continue
+        [ -e /$f ] || { rm -fv ./content/var/tmp/xbian_update/files_to_overwrite/$f; continue; }
+        [ -h /$f ] && { cp --preserve=mode,timestamp -dv -a  --remove-destination $1 -u /$f ./content/var/tmp/xbian_update/files_to_overwrite/$f 2>/dev/null; continue; }
+        if ! diff -q ./content/var/tmp/xbian_update/files_to_overwrite/$f /$f > /dev/null 2>&1 || test -h ./content/var/tmp/xbian_update/files_to_overwrite/$f ; then
+                cp --preserve=mode,timestamp -va --remove-destination $1 /$f ./content/var/tmp/xbian_update/files_to_overwrite/$f
         fi
 done
