@@ -7,10 +7,13 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 	echo "1) Stopping XBMC";
 	stop xbmc >/dev/null 2>&1|| service xbmc stop >/dev/null 2>&1||true
 
+        pkill splash
+
 	echo "2) Installing new files"
 	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
 	if [ -f "/boot/cmdline.txt" ]; then
 		mv /boot/cmdline.txt /boot/cmdline.txt.old
 	fi
+	[ -e /boot/cmdline.txt ] && rm -f /boot/cmdline.txt
 fi

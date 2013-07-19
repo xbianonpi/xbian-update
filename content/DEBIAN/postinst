@@ -8,6 +8,8 @@ if [ $1 == "configure" ]; then
 
         version1011() {
 
+	echo "installing update to 1.0-1.1"; 
+
 	echo "3) Turning off rainbow screen"
 
 	if grep -q "disable_splash=1" /boot/config.txt;	then
@@ -357,6 +359,8 @@ EOF
 ############################## 1.0-1.1 END   ###################################
 
         version1012() {
+        
+            echo "installing update to 1.0-1.2"
             cp -ar --remove-destination /var/tmp/xbian_update/files_to_overwrite/* / > /dev/null 2>&1
 
             #rcS.d
@@ -411,7 +415,7 @@ EOF
                 if patch -s -N --dry-run -p0 < $f > /dev/null 2>&1; then
                     patch -s -p0 < $f || echo "patch $f failed" >> /home/xbian/xbian-update.log
                 fi
-            fi
+            done
 
         }
 
@@ -420,8 +424,13 @@ EOF
         version=$(dpkg-query -W -f='${Version}\n' "xbian-update" | sed 's/[\.-]//g')
         while test $(($version / 1000)) -eq 0; do version=$(($version *10)); done
 
-        [ $version -lt 1011 ] && { echo "installing update to 1.0-1.1"; version1011; }
-        [ $version -lt 1012 -o $version -eq 1012 ] && { echo "installing update to 1.0-1.2"; version1012; }
+        [ $version -lt 1011 ] && version1011
+        [ $version -lt 1012 -o $version -eq 1012 ] && version1012
+
+        # update cmdline.txt subvol parameter to what is was during boot
+        subvolume=$(cat /proc/cmdline); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
+        snap=$(cat /proc/cmdline); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
+        cat /boot/cmdline.new | eval $(echo "sed 's/rootfsopts=subvol=root\/@/rootfsopts=subvol=$subvolume\/@$snap/'") > /boot/cmdline.txt
 
 ###############################################################################
 
