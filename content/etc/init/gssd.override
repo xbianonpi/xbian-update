@@ -1,0 +1,1 @@
+exec rpc.gssd -p $PIPEFS_MOUNTPOINT

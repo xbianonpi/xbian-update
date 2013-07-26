@@ -1,0 +1,56 @@
+#!/bin/sh
+
+mpids=''
+
+mountfs(){
+    mountfs_helper(){
+        [ $# -ne 0 ] || return 0
+        [ $# -gt 1 ] && { m=$2; t=$3; } || { m=$1; n=$(echo $m|sed 's%/%\\/%g'); t=$(grep $m /etc/fstab| grep -v "$m/" | eval $(echo awk "'\$2 ~ /$n/ {print \$3}'")); }
+
+        case $t in
+            nfs)
+                start -n statd || :
+                return 0
+                ;;
+            nfs4)
+                start -n idmapd || :
+                return 0
+                ;;
+            cifs)
+                return 0
+                ;;
+            *)
+                ;;
+        esac
+
+        [ -d $m ] || mkdir -p $m
+        initctl emit -n mounting TYPE=$t MOUNTPOINT=$m
+
+        if [ $# -gt 1 ]; then
+            mount -ns -t $3 -o $4 $1 $2  || :
+        else
+            mount -ns $m || :
+        fi
+        initctl emit -n mounted TYPE=$t MOUNTPOINT=$m 
+
+        return 0
+    }
+
+    mountfs_helper $@ 
+    #& mpids="$! $mpids"
+
+    return 0
+}
+
+waitmountfs(){
+    [ -z "$mpids" ] || return 0
+    wait $mpids
+
+    return 0
+}
+
+mountfstab(){
+    while read DEV MTPT FSTYPE OPTS REST; do
+        mountfs $DEV $MTPT $FSTYPE $OPTS
+    done < /etc/fstab.d/xbian
+}

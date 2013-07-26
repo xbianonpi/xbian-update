@@ -1,0 +1,1 @@
+start on (virtual-filesystems and net-device-up) or xbian

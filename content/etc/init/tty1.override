@@ -1,0 +1,1 @@
+post-start exec touch /run/tty1.running

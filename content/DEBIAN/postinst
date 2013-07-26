@@ -363,6 +363,26 @@ EOF
             echo "installing update to 1.0-1.2"
             cp -ar --remove-destination /var/tmp/xbian_update/files_to_overwrite/* / > /dev/null 2>&1
 
+            if btrfs-auto-snapshot listvol | grep -xq modules; then
+                echo "modules directory already moved"
+            else
+                echo "moving modules directory"
+                btrfs-auto-snapshot createvol modules > /dev/null 2>&1
+                btrfs-auto-snapshot createvol modules/@ > /dev/null 2>&1
+                td=$(mktemp -d)
+                mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) $td
+                cp -ar /lib/modules/* $td > /dev/null 2>&1
+                umount $td
+                rm -fr /lib/modules/*
+                if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules; then
+                    echo "done"
+                else
+                    echo "something wrong happened, your xbian may not boot successfully after restart. disabling restart after update finish"
+                    touch /run/noreboot
+                fi
+            fi
+
+            echo "updating services"
             #rcS.d
             insserv -rf /etc/init.d/checkroot-bootclean.sh > /dev/null 2>&1
             insserv -fr /etc/init.d/hostname.sh > /dev/null 2>&1
@@ -372,11 +392,10 @@ EOF
             insserv -fr /etc/init.d/screen-cleanup > /dev/null 2>&1
             insserv -fr /etc/init.d/rpcbind > /dev/null 2>&1
             insserv -fr /etc/init.d/nfs-common > /dev/null 2>&1
-            rm -fr /etc/init.d/rpcbind
-            rm -fr /etc/init.d/nfs-common
 
             #rc2.d
             insserv -fr /etc/init.d/cron > /dev/null 2>&1
+            insserv -fr /etc/init.d/anacron > /dev/null 2>&1
             insserv -fr /etc/init.d/ntp > /dev/null 2>&1
             insserv -fr /etc/init.d/ssh > /dev/null 2>&1
             insserv -fr nrg-tools > /dev/null 2>&1
@@ -391,18 +410,29 @@ EOF
             insserv -f /etc/init.d/kbd  > /dev/null 2>&1
             insserv -f /etc/init.d/unmountnfs.sh > /dev/null 2>&1
 
+            rm -f /etc/init.d/rpcbind
+            rm -f /etc/init.d/nfs-common
+            rm -f /etc/init/xbmc-screensaver-wait.conf
+            
             insserv -f > /dev/null 2>&1
+            initctl reload-configuration
 
+            echo "updating modules"
 	    grep -q frandom /etc/modules || echo frandom >> /etc/modules  
 	    grep -q bcm2708-rng /etc/modules || echo bcm2708-rng >> /etc/modules  
+            grep -q btrfs /etc/modules || echo btrfs >> /etc/modules
+	    grep -q vfat /etc/modules || echo vfat >> /etc/modules  
+	    grep -q usb_storage /etc/modules || echo usb_storage >> /etc/modules  
 
-            grep -iv "AddressFamily inet" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new
-            grep -iv "UseDNS no" /etc/ssh/sshd_config.new > /etc/ssh/sshd_config.new.2
+
+            grep -iv ^"AddressFamily" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new
+            grep -iv ^"UseDNS" /etc/ssh/sshd_config.new > /etc/ssh/sshd_config.new.2
             rm -f /etc/ssh/sshd_config.new
             echo "AddressFamily inet" >> /etc/ssh/sshd_config.new.2
             echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
             mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
 
+            echo "checking interfaces"
             if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
                 :
             else
@@ -411,11 +441,14 @@ EOF
                 mv /etc/network/interfaces.new /etc/network/interfaces
             fi
 
+            echo "patching files"
             for f in $(ls /var/tmp/xbian_update/diffs/*_1012); do
                 if patch -s -N --dry-run -p0 < $f > /dev/null 2>&1; then
-                    patch -s -p0 < $f || echo "patch $f failed" >> /home/xbian/xbian-update.log
+                    patch -s -p0 < $f || { echo "patch $f failed"; echo "patch $f failed" >> /home/xbian/xbian-update.log; }
                 fi
             done
+            
+            find /etc/ -iname \*~ | xargs rm 
 
         }
 
@@ -427,10 +460,11 @@ EOF
         [ $version -lt 1011 ] && version1011
         [ $version -lt 1012 -o $version -eq 1012 ] && version1012
 
-        # update cmdline.txt subvol parameter to what is was during boot
+        # update cmdline.txt subvol parameter to what it was during boot
         subvolume=$(cat /proc/cmdline); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
         snap=$(cat /proc/cmdline); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
         cat /boot/cmdline.new | eval $(echo "sed 's/rootfsopts=subvol=root\/@/rootfsopts=subvol=$subvolume\/@$snap/'") > /boot/cmdline.txt
+        mv /boot/cmdline.new /boot/cmdline.default
 
 ###############################################################################
 

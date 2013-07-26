@@ -1,1 +1,2 @@
-#start on started xbmc-done
+start on (startup ON_BOOT= or xbian) and started udev
+
