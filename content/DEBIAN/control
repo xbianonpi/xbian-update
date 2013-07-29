@@ -10,4 +10,4 @@ Replaces: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspb
 Conflicts: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit
 Architecture: armhf
 Maintainer: Koenkk <development@xbian.org>
-Description: Hotfix update for XBian 1.0 Beta 2
+Description: Updates XBian 1.0 Beta 1 to XBian 1.0 Beta 2
