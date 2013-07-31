@@ -483,6 +483,11 @@ EOF
                 mv /etc/fstab.new /etc/fstab
             fi
 
+            if grep -wq "/proc" /etc/fstab; then
+                grep -wv "/proc" /etc/fstab > /etc/fstab.new
+                mv /etc/fstab.new /etc/fstab
+            fi
+
             echo "1.0Beta1.2" > /etc/xbian_version
 
         }
