@@ -324,7 +324,7 @@ EOF
         1011f() {
         echo "checking for Beta 1.1 hotfix"
         ! grep -xq "1.0Beta1.1" /etc/xbian_version ||  return 0
-        [ ! -e /etc/xbian_revision ] || { [ "$(cat /etc/xbian_revision | grep -m1 .)" -lt 10 ] || return 0; }
+        [ ! -e /tmp/xbian_revision.old ] || { [ "$(cat /tmp/xbian_revision.old | grep -m1 .)" -lt 10 ] || return 0; }
 
         echo "installing update to Beta 1.1 hotfix"
 	echo "1.0Beta1.1" > /etc/xbian_version

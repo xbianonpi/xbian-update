@@ -16,4 +16,6 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 		mv /boot/cmdline.txt /boot/cmdline.txt.old
 	fi
 	[ ! -e "/boot/cmdline.new" ] || rm -f /boot/cmdline.new
+
+	[ ! -e /etc/xbian_revision ] || cp /etc/xbian_revision /tmp/xbian_revision.old
 fi
