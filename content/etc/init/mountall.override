@@ -1,4 +1,2 @@
 start on startup ON_BOOT= or xbian
-stop on runlevel [2345]
-
 

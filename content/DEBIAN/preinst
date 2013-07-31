@@ -4,13 +4,13 @@ mountpoint -q /boot || mount /boot
 
 if [ $1 == "install" -o $1 == "upgrade" ]; then
 
-	echo "1) Stopping XBMC";
-	stop xbmc >/dev/null 2>&1|| service xbmc stop >/dev/null 2>&1||true
+        if ! test -e /run/noreboot; then
+            stop xbmc >/dev/null 2>&1|| service xbmc stop >/dev/null 2>&1||true
 
-        pkill splash || :
+            pkill splash || :
 
-	echo "2) Installing new files"
-	/usr/bin/splash --infinitebar --msgtxt="installing update..." &
+            /usr/bin/splash --infinitebar --msgtxt="installing update..." &
+        fi
 
 	if [ -f "/boot/cmdline.txt" ]; then
 		mv /boot/cmdline.txt /boot/cmdline.txt.old

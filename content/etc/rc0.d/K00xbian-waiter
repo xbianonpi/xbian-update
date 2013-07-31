@@ -1,3 +1,0 @@
-#!/bin/sh
-
-start xbian-waiter WAIT_FOR=xbmc WAITER=initd STATUS="stop/waiting"

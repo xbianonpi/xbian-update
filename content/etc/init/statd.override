@@ -1,0 +1,24 @@
+start on started portmap and net-device-up IFACE!=lo
+
+pre-start script
+    if [ -f "$DEFAULTFILE" ]; then
+        . "$DEFAULTFILE"
+    fi
+    if [ "x$NEED_STATD" = xno ]; then
+        stop; exit 0
+    fi
+    sm-notify
+    status portmap | grep -vq "start/running" || exit 0
+    start portmap || :
+end script
+
+script
+        if [ -f "$DEFAULTFILE" ]; then
+            . "$DEFAULTFILE"
+        fi
+    
+        [ "x$NEED_STATD" != xno ] || exit 0
+
+        exec rpc.statd -L $STATDOPTS
+end script
+

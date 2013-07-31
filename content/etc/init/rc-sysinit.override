@@ -1,1 +1,1 @@
-start on (filesystem and static-network-up and started ntp and started xbmc-done) or failsafe-boot
+start on (filesystem and static-network-up and started hwclock.sh and started xbmc-done) or failsafe-boot

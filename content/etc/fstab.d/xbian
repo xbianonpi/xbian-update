@@ -1,3 +1,5 @@
-LABEL=xbian-root-btrfs /lib/modules btrfs rw,compress=lzo,autodefrag,subvol=modules/@,noatime 0 0
+LABEL=xbian-root-btrfs /lib/modules btrfs subvol=modules/@ 0 0
+LABEL=xbian-root-btrfs  /home   btrfs   subvol=home/@   0       0
 rpc_pipefs      /run/rpc_pipefs         rpc_pipefs      defaults        0       0
+
  

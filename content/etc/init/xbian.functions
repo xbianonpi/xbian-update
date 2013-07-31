@@ -9,11 +9,9 @@ mountfs(){
 
         case $t in
             nfs)
-                start -n statd || :
                 return 0
                 ;;
             nfs4)
-                start -n idmapd || :
                 return 0
                 ;;
             cifs)
@@ -24,20 +22,19 @@ mountfs(){
         esac
 
         [ -d $m ] || mkdir -p $m
-        initctl emit -n mounting TYPE=$t MOUNTPOINT=$m
+        initctl emit -n mounting TYPE=$t MOUNTPOINT=$m || :
 
         if [ $# -gt 1 ]; then
-            mount -ns -t $3 -o $4 $1 $2  || :
+            mount -t $3 -o $4 $1 $2  || :
         else
-            mount -ns $m || :
+            mount -s $m || :
         fi
-        initctl emit -n mounted TYPE=$t MOUNTPOINT=$m 
+        initctl emit -n mounted TYPE=$t MOUNTPOINT=$m || :
 
         return 0
     }
 
-    mountfs_helper $@ 
-    #& mpids="$! $mpids"
+    mountfs_helper $@ & mpids="$mpids $!"
 
     return 0
 }

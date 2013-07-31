@@ -1,13 +1,13 @@
 #!/bin/sh
 
-for f in $(find ./content/boot  -printf '%P\n' -iname \* | grep -v DEBIAN); do
-        [ -d ./content/boot/$f ] && continue
-        [ -e /boot/$f ] || { rm -vf ./content/boot/$f; continue; }
-        [ -h ./content/boot/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /boot/$f ./content/boot/$f 2>/dev/null; continue; }
-        if ! diff -q ./content/boot/$f /boot/$f > /dev/null; then
-                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /boot/$f ./content/boot/$f
-        fi
-done
+#for f in $(find ./content/boot  -printf '%P\n' -iname \* | grep -v DEBIAN); do
+#        [ -d ./content/boot/$f ] && continue
+#        [ -e /boot/$f ] || { rm -vf ./content/boot/$f; continue; }
+#        [ -h ./content/boot/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /boot/$f ./content/boot/$f 2>/dev/null; continue; }
+#        if ! diff -q ./content/boot/$f /boot/$f > /dev/null; then
+#                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /boot/$f ./content/boot/$f
+#        fi
+#done
 for f in $(find ./content/etc  -printf '%P\n' -iname \* | grep -v DEBIAN); do
         [ -d ./content/etc/$f ] && continue
         [ -e /etc/$f ] || { rm -v -f ./content/etc/$f; continue; }

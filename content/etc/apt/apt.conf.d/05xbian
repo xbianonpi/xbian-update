@@ -1,0 +1,14 @@
+APT::Periodic::Update-Package-Lists 1;
+APT::Periodic::AutocleanInterval 7;
+APT::Periodic::Enable 1;
+APT::Periodic::Verbose 1;
+
+DPkg::NoTriggers "true";
+PackageManager::Configure "smart";
+DPkg::ConfigurePending "true";
+DPkg::TriggersPending "true";
+
+Dpkg::Options {
+   "--force-confdef";
+   "--force-confold";
+}
