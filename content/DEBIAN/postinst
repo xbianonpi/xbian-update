@@ -445,14 +445,14 @@ EOF
             echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
             mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
 
-            echo "checking interfaces"
-            if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
-                :
-            else
-                echo "auto eth0" > /etc/network/interfaces.new
-                cat /etc/network/interfaces >> /etc/network/interfaces.new
-                mv /etc/network/interfaces.new /etc/network/interfaces
-            fi
+#            echo "checking interfaces"
+#            if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
+#                :
+#            else
+#                echo "auto eth0" > /etc/network/interfaces.new
+#                cat /etc/network/interfaces >> /etc/network/interfaces.new
+#                mv /etc/network/interfaces.new /etc/network/interfaces
+#            fi
 
             echo "patching files"
             for f in $(ls /var/tmp/xbian_update/diffs/*_1012); do

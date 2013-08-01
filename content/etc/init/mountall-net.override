@@ -1,1 +1,0 @@
-start on net-device-up IFACE!=lo
