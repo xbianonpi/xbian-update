@@ -185,7 +185,7 @@ if [ $1 == "configure" ]; then
 
     if [ $(grep /boot /etc/fstab | grep -c "noauto,user,uid=0,gid=0") -eq 0 ];	then
         grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
-        echo "UUID=8B12-9112	/boot	vfat	defaults,noauto,user,gid=0,uid=0	0	0" >> /etc/fstab
+        echo "UUID=$(blkid /dev/mmcblk0p1 -o value -s UUID)	/boot	vfat	defaults,noauto,user,gid=0,uid=0	0	0" >> /etc/fstab
         if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
             echo "Success: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
 
@@ -287,25 +287,34 @@ EOF
 
 	echo "17) updating sysv init scripts and adapting system"
 	
-	insserv -fr /etc/init.d/urandom
-	insserv -fr /etc/init.d/hdparm
-	insserv -fr /etc/init.d/rmnologin
-	insserv -fr /etc/init.d/udev-mtab
-	insserv -fr /etc/init.d/watchdog
-	insserv -fr /etc/init.d/xbmc
-	insserv -fr /etc/init.d/hwclock.sh
-	insserv -fr /etc/init.d/console-screen.sh
-	insserv -fr /etc/init.d/kbd
-	insserv -fr /etc/init.d/keyboard-setup
-	insserv -fr /etc/init.d/wd_keepalive
-	insserv -fr /etc/init.d/plymouth
-	insserv -fr /etc/init.d/plymouth-log
-	insserv -fr /etc/init.d/sudo
-	insserv -rf /etc/init.d/avahi-daemon
-	insserv -rf /etc/init.d/dbus
-	insserv -rf /etc/init.d/udev
-	insserv -rf /etc/init.d/ntp
-	insserv -f
+        insserv -fr /etc/init.d/checkfs.sh > /dev/null 2>&1
+        insserv -fr /etc/init.d/checkroot.sh > /dev/null 2>&1
+        insserv -fr /etc/init.d/mountall-bootclean.sh > /dev/null 2>&1
+        insserv -fr /etc/init.d/mountall.sh > /dev/null 2>&1
+        insserv -fr /etc/init.d/mountdevsubfs.sh > /dev/null 2>&1
+        insserv -fr /etc/init.d/mountkernfs.sh > /dev/null 2>&1
+        insserv -fr /etc/init.d/mountnfs-bootclean.sh > /dev/null 2>&1
+        insserv -fr /etc/init.d/mtab.sh > /dev/null 2>&1
+
+	insserv -fr /etc/init.d/urandom > /dev/null 2>&1
+	insserv -fr /etc/init.d/hdparm > /dev/null 2>&1
+	insserv -fr /etc/init.d/rmnologin > /dev/null 2>&1
+	insserv -fr /etc/init.d/udev-mtab > /dev/null 2>&1
+	insserv -fr /etc/init.d/watchdog > /dev/null 2>&1
+	insserv -fr /etc/init.d/xbmc > /dev/null 2>&1
+	insserv -fr /etc/init.d/hwclock.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/console-screen.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/kbd > /dev/null 2>&1
+	insserv -fr /etc/init.d/keyboard-setup > /dev/null 2>&1
+	insserv -fr /etc/init.d/wd_keepalive > /dev/null 2>&1
+	insserv -fr /etc/init.d/plymouth > /dev/null 2>&1
+	insserv -fr /etc/init.d/plymouth-log > /dev/null 2>&1
+	insserv -fr /etc/init.d/sudo > /dev/null 2>&1
+	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
+	insserv -rf /etc/init.d/dbus > /dev/null 2>&1
+	insserv -rf /etc/init.d/udev > /dev/null 2>&1
+	insserv -rf /etc/init.d/ntp > /dev/null 2>&1
+	insserv -f > /dev/null 2>&1
 
         test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
         rm -f /etc/nologin
@@ -316,6 +325,8 @@ EOF
 	rm -f /usr/local/lib/libtag.a
 	rm -f /usr/local/lib/libtag_c.a
 	echo "Success: files removed" >> /home/xbian/xbian-update.log
+
+        echo "1.0Beta1" > /etc/xbian_version
 
 	#echo "---UPDATE LOG---"
 	#cat "/home/xbian/xbian-update.log"
@@ -372,7 +383,12 @@ EOF
             cp -ar --remove-destination /var/tmp/xbian_update/files_to_overwrite/* / > /dev/null 2>&1
 
             if btrfs-auto-snapshot listvol | grep -xq modules; then
-                echo "modules directory already moved"
+                echo "modules volume already exists"
+                if ! mountpoint -q /lib/modules; then
+                    mv /lib/modules /lib/modules.old
+                    mkdir /lib/modules; mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules
+                    [ -e /lib/modules/$(uname -r) ] || mv /lib/modules.old/$(uname -r) /lib/modules/$(uname -r)
+                fi
             else
                 echo "moving modules directory"
                 btrfs-auto-snapshot createvol modules > /dev/null 2>&1
@@ -402,6 +418,15 @@ EOF
             insserv -fr /etc/init.d/nfs-common > /dev/null 2>&1
             insserv -fr /etc/init.d/udev > /dev/null 2>&1 
 
+            insserv -fr /etc/init.d/checkfs.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/checkroot.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/mountall-bootclean.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/mountall.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/mountdevsubfs.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/mountkernfs.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/mountnfs-bootclean.sh > /dev/null 2>&1
+            insserv -fr /etc/init.d/mtab.sh > /dev/null 2>&1
+
             #rc2.d
             insserv -fr /etc/init.d/cron > /dev/null 2>&1
             insserv -fr /etc/init.d/anacron > /dev/null 2>&1
@@ -415,6 +440,8 @@ EOF
             insserv -fr avahi-daemon > /dev/null 2>&1
             insserv -fr networking > /dev/null 2>&1
             insserv -fr dbus > /dev/null 2>&1
+            insserv -fr console-setup > /dev/null 2>&1
+            insserv -fr mountnfs.sh > /dev/null 2>&1
 
             #rc6.d
             insserv -fr /etc/init.d/kexec > /dev/null 2>&1
@@ -422,6 +449,8 @@ EOF
             insserv -f /etc/init.d/kbd  > /dev/null 2>&1
             insserv -f /etc/init.d/unmountnfs.sh > /dev/null 2>&1
             insserv -f xbian-waiter > /dev/null 2>&1
+            insserv -fr rsyslog > /dev/null 2>&1
+            insserv -fr winbind > /dev/null 2>&1
 
             rm -f /etc/init.d/rpcbind > /dev/null 2>&1
             rm -f /etc/init.d/nfs-common > /dev/null 2>&1
@@ -495,7 +524,13 @@ EOF
 ############################## 1.0-1.2 END   ###################################
         
         version=$(dpkg-query -W -f='${Version}\n' "xbian-update" | sed 's/[\.-]//g')
+        [ -n "$version" ] || vesion='1000'
         while test $(($version / 1000)) -eq 0; do version=$(($version *10)); done
+
+        if [ -e /run/xbian-update-force ]; then
+            version='1000'
+            rm /tmp/xbian_revision.old || :
+        fi
 
         [ $version -lt 1011 ] && version1011
         [ $version -lt 1012 -o $version -eq 1012 ] && version1012
@@ -512,7 +547,7 @@ EOF
 	rm -fr /var/tmp/xbian_update
 
 
-	if [ $version -lt 1011 ]; then
+	if ! status -q xbian-update-reboot; then
 cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
@@ -525,6 +560,7 @@ done
 apt-get clean
 sleep 5
 sync
+[ ! -e /run/noreboot ] ||  exit 0
 /usr/bin/splash --infinitebar --msgtxt="rebooting..."
 reboot -f
 
