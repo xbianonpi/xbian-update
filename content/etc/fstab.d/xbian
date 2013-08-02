@@ -1,5 +1,5 @@
-LABEL=xbian-root-btrfs /lib/modules btrfs subvol=modules/@ 0 0
-LABEL=xbian-root-btrfs  /home   btrfs   subvol=home/@   0       0
+/dev/root /lib/modules btrfs subvol=modules/@ 0 0
+/dev/root /home   btrfs   subvol=home/@   0       0
 rpc_pipefs      /run/rpc_pipefs         rpc_pipefs      defaults        0       0
 
  
