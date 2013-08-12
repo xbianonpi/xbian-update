@@ -1,1 +1,3 @@
-post-start exec touch /run/tty1.running
+start on (stopped xbmc-preload and started portmap) or xbmc-failed-start or failsafe-boot
+
+pre-start exec touch /run/tty1.running

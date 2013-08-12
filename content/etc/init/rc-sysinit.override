@@ -1,1 +1,4 @@
-start on (filesystem and static-network-up and started hwclock.sh and started xbmc-done) or failsafe-boot
+start on (local-filesystems and static-network-up and started xbmc-done) or failsafe-boot
+
+console log
+

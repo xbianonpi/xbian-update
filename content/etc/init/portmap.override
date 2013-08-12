@@ -1,9 +1,10 @@
 env STATEDIR=/run/rpcbind
 
+console none
+
 pre-start script
         mkdir -p $STATEDIR || true
 
         [ -f $STATEDIR/rpcbind.xdr ] || touch $STATEDIR/rpcbind.xdr || :
         [ -f $STATEDIR/portmap.xdr ] || touch $STATEDIR/portmap.xdr || :
 end script
-

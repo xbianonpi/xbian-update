@@ -1,0 +1,20 @@
+#!/bin/sh
+
+exec > /dev/null 2>&1
+
+while test $# -ne '0'; do
+    case $1 in 
+        -n)
+            shift
+            ;;
+        -p)
+            PID=$2
+            shift 2
+            ;;
+        -i)
+            shift 2
+            ;;
+    esac
+done
+
+pidfile=$PID interface=$IFACE /etc/xbian-udhcpc/default.script renew & echo $! > $PID

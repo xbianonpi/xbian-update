@@ -1,4 +1,16 @@
 #
-# no hwclock on RPI
+# Low level networking (ethernet card)
 #
-$time		
+$network        
+
+#
+# System logger is operational
+#
+$syslog         +rsyslog +sysklogd
+
+#
+# The system time has been set correctly
+#
+$time           
+
+$urandom        frandom

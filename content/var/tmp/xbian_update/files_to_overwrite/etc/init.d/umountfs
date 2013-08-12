@@ -107,7 +107,7 @@ do_stop () {
 		fi
 		log_action_end_msg $?
 	fi
-	splash --percentagebar --percentage=97 --msgtxt="powered off..."
+        /usr/bin/splash --msgtxt="system halted..." --percentage=97
 }
 
 case "$1" in

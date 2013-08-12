@@ -1,1 +1,3 @@
-start on (virtual-filesystems and net-device-up and startup ON_BOOT=) or xbian
+start on xbian
+
+console none

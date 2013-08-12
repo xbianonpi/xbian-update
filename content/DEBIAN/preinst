@@ -4,6 +4,8 @@ mountpoint -q /boot || mount /boot
 
 if [ $1 == "install" -o $1 == "upgrade" ]; then
 
+        insserv -fr xbian-waiter > /dev/null 2>&1
+
         if ! test -e /run/noreboot; then
             stop xbmc >/dev/null 2>&1|| service xbmc stop >/dev/null 2>&1||true
 

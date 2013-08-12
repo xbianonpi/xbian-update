@@ -1,15 +1,6 @@
+start on started portmap
 
-pre-start script
-    if [ -f "$DEFAULTFILE" ]; then
-        . "$DEFAULTFILE"
-    fi
-    if [ "x$NEED_STATD" = xno ]; then
-        stop; exit 0
-    fi
-    sm-notify
-    status portmap | grep -vq "start/running" || exit 0
-    start portmap || :
-end script
+pre-start exec sm-notify
 
 script
         if [ -f "$DEFAULTFILE" ]; then

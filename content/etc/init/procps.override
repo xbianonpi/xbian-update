@@ -1,1 +1,1 @@
-start on mounted MOUNTPOINT=/proc
+start on startup

@@ -4,11 +4,11 @@ Version: 1.0-1.2
 Section: update
 Essential: Yes
 Priority: optional
-Pre-Depends: xbian-update(>=1.0-0.5), kbd, xbian-package-lirc (>=1.4), xbian-package-config-xbmc (>=1.1-1), xbian-package-xbmc (>=2.3-0.2), xbian-package-kernel (>=1.3-3), xbian-package-lirc (>=1.4-2), libc-bin (>=2.13-38+rpi2), libc-dev-bin (>=2.13-38+rpi2), libc6 (>=2.13-38+rpi2), libc6-dev (>=2.13-38+rpi2), udisks, nfs-common, samba-common-bin, avahi-daemon, xbian-package-usbmount (>=1.0-0.7), ntfs-3g, wireless-tools, fbset, libplist1, pv, exfat-fuse, bc, usbutils, libafpclient0, python-sqlite, btrfs-tools (>=1.0-xbian), libcurl3, hfsplus, hfsprogs, hfsutils, libva1, upstart, mountall, plymouth, xbian-package-config-shell (>=2.1.4), xbian-package-cec (>=1.1-0.2), xbian-package-firmware (>=1.4-0.1), xbian-package-splash (>=1.0-0.9), policykit-1, patch
-Depends: xbian-package-zram-swap (>=1.0-3.4), isc-dhcp-client, xbian-package-upstart-xbmc-bridge, nfs-common, cifs-utils, exfat-fuse, exfat-utils, fuse, hdparm, hfsplus, hfsprogs, hfsutils, wireless-tools,  ntfs-3g, wpasupplicant
-Replaces: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit, rpi-update
-Conflicts: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit, rpi-update
+Pre-Depends: xbian-update(>=1.0-0.5), kbd, xbian-package-lirc (>=1.4), xbian-package-config-xbmc (>=1.1-1), xbian-package-xbmc (>=2.3-1.4), xbian-package-lirc (>=1.4-2), libc-bin (>=2.13-38+rpi2), libc-dev-bin (>=2.13-38+rpi2), libc6 (>=2.13-38+rpi2), libc6-dev (>=2.13-38+rpi2), udisks, nfs-common, samba-common-bin, avahi-daemon, xbian-package-usbmount (>=1.0-1), ntfs-3g, wireless-tools, fbset, libplist1, pv, exfat-fuse, bc, usbutils, libafpclient0, python-sqlite, btrfs-tools (>=1.0-xbian), libcurl3, hfsplus, hfsprogs, hfsutils, libva1, upstart, mountall, plymouth, xbian-package-config-shell, policykit-1, patch
+Depends: xbian-package-zram-swap (>=1.0-3.4), xbian-package-upstart-xbmc-bridge, nfs-common, cifs-utils, exfat-fuse, exfat-utils, fuse, hdparm, hfsplus, hfsprogs, hfsutils, wireless-tools,  ntfs-3g, wpasupplicant, xbian-package-firmware (>=1.4-0.1), xbian-package-splash (>=1.0-1.1), xbian-package-kernel 
+Replaces: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit, rpi-update, udhcpc
+Conflicts: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, sysvinit, rpi-update, udhcpc, isc-dhcp-common, isc-dhcp-client
 Architecture: armhf
-Breaks: xbian-package-config-shell (<<2.1.3-7)
+Breaks: xbian-package-config-shell (<<2.1.4-2), xbian-package-cec (<<1.1-0.3), xbian-package-kernel (<<1.3-4.2)
 Maintainer: Koenkk <development@xbian.org>
 Description: Updates XBian 1.0 Beta 1 to XBian 1.0 Beta 2

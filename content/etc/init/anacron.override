@@ -1,5 +1,1 @@
-start on started ntp-set and started xbmc-done
-
-pre-start script
-    echo "$(date) anacron" >> /run/date.ntp
-end script
+start on started ntp and started xbmc-done

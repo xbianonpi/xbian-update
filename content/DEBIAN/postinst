@@ -426,8 +426,10 @@ EOF
             insserv -fr /etc/init.d/mountkernfs.sh > /dev/null 2>&1
             insserv -fr /etc/init.d/mountnfs-bootclean.sh > /dev/null 2>&1
             insserv -fr /etc/init.d/mtab.sh > /dev/null 2>&1
+            insserv -fr kbd  > /dev/null 2>&1
 
             #rc2.d
+            insserv -fr bootlogs  > /dev/null 2>&1
             insserv -fr /etc/init.d/cron > /dev/null 2>&1
             insserv -fr /etc/init.d/anacron > /dev/null 2>&1
             insserv -fr /etc/init.d/ntp > /dev/null 2>&1
@@ -474,14 +476,16 @@ EOF
             echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
             mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
 
-#            echo "checking interfaces"
-#            if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
-#                :
-#            else
-#                echo "auto eth0" > /etc/network/interfaces.new
-#                cat /etc/network/interfaces >> /etc/network/interfaces.new
-#                mv /etc/network/interfaces.new /etc/network/interfaces
-#            fi
+            echo "checking interfaces"
+            if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
+                :
+            else
+                if ip link show eth0 | grep UP | grep -q DEFAULT; then
+                    echo "auto eth0" > /etc/network/interfaces.new
+                    cat /etc/network/interfaces >> /etc/network/interfaces.new
+                    mv /etc/network/interfaces.new /etc/network/interfaces
+                fi
+            fi
 
             echo "patching files"
             for f in $(ls /var/tmp/xbian_update/diffs/*_1012); do
@@ -491,6 +495,9 @@ EOF
             done
             
             find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
+
+            sed 's/<guires>720<\/guires>/<guires>1080<\/guires>/g' -i /home/xbian/.xbmc/userdata/advancedsettings.xml
+            rm -fr /home/xbian/.xbmc/userdata/autoexec.py
 
             echo "changing virtual filesystem parameters and recreating initramfs.gz."
             #dpkg-trigger --no-await trigger-xbian-update-initramfs
@@ -517,6 +524,9 @@ EOF
                 mv /etc/fstab.new /etc/fstab
             fi
 
+            cat /etc/fstab | sort > /etc/fstab.new
+            mv /etc/fstab.new /etc/fstab
+
             echo "1.0Beta1.2" > /etc/xbian_version
 
         }
@@ -538,8 +548,13 @@ EOF
         # update cmdline.txt subvol parameter to what it was during boot
         subvolume=$(cat /proc/cmdline); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
         snap=$(cat /proc/cmdline); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
+
+        cp /boot/cmdline.new /boot/cmdline.default
         cat /boot/cmdline.new | eval $(echo "sed 's/rootfsopts=subvol=root\/@/rootfsopts=subvol=$subvolume\/@$snap/'") > /boot/cmdline.txt
-        mv /boot/cmdline.new /boot/cmdline.default
+        mv /boot/cmdline.txt /boot/cmdline.new
+
+        rootdev=$(cat /proc/cmdline); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
+        cat /boot/cmdline.new | eval $(echo "sed 's/root=LABEL=xbian-root-btrfs/root=$rootdev/'") > /boot/cmdline.txt
 
 ###############################################################################
 

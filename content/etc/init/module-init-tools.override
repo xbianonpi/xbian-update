@@ -1,2 +1,3 @@
-start on (startup ON_BOOT= or xbian) and started udev
+start on mounted MOUNTPOINT=/lib/modules and stopped udevtrigger
 
+nice +10

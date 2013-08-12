@@ -1,3 +1,5 @@
+manual
+
 script
     chmod 0400 "${MOUNTPOINT}"/slabinfo || true
 end script

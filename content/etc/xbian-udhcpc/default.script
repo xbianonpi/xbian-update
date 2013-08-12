@@ -1,0 +1,63 @@
+#!/bin/sh
+# Busybox udhcpc dispatcher script. Copyright (C) 2009 by Axel Beckert.
+#
+# Based on the busybox example scripts and the old udhcp source
+# package default.* scripts.
+
+
+RESOLV_CONF="/etc/resolv.conf"
+. /etc/xbian-initramfs/cnvres-code.sh 
+
+case $1 in
+    bound|renew)
+
+        case $METHOD in
+            dhcp)
+                ipconfig $interface
+                ;;
+            *)
+                exit 0
+                ;;
+        esac
+
+        R=$(update_resolv)
+        if [ -x /sbin/resolvconf ]; then
+            echo "$R" | resolvconf -a "${interface}.udhcpc"
+        else
+            echo "$R" > "$RESOLV_CONF"
+        fi
+
+        leasetime=$(cat /run/net-$interface.conf | grep DHCPLEASETIME | awk -F'=' '{print $2}' |tr -d "'")
+	;;
+
+    deconfig)
+	if [ -x /sbin/resolvconf ]; then
+	    resolvconf -d "${interface}.udhcpc"
+	fi
+	ifconfig $interface down
+	exit 0
+	;;
+
+    leasefail)
+	echo "$0: Lease failed: $message"
+	;;
+
+    nak)
+	echo "$0: Received a NAK: $message"
+	;;
+
+    *)
+	echo "$0: Unknown udhcpc command: $1";
+	exit 1;
+	;;
+esac
+
+sleep $leasetime & echo $! > $pidfile
+if wait $!; then
+    interface=$interface $0 renew &
+else
+    kill $(cat /run/wpa_supplicant.$interface.pid) >/dev/null 2>&1
+    rm -fr /run/wpa_supplicant.$interface.pid
+    rm -fr $pidfile
+    interface=$interface $0 deconfig
+fi

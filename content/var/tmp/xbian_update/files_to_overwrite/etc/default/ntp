@@ -1,1 +1,1 @@
-NTPD_OPTS='-g'
+NTPD_OPTS='-g -L -U 1'

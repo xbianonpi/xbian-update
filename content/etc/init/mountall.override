@@ -1,2 +1,2 @@
-start on startup ON_BOOT= or xbian
+start on xbian or startup ON_BOOT=
 

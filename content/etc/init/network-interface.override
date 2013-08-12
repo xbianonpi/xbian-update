@@ -1,0 +1,21 @@
+env CALLER=system
+env RUN_SCRIPTS
+
+nice -12
+
+pre-start script
+    mkdir -p /run/network
+    if [ "$INTERFACE" = lo ]; then
+        initctl emit -n net-device-up \
+            IFACE=lo LOGICAL=lo ADDRFAM=inet METHOD=loopback || true
+        touch /run/network/ifup.lo
+        echo "lo=lo" >> /run/network/ifstate
+    fi
+
+    case $l in wlan?) CALLER=system; ;; esac
+    [ "$CALLER" != xbian ] || RUN_SCRIPTS='--no-scripts'
+
+    [ "$INTERFACE" = lo ] || ifup --allow auto $RUN_SCRIPTS $INTERFACE
+
+    [ -z "$RUN_SCRIPTS" ] || { grep -q $INTERFACE /run/network/ifstate && /etc/network/if-up.d/upstart; :; }
+end script

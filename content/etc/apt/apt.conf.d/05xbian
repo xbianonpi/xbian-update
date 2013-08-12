@@ -2,6 +2,11 @@ APT::Periodic::Update-Package-Lists 1;
 APT::Periodic::AutocleanInterval 7;
 APT::Periodic::Enable 1;
 APT::Periodic::Verbose 1;
+APT::Install-Recommends "0";
+APT::Install-Suggests "0";
+APT::dir::cache "/run/user";
+APT::dir::tmp "/run/user";
+APT::Get::AllowUnauthenticated "0";
 
 DPkg::NoTriggers "true";
 PackageManager::Configure "smart";
@@ -12,3 +17,5 @@ Dpkg::Options {
    "--force-confdef";
    "--force-confold";
 }
+
+Acquire::PDiffs "0";
