@@ -1,2 +1,3 @@
 start on xbian or startup ON_BOOT=
 
+nice -5

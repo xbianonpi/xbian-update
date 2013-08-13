@@ -1,1 +1,2 @@
-start on net-device-up
+start on xbian or startup ON_BOOT=
+

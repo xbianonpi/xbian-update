@@ -387,7 +387,10 @@ EOF
                 if ! mountpoint -q /lib/modules; then
                     mv /lib/modules /lib/modules.old
                     mkdir /lib/modules; mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules
-                    [ -e /lib/modules/$(uname -r) ] || mv /lib/modules.old/$(uname -r) /lib/modules/$(uname -r)
+                    for m in $(ls /lib/modules.old); do
+                        [ -e /lib/modules/$m ] ||  mv /lib/modules.old/$m /lib/modules/$m
+                    done
+                    rm -fr /lib/modules.old
                 fi
             else
                 echo "moving modules directory"
@@ -426,7 +429,7 @@ EOF
             insserv -fr /etc/init.d/mountkernfs.sh > /dev/null 2>&1
             insserv -fr /etc/init.d/mountnfs-bootclean.sh > /dev/null 2>&1
             insserv -fr /etc/init.d/mtab.sh > /dev/null 2>&1
-            insserv -fr kbd  > /dev/null 2>&1
+            insserv -fr /etc/init.d/kbd  > /dev/null 2>&1
 
             #rc2.d
             insserv -fr bootlogs  > /dev/null 2>&1
@@ -457,7 +460,8 @@ EOF
             rm -f /etc/init.d/rpcbind > /dev/null 2>&1
             rm -f /etc/init.d/nfs-common > /dev/null 2>&1
             rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
-            
+            rm -f /etc/init/dbus-reconnect.conf > /dev/null 2>&1
+
             insserv -f > /dev/null 2>&1
             initctl -q reload-configuration
 
@@ -488,12 +492,17 @@ EOF
             fi
 
             echo "patching files"
-            for f in $(ls /var/tmp/xbian_update/diffs/*_1012); do
+            for f in $(ls /var/tmp/xbian_update/diffs/*_1012 2>/dev/null); do
                 if patch -s -N --dry-run -p0 < $f > /dev/null 2>&1; then
                     patch -s -p0 < $f || { echo "patch $f failed"; echo "patch $f failed" >> /home/xbian/xbian-update.log; }
                 fi
             done
-            
+
+            while read line; do 
+                [ -n "$line" ] && grep -v "$line" /etc/sysctl.conf > /etc/sysctl.conf.new
+                mv /etc/sysctl.conf.new /etc/sysctl.conf
+            done < /var/tmp/xbian_update/pchanges/sysctl.conf
+
             find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
 
             sed 's/<guires>720<\/guires>/<guires>1080<\/guires>/g' -i /home/xbian/.xbmc/userdata/advancedsettings.xml

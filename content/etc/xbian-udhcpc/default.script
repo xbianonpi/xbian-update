@@ -13,7 +13,7 @@ case $1 in
 
         case $METHOD in
             dhcp)
-                ipconfig $interface
+                timeout 90 ipconfig $interface
                 ;;
             *)
                 exit 0
@@ -35,6 +35,7 @@ case $1 in
 	    resolvconf -d "${interface}.udhcpc"
 	fi
 	ifconfig $interface down
+	[ -f "$pidfile" ] && rm -fr $pidfile
 	exit 0
 	;;
 
@@ -46,18 +47,25 @@ case $1 in
 	echo "$0: Received a NAK: $message"
 	;;
 
+    slp)
+        ;;
+
     *)
 	echo "$0: Unknown udhcpc command: $1";
 	exit 1;
 	;;
 esac
 
+if [ $1 != slp ]; then
+    pidfile=$pidfile interface=$interface leasetime=$leasetime $0 slp &
+    exit 0
+fi
+
 sleep $leasetime & echo $! > $pidfile
 if wait $!; then
-    interface=$interface $0 renew &
+    pidfile=$pidfile interface=$interface $0 renew &
 else
     kill $(cat /run/wpa_supplicant.$interface.pid) >/dev/null 2>&1
     rm -fr /run/wpa_supplicant.$interface.pid
-    rm -fr $pidfile
-    interface=$interface $0 deconfig
+    pidfile=$pidfile interface=$interface $0 deconfig
 fi

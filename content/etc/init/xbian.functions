@@ -31,13 +31,12 @@ mountfs(){
         else
             mount -s $m || :
         fi
-        initctl emit -n mounted TYPE=$t MOUNTPOINT=$m DEVICE=$d &
+        initctl emit -n mounted TYPE=$t MOUNTPOINT=$m DEVICE=$d || :
 
         return 0
     }
 
-    mountfs_helper $@ 
-    #& mpids="$mpids $!"
+    mountfs_helper $@ & mpids="$mpids $!"
 
     return 0
 }

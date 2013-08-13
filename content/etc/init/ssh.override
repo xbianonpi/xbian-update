@@ -1,1 +1,1 @@
-start on startup
+start on net-device-up
