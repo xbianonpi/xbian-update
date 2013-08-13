@@ -471,6 +471,8 @@ EOF
             grep -q btrfs /etc/modules || echo btrfs >> /etc/modules
 	    grep -q vfat /etc/modules || echo vfat >> /etc/modules  
 	    grep -q usb_storage /etc/modules || echo usb_storage >> /etc/modules  
+	    grep -q deadline-iosched /etc/modules || echo deadline-iosched  >> /etc/modules  
+	    grep -q cfq-iosched /etc/modules || echo cfq-iosched  >> /etc/modules  
 
 
             grep -iv ^"AddressFamily" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new

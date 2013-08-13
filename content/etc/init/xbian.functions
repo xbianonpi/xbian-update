@@ -36,7 +36,8 @@ mountfs(){
         return 0
     }
 
-    mountfs_helper $@ & mpids="$mpids $!"
+    mountfs_helper $@ 
+    #& mpids="$mpids $!"
 
     return 0
 }
