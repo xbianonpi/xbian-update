@@ -1,3 +1,0 @@
-nice -1
-
-exec /sbin/udevd --daemon --children-max=1

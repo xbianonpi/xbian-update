@@ -1,5 +1,53 @@
 #!/bin/bash
 
+rmo(){
+
+echo "removing non-used services"
+
+for f in avahi-daemon.override \
+bootmisc.sh.conf \
+checkfs.sh.conf \
+checkroot-bootclean.sh.conf \
+checkroot.sh.conf \
+console.conf \
+cron.override \
+hostname.conf \
+hostname.override \
+mountall-bootclean.sh.conf \
+mountall.sh.conf \
+mountdevsubfs.sh.conf \
+mountkernfs.sh.conf \
+mountnfs.sh.conf \
+mtab.sh.conf \
+network-interface-container.conf \
+network-interface-security.conf \
+network-interface-security.override \
+portmap-wait.conf \
+progress-reboot.conf \
+rpcbind-boot.conf \
+rpcbind-boot.override \
+startpar-bridge.conf \
+statd-mounting.conf \
+statd-mounting.override \
+tty3.conf \
+tty3.override \
+tty4.conf \
+tty4.override \
+tty5.conf \
+tty5.override \
+tty6.conf \
+tty6.override \
+udev-fallback-graphics.conf \
+udev-fallback-graphics.override \
+udevmonitor.conf \
+udevmonitor.override \
+xbian-waiter.conf \
+module-init-tools.override \
+udevtrigger.override \
+udev.override; do rm -fr /etc/init/$f; done
+
+}
+
 if [ $1 == "configure" ]; then
 
 	rm /home/xbian/xbian-update.log >/dev/null 2>&1
@@ -340,6 +388,9 @@ EOF
         echo "installing update to Beta 1.1 hotfix"
 	echo "1.0Beta1.1" > /etc/xbian_version
 
+	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
+	insserv -rf /etc/init.d/dbus > /dev/null 2>&1
+
 	locale-gen
 
     if [ $(grep /boot /etc/fstab | grep -c "noauto") -eq 1 ];	then
@@ -447,13 +498,13 @@ EOF
             insserv -fr dbus > /dev/null 2>&1
             insserv -fr console-setup > /dev/null 2>&1
             insserv -fr mountnfs.sh > /dev/null 2>&1
+            insserv -fr motd > /dev/null 2>&1
 
             #rc6.d
             insserv -fr /etc/init.d/kexec > /dev/null 2>&1
             insserv -fr /etc/init.d/kexec-load > /dev/null 2>&1
-            insserv -f /etc/init.d/kbd  > /dev/null 2>&1
-            insserv -f /etc/init.d/unmountnfs.sh > /dev/null 2>&1
-            insserv -f xbian-waiter > /dev/null 2>&1
+            insserv -fr /etc/init.d/kbd  > /dev/null 2>&1
+            insserv -fr xbian-waiter > /dev/null 2>&1
             insserv -fr rsyslog > /dev/null 2>&1
             insserv -fr winbind > /dev/null 2>&1
 
@@ -462,17 +513,21 @@ EOF
             rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
             rm -f /etc/init/dbus-reconnect.conf > /dev/null 2>&1
 
+            rmo
+
+            insserv -f /etc/init.d/unmountnfs.sh > /dev/null 2>&1
             insserv -f > /dev/null 2>&1
             initctl -q reload-configuration
 
             echo "updating modules"
-	    grep -q frandom /etc/modules || echo frandom >> /etc/modules  
-	    grep -q bcm2708-rng /etc/modules || echo bcm2708-rng >> /etc/modules  
+
+            sed -i '/frandom/d' /etc/modules
+            sed -i '/bcm2708-rng/d' /etc/modules
+            sed -i '/deadline-iosched/d' /etc/modules
+            sed -i '/cfq-iosched/d' /etc/modules
             grep -q btrfs /etc/modules || echo btrfs >> /etc/modules
 	    grep -q vfat /etc/modules || echo vfat >> /etc/modules  
 	    grep -q usb_storage /etc/modules || echo usb_storage >> /etc/modules  
-	    grep -q deadline-iosched /etc/modules || echo deadline-iosched  >> /etc/modules  
-	    grep -q cfq-iosched /etc/modules || echo cfq-iosched  >> /etc/modules  
 
 
             grep -iv ^"AddressFamily" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new
@@ -520,7 +575,6 @@ EOF
             fi
 
             if grep -wq "/" /etc/fstab; then
-                echo "/dev/root	/	rootfs	defaults	0	0" > /etc/fstab.new
                 grep -wv "/" /etc/fstab >> /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
             fi
@@ -533,6 +587,16 @@ EOF
             if grep -wq "/proc" /etc/fstab; then
                 grep -wv "/proc" /etc/fstab > /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
+            fi
+
+            if ! grep -wq "/run/user" /etc/fstab; then
+                echo "none            /run/user                       tmpfs                   noauto                  0       0" >> /etc/fstab
+            fi
+            if ! grep -wq "/sys/kernel/security" /etc/fstab; then
+                echo "none            /sys/kernel/security            securityfs              noauto                  0       0" >> /etc/fstab
+            fi
+            if ! grep -wq "/sys/kernel/debug" /etc/fstab; then
+                echo "none            /sys/kernel/debug               debugfs                 noauto                  0       0" >> /etc/fstab
             fi
 
             cat /etc/fstab | sort > /etc/fstab.new

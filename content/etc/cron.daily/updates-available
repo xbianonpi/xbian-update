@@ -1,0 +1,8 @@
+#!/bin/sh
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+exec > /run/motd.dynamic
+uname -snrv 
+/bin/echo -e "\e[5m$(/usr/lib/update-notifier/update-motd-updates-available)\e[25m
+"

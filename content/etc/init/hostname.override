@@ -1,3 +1,0 @@
-# already started during initramfs
-
-start on startup ON_BOOT=

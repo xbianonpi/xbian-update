@@ -1,4 +1,4 @@
-start on xbian
+start on xbian or xbian-fstab
 
 pre-start exec initctl emit -n not-container
 

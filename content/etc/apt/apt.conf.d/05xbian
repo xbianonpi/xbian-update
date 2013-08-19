@@ -1,3 +1,4 @@
+APT::Periodic::RandomSleep 0;
 APT::Periodic::Update-Package-Lists 1;
 APT::Periodic::AutocleanInterval 7;
 APT::Periodic::Enable 1;

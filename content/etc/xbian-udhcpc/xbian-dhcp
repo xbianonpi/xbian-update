@@ -1,9 +1,11 @@
 #!/bin/sh
-# Busybox udhcpc dispatcher script. Copyright (C) 2009 by Axel Beckert.
+# Xbian dhcp script.
 #
-# Based on the busybox example scripts and the old udhcp source
-# package default.* scripts.
+# Based on the busybox example scripts
 
+set -x
+exec >> /run/xbian-udhcpc.$interface 2>&1
+echo "------"
 
 RESOLV_CONF="/etc/resolv.conf"
 . /etc/xbian-initramfs/cnvres-code.sh 
@@ -13,7 +15,7 @@ case $1 in
 
         case $METHOD in
             dhcp)
-                timeout 90 ipconfig $interface
+                timeout 60 ipconfig -d $interface -c dhcp
                 ;;
             *)
                 exit 0
@@ -21,12 +23,13 @@ case $1 in
         esac
 
         R=$(update_resolv)
-        if [ -x /sbin/resolvconf ]; then
-            echo "$R" | resolvconf -a "${interface}.udhcpc"
-        else
-            echo "$R" > "$RESOLV_CONF"
+        if echo $R | grep -q nameserver; then 
+            if [ -x /sbin/resolvconf ]; then
+                echo "$R" | resolvconf -a "${interface}.udhcpc"
+            else
+                echo "$R" > "$RESOLV_CONF"
+            fi
         fi
-
         leasetime=$(cat /run/net-$interface.conf | grep DHCPLEASETIME | awk -F'=' '{print $2}' |tr -d "'")
 	;;
 

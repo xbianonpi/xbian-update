@@ -1,4 +1,4 @@
-#start on xbian or startup ON_BOOT=
-start on stopped xbian-fstab
+start on xbian
+stop on started xbian-fstab and filesystem
 
-nice +8
+nice -5

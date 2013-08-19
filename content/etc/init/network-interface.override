@@ -1,7 +1,7 @@
 env CALLER=system
 env RUN_SCRIPTS
 
-nice -12
+nice -18
 
 pre-start script
     mkdir -p /run/network

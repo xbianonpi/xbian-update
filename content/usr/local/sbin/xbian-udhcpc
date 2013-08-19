@@ -2,6 +2,9 @@
 
 exec > /dev/null 2>&1
 
+env >> /run/xbian-udhcpc.$IFACE
+echo "command parameters $@" >> /run/xbian-udhcpc.$IFACE
+
 while test $# -ne '0'; do
     case $1 in 
         -n)
@@ -17,4 +20,5 @@ while test $# -ne '0'; do
     esac
 done
 
-pidfile=$PID interface=$IFACE /etc/xbian-udhcpc/default.script renew & echo $! > $PID
+pidfile=$PID interface=$IFACE /etc/xbian-udhcpc/xbian-dhcp renew & echo $! > $PID
+wait $!

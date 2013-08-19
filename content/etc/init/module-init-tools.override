@@ -1,2 +1,0 @@
-start on (startup ON_BOOT= or xbian) and started udev and mounted MOUNTPOINT=/lib/modules
-

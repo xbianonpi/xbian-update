@@ -1,1 +1,26 @@
-start on startup ON_BOOT= or xbian
+start on mounted MOUNTPOINT=/run/rpc_pipefs and mounted MOUNTPOINT=/lib/modules
+
+env DEFAULTFILE=/etc/default/nfs-common
+
+pre-start script
+        set +e
+        do_modprobe() {
+                modprobe -q "$1" || true
+        }
+
+        if [ -f "$DEFAULTFILE" ]; then
+                . "$DEFAULTFILE"
+        fi
+
+        if [ -z "$NEED_IDMAPD" ]; then
+                NEED_IDMAPD=no
+                [ "$(grep -w 'nfs4' /etc/fstab | grep -v ^# | awk '{print $3}' | sort | uniq)" != nfs4 ] || NEED_IDMAPD=yes
+        fi
+
+        [ "x$NEED_IDMAPD" = xyes ] || { stop; exit 0; }
+
+        do_modprobe nfs
+
+        do_modprobe sunrpc
+
+end script

@@ -1,13 +1,32 @@
-start on started portmap
+start on started portmap and mounted MOUNTPOINT=/lib/modules
 
-pre-start exec sm-notify
+pre-start script
+    do_modprobe() {
+        modprobe -q "$1" || true
+    }
+
+    if [ -f "$DEFAULTFILE" ]; then
+        . "$DEFAULTFILE"
+    fi
+
+    if [ -z "$NEED_STATD" ]; then
+        NEED_STATD=no
+        [ "$(grep -w 'nfs' /etc/fstab | grep -v ^# | awk '{print $3}' | sort | uniq)" != nfs ] || NEED_STATD=yes
+    fi
+
+    [ "x$NEED_STATD" != xno ] || { stop; exit 0; }
+
+    do_modprobe nfsv3
+    do_modprobe nfs
+    do_modprobe sunrpc
+
+    exec sm-notify
+end script
 
 script
         if [ -f "$DEFAULTFILE" ]; then
             . "$DEFAULTFILE"
         fi
-    
-        [ "x$NEED_STATD" != xno ] || exit 0
 
         exec rpc.statd -L $STATDOPTS
 end script

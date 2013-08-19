@@ -1,3 +1,10 @@
+# set deadline scheduler for non-rotating disks
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="deadline"
+
+# set cfq scheduler for rotating disks
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="noop"
+#
+
 SUBSYSTEM=="vchiq", GROUP="video", MODE="0666"
 KERNEL=="tty0", GROUP="xbian", OWNER="xbian"
 KERNEL=="event*", MODE="0666", GROUP="xbian"
