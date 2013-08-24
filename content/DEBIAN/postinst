@@ -525,8 +525,6 @@ EOF
             sed -i '/bcm2708-rng/d' /etc/modules
             sed -i '/deadline-iosched/d' /etc/modules
             sed -i '/cfq-iosched/d' /etc/modules
-            grep -q btrfs /etc/modules || echo btrfs >> /etc/modules
-	    grep -q vfat /etc/modules || echo vfat >> /etc/modules  
 	    grep -q usb_storage /etc/modules || echo usb_storage >> /etc/modules  
 
 
@@ -541,7 +539,7 @@ EOF
             if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
                 :
             else
-                if ip link show eth0 | grep UP | grep -q DEFAULT; then
+                if ip link show eth0 | grep "state UP" | grep -q DEFAULT; then
                     echo "auto eth0" > /etc/network/interfaces.new
                     cat /etc/network/interfaces >> /etc/network/interfaces.new
                     mv /etc/network/interfaces.new /etc/network/interfaces
@@ -662,8 +660,6 @@ EOF
 	fi
 
 fi
-
-mountpoint -q /boot && umount /boot || true
 
 exit 0
 

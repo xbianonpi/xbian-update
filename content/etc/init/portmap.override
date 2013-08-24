@@ -1,4 +1,4 @@
-start on xbian or xbian-fstab
+start on xbian
 
 emits xbian-nowait
 
@@ -15,6 +15,6 @@ end script
 
 post-start script
     nowait=$(cat /etc/fstab| grep -v ^# | awk '{print $3}' | sort | uniq  | grep 'nfs\|nfs4') || :
-    [ -n "$nowait" ] || initctl emit -n xbian-nowait || :
+    [ -n "$nowait" ] || initctl emit xbian-nowait &
     exit 0
 end script

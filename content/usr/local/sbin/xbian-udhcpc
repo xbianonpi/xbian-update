@@ -1,7 +1,5 @@
 #!/bin/sh
 
-exec > /dev/null 2>&1
-
 env >> /run/xbian-udhcpc.$IFACE
 echo "command parameters $@" >> /run/xbian-udhcpc.$IFACE
 
@@ -22,3 +20,4 @@ done
 
 pidfile=$PID interface=$IFACE /etc/xbian-udhcpc/xbian-dhcp renew & echo $! > $PID
 wait $!
+exit $?

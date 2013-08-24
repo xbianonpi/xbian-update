@@ -3,8 +3,7 @@
 #
 # Based on the busybox example scripts
 
-set -x
-exec >> /run/xbian-udhcpc.$interface 2>&1
+exec >> /run/xbian-udhcpc.$interface
 echo "------"
 
 RESOLV_CONF="/etc/resolv.conf"
@@ -15,7 +14,10 @@ case $1 in
 
         case $METHOD in
             dhcp)
-                timeout 60 ipconfig -d $interface -c dhcp
+                echo DHCPDISCOVER >&2
+                timeout 60 ipconfig -d $interface -c dhcp > /dev/null 2>&1
+                [ $? -eq 124 ] && exit 1
+                echo bound >&2
                 ;;
             *)
                 exit 0
@@ -37,7 +39,6 @@ case $1 in
 	if [ -x /sbin/resolvconf ]; then
 	    resolvconf -d "${interface}.udhcpc"
 	fi
-	ifconfig $interface down
 	[ -f "$pidfile" ] && rm -fr $pidfile
 	exit 0
 	;;
@@ -64,8 +65,10 @@ if [ $1 != slp ]; then
     exit 0
 fi
 
-sleep $leasetime & echo $! > $pidfile
-if wait $!; then
+trap '' USR2
+sleep $leasetime & spid=$!; echo $spid > $pidfile
+echo Terminated >&2
+if wait $spid; then
     pidfile=$pidfile interface=$interface $0 renew &
 else
     kill $(cat /run/wpa_supplicant.$interface.pid) >/dev/null 2>&1

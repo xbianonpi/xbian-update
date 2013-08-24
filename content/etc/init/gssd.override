@@ -25,3 +25,4 @@ end script
 
 exec rpc.gssd -p $PIPEFS_MOUNTPOINT
 
+post-stop exec umount "$PIPEFS_MOUNTPOINT" || true > /dev/null 2>&1

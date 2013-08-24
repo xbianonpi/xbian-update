@@ -1,0 +1,10 @@
+PRETTY_NAME="XBian GNU/Linux 7 (wheezy)"
+NAME="XBian GNU/Linux"
+VERSION_ID="7"
+VERSION="7 (wheezy)"
+ID=raspbian
+ID_LIKE=debian
+ANSI_COLOR="1;31"
+HOME_URL="http://www.xbian.org/"
+SUPPORT_URL="http://forum.xbian.org/"
+BUG_REPORT_URL="https://github.com/xbianonpi"

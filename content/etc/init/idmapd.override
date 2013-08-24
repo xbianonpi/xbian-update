@@ -24,3 +24,5 @@ pre-start script
         do_modprobe sunrpc
 
 end script
+
+post-stop exec umount "$PIPEFS_MOUNTPOINT" || true > /dev/null 2>&1

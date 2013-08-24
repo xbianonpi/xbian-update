@@ -1,4 +1,4 @@
 start on xbian
 stop on started xbian-fstab and filesystem
 
-nice -5
+nice -3

@@ -24,3 +24,11 @@ for f in $(find ./content/var/tmp/xbian_update/files_to_overwrite  -printf '%P\n
                 cp --preserve=mode,timestamp -va --remove-destination $1 /$f ./content/var/tmp/xbian_update/files_to_overwrite/$f
         fi
 done
+for f in $(find ./content/lib  -printf '%P\n' -iname \* | grep -v DEBIAN); do
+        [ -d ./content/lib/$f ] && continue
+        [ -e /lib/$f ] || { rm -vf ./content/lib/$f; continue; }
+        [ -h ./content/lib/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /lib/$f ./content/lib/$f 2>/dev/null; continue; }
+        if ! diff -q ./content/lib/$f /lib/$f > /dev/null; then
+                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /lib/$f ./content/lib/$f
+        fi
+done
