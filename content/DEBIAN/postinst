@@ -24,6 +24,13 @@ network-interface-security.conf \
 network-interface-security.override \
 portmap-wait.conf \
 progress-reboot.conf \
+mountall-shell.conf \
+mounted-debugfs.conf \
+mounted-dev.conf \
+mounted-proc.conf \
+mounted-proc.override \
+mounted-var.conf \
+mountnfs-bootclean.sh.conf \
 rpcbind-boot.conf \
 rpcbind-boot.override \
 startpar-bridge.conf \
@@ -51,8 +58,6 @@ udev.override; do rm -fr /etc/init/$f; done
 if [ $1 == "configure" ]; then
 
 	rm /home/xbian/xbian-update.log >/dev/null 2>&1
-
-	/usr/bin/splash --infinitebar --msgtxt="installing update..."
 
         version1011() {
 
@@ -499,6 +504,8 @@ EOF
             insserv -fr console-setup > /dev/null 2>&1
             insserv -fr mountnfs.sh > /dev/null 2>&1
             insserv -fr motd > /dev/null 2>&1
+            insserv -fr openbsd-inetd > /dev/null 2>&1
+            insserv -fr samba > /dev/null 2>&1
 
             #rc6.d
             insserv -fr /etc/init.d/kexec > /dev/null 2>&1
@@ -597,8 +604,27 @@ EOF
                 echo "none            /sys/kernel/debug               debugfs                 noauto                  0       0" >> /etc/fstab
             fi
 
-            cat /etc/fstab | sort > /etc/fstab.new
+            grep -v ^$ /etc/fstab | sort > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
+
+            grep -v ^"initial-interval " /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.new
+            grep -v ^"reboot " /etc/dhcp/dhclient.new > /etc/dhcp/dhclient.conf
+            echo "initial-interval 1;" >> /etc/dhcp/dhclient.conf
+            echo "reboot 0;" >> /etc/dhcp/dhclient.conf
+            rm -fr /etc/dhcp/dhclient.new
+
+            grep -q "initial_turbo=1" /boot/config.txt || echo "initial_turbo=1" >> /boot/config.txt
+
+            grep -q "# SAMBA NetBIOS services" /etc/inetd.conf || echo "# SAMBA NetBIOS services (for PC file and print sharing)
+netbios-ssn stream tcp nowait root /usr/sbin/smbd smbd
+netbios-ns dgram udp wait root /usr/sbin/nmbd nmbd" >> /etc/inetd.conf
+
+            if [ ! -e /etc/samba/smb.conf.xbian ]; then
+                mv /etc/samba/smb.conf /etc/samba/smb.conf.xbian
+            fi
+            cp /var/tmp/xbian_update/pchanges/smb.conf /etc/samba/smb.conf
+
+            { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
             echo "1.0Beta1.2" > /etc/xbian_version
 
@@ -623,11 +649,12 @@ EOF
         snap=$(cat /proc/cmdline); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
 
         cp /boot/cmdline.new /boot/cmdline.default
-        cat /boot/cmdline.new | eval $(echo "sed 's/rootfsopts=subvol=root\/@/rootfsopts=subvol=$subvolume\/@$snap/'") > /boot/cmdline.txt
+        cat /boot/cmdline.new | eval $(echo "sed 's%rootfsopts=subvol=root\/@%rootfsopts=subvol=$subvolume\/@$snap%'") > /boot/cmdline.txt
         mv /boot/cmdline.txt /boot/cmdline.new
 
         rootdev=$(cat /proc/cmdline); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
-        cat /boot/cmdline.new | eval $(echo "sed 's/root=LABEL=xbian-root-btrfs/root=$rootdev/'") > /boot/cmdline.txt
+        cat /boot/cmdline.new | eval $(echo "sed 's%root=LABEL=xbian-root-btrfs%root=$rootdev%'") > /boot/cmdline.txt
+        rm /boot/cmdline.new
 
 ###############################################################################
 
@@ -660,6 +687,8 @@ EOF
 	fi
 
 fi
+
+sync; mountpoint -q /boot && umount /boot
 
 exit 0
 
