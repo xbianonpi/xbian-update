@@ -1,22 +1,23 @@
-env CALLER=system
-env RUN_SCRIPTS=
+env AUTOONLY='--allow auto'
+env TO=25
 
-nice -10
-
-console log
+nice -18
 
 pre-start script
     mkdir -p /run/network
+
+    case $INTERFACE in
+        eth?)
+            ifquery -a -l | grep -wq $INTERFACE || { TO=8; AUTOONLY=  ; } || :
+            ;;
+    esac
+
     if [ "$INTERFACE" = lo ]; then
-        initctl emit -n net-device-up \
-            IFACE=lo LOGICAL=lo ADDRFAM=inet METHOD=loopback || true
-        echo "lo=lo" >> /run/network/ifstate
+	# bring this up even if /etc/network/interfaces is broken
+	ifconfig lo 127.0.0.1 up || true
+	initctl emit -n net-device-up \
+	    IFACE=lo LOGICAL=lo ADDRFAM=inet METHOD=loopback || true
     fi
 
-    case $INTERFACE in wlan?) CALLER=system; ;; esac
-    [ "$CALLER" != xbian ] || RUN_SCRIPTS='--no-scripts'
-
-    [ "$INTERFACE" = lo ] || ifup -v --allow auto $RUN_SCRIPTS $INTERFACE
-
-    [ -z "$RUN_SCRIPTS" ] || { grep -q "$INTERFACE" /run/network/ifstate && /etc/network/if-up.d/upstart || :; }
+    exec timeout $TO ifup $AUTOONLY $INTERFACE
 end script

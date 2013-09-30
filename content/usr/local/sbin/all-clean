@@ -3,6 +3,7 @@
 rm -f /home/xbian/*.log
 rm -f /home/xbian/.xbmc/temp/*.log
 for f in $(find /var/log -type f); do echo > $f; done
+find / -iname \*.DS_Store | xargs rm -f
 rm /boot/*.old
 apt-get clean
 apt-get autoclean
@@ -18,7 +19,7 @@ rm -fr /root/.config
 rm -f /etc/apt/preferences.d/media
 rm -fr /home/xbian/.mc
 rm -fr /root/.mc
-rm -fr /run/*
+#rm -fr /run/*
 rm -fr /tmp/*
 rm -fr /var/tmp/*
 rm -f /var/lib/dpkg/*-old

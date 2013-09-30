@@ -4,7 +4,9 @@ description "Waiting for state"
 task
 normal exit 2 TERM
 
-stop on started $WAIT_FOR or stopped $WAIT_FOR
+nice -2
+
+stop on started $WAIT_FOR or stopped $WAIT_FOR or $WAIT_FOR
 
 # These are all arguments for use influencing how this job waits
 env TIMEOUT=30
@@ -13,7 +15,7 @@ env WAIT_FOREVER="N"
 env WAIT_STATE="started"
 env TARGET_GOAL="start"
 env ACT=yes
-env STATE=
+export WAIT_FOR
 
 # Required args w/ no sensible default, the tests at the beginning of
 # the script are just to guard against WAITER="" or WAIT_FOR="", as the
@@ -21,10 +23,9 @@ env STATE=
 instance $WAITER$WAIT_FOR
 
 script
-    test -n "$WAIT_FOR" || exit 1
-    test -n "$WAITER" || exit 1
+    [ -n "$WAIT_FOR" -a -n "$WAITER" ] || exit 1
 
-    [ -z "$STATE" ] || WAIT_STATE=$STATE
+    status -q "$WAIT_FOR" || exit 0
 
     # We don't want to override the manual stanza
     # XXX: initctl show-config should share manual w/ us too
@@ -39,9 +40,10 @@ script
 
     if [ "$WAIT_STATE" = "stopped" ] ; then
         TARGET_GOAL="stop"
+        WAIT_STATE=waiting
+    else
+        WAIT_STATE=running
     fi
-
-    [ "$WAIT_STATE" = start ] && WAIT_STATE='running' || WAIT_STATE='waiting'
 
     # Already running/stopped?
     status $WAIT_FOR | grep -q "$TARGET_GOAL/$WAIT_STATE" && exit 0
@@ -65,3 +67,4 @@ script
     # Very strange, sleep returned non-zero?
     exit 1
 end script
+

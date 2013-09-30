@@ -1,4 +1,4 @@
-start on mounted MOUNTPOINT=/run/rpc_pipefs and mounted MOUNTPOINT=/lib/modules
+start on started mounted-run  
 
 env DEFAULTFILE=/etc/default/nfs-common
 
@@ -23,6 +23,14 @@ pre-start script
 
         do_modprobe sunrpc
 
+        if ! mountpoint -q "$PIPEFS_MOUNTPOINT"; then
+            mkdir -p "$PIPEFS_MOUNTPOINT"
+            mount -t rpc_pipefs rpc_pipefs "$PIPEFS_MOUNTPOINT" || true
+        fi
+
 end script
 
-post-stop exec umount "$PIPEFS_MOUNTPOINT" || true > /dev/null 2>&1
+post-stop script
+    umount "$PIPEFS_MOUNTPOINT" || :
+    exit 0
+end script

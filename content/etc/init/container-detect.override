@@ -1,4 +1,0 @@
-start on xbian
-
-pre-start exec initctl emit -n not-container
-

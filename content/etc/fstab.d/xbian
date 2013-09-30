@@ -1,3 +1,0 @@
-/dev/root       /lib/modules    btrfs           subvol=modules/@,noatime  0       0
-rpc_pipefs      /run/rpc_pipefs rpc_pipefs      default                                 0       0
-/dev/root       /home           btrfs           subvol=home/@,noatime      0       0

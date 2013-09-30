@@ -1,4 +1,3 @@
-start on (static-network-up and (started xbmc-done or xbmc-rc)) or failsafe-boot
+start on ((net-device-up IFACE=lo or started networking) and (started xbmc-done or xbmc-rc)) or failsafe-boot
 
 console log
-

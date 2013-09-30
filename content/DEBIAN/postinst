@@ -6,13 +6,14 @@ echo "removing non-used services"
 
 for f in avahi-daemon.override \
 bootmisc.sh.conf \
+udev-finish.override \
+udev-finish.conf \
+mountall-net.conf \
 checkfs.sh.conf \
 checkroot-bootclean.sh.conf \
 checkroot.sh.conf \
 console.conf \
 cron.override \
-hostname.conf \
-hostname.override \
 mountall-bootclean.sh.conf \
 mountall.sh.conf \
 mountdevsubfs.sh.conf \
@@ -44,14 +45,24 @@ tty5.conf \
 tty5.override \
 tty6.conf \
 tty6.override \
+ssh.conf \
+ssh.override \
 udev-fallback-graphics.conf \
 udev-fallback-graphics.override \
 udevmonitor.conf \
 udevmonitor.override \
 xbian-waiter.conf \
-module-init-tools.override \
-udevtrigger.override \
-udev.override; do rm -fr /etc/init/$f; done
+ssh.conf \
+ssh.override \
+progress-mounted.conf \
+progress-mounting.conf \
+screen-cleanup.conf \
+xbian-fstab.conf \
+xbian.functions \
+container-detect.conf \
+container-detect.override; do rm -fr /etc/init/$f; done
+
+rm -fr /etc/apt/apt.conf.d/20archive || :
 
 }
 
@@ -94,7 +105,7 @@ if [ $1 == "configure" ]; then
 	echo "5) Changing fanartres"
 
 	if [ $(grep "<fanartres>540</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
-		sed -i 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
+		sed -i --follow-symlinks 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
 		if [ $(grep "<fanartres>720</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 			echo "Success: changed fanartres to 720" >> /home/xbian/xbian-update.log; 
 		else
@@ -107,7 +118,7 @@ if [ $1 == "configure" ]; then
 	echo "6) Changing imagres"
 
 	if [ $(grep "<imageres>256</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
-		sed -i 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
+		sed -i --follow-symlinks 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
 		if [ $(grep "<imageres>540</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 			echo "Success: changed imageres to 540" >> /home/xbian/xbian-update.log; 
 		else
@@ -120,7 +131,7 @@ if [ $1 == "configure" ]; then
 	echo "7) Adding SuperRepo"
 
 	if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 0 ];	then
-        sed -i 's|<files>|<files>\n\t<default pathversion="1"></default>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion="1">http://use.superrepo.org/Frodo</path>|g' /home/xbian/.xbmc/userdata/sources.xml
+        sed -i --follow-symlinks 's|<files>|<files>\n\t<default pathversion="1"></default>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion="1">http://use.superrepo.org/Frodo</path>|g' /home/xbian/.xbmc/userdata/sources.xml
 		if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 1 ];	then
 			echo "Success: changed Fusion to SuperRepo" >> /home/xbian/xbian-update.log; 
 		else
@@ -133,7 +144,7 @@ if [ $1 == "configure" ]; then
 	echo "8) Modifying avahi-deamon defaults"
 
 	if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=1"  /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
-		sed -i 's:AVAHI_DAEMON_DETECT_LOCAL=1:AVAHI_DAEMON_DETECT_LOCAL=0:g' /etc/default/avahi-daemon
+		sed -i --follow-symlinks 's:AVAHI_DAEMON_DETECT_LOCAL=1:AVAHI_DAEMON_DETECT_LOCAL=0:g' /etc/default/avahi-daemon
 		if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=0" /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
 			echo "Success: modified avahi-deamon defaults" >> /home/xbian/xbian-update.log; 
 		else
@@ -146,9 +157,9 @@ if [ $1 == "configure" ]; then
 	echo "9) Disable watchdog"
 
 	if [ $(grep "run_watchdog=1"  /etc/default/watchdog| wc -l) -eq 1 ];	then
-		sed -i 's:run_watchdog=1:run_watchdog=0:g' /etc/default/watchdog
-        update-rc.d watchdog remove >/dev/null 2>&1
-        sed -i '/bcm2708_wdog/d' /etc/modules
+		sed -i --follow-symlinks 's:run_watchdog=1:run_watchdog=0:g' /etc/default/watchdog
+                update-rc.d watchdog remove >/dev/null 2>&1
+                sed -i --follow-symlinks '/bcm2708_wdog/d' /etc/modules
 		if [ $(grep "run_watchdog=0" /etc/default/watchdog| wc -l) -eq 1 ];	then
 			echo "Success: disabled watchdog" >> /home/xbian/xbian-update.log; 
 		else
@@ -177,7 +188,7 @@ if [ $1 == "configure" ]; then
     echo "11) Enable auto fsck on boot"
 
     if [ $(grep "#FSCKFIX=no" /etc/default/rcS| wc -l) -eq 1 ];	then
-        sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
+        sed -i --follow-symlinks 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
         if [ $(grep "^FSCKFIX=yes" /etc/default/rcS| wc -l) -eq 1 ];	then
             echo "Success: enable auto fsck on boot" >> /home/xbian/xbian-update.log;
         else
@@ -192,9 +203,9 @@ if [ $1 == "configure" ]; then
     if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ]; then
         echo "Notice: DELAYLOGIN already disabled" >> /home/xbian/xbian-update.log
     else
-        sed -i 's/DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
-        sed -i 's/#DELAYLOGIN=no/DELAYLOGIN=no/g' /etc/default/rcS
-        sed -i 's/#DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
+        sed -i --follow-symlinks 's/DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
+        sed -i --follow-symlinks 's/#DELAYLOGIN=no/DELAYLOGIN=no/g' /etc/default/rcS
+        sed -i --follow-symlinks 's/#DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
         if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 0 ]; then
             echo "DELAYLOGIN=no" >> /etc/default/rcS
         fi
@@ -209,7 +220,7 @@ if [ $1 == "configure" ]; then
     echo "14a) Removing swapfile from /etc/fstab"
 
     if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 1 ];	then
-        sed -i '/\/var\/swapfile/d' /etc/fstab
+        sed -i --follow-symlinks '/\/var\/swapfile/d' /etc/fstab
         if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 0 ];	then
             echo "Success: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
 
@@ -248,7 +259,6 @@ if [ $1 == "configure" ]; then
     else
             echo "Notice: /boot already present in /etc/fstab" >> /home/xbian/xbian-update.log;
     fi
-    mountpoint -q /boot && mount -o remount /boot
 
 	echo "16) Applying patches"
 
@@ -390,7 +400,7 @@ EOF
         ! grep -xq "1.0Beta1.1" /etc/xbian_version ||  return 0
         [ ! -e /tmp/xbian_revision.old ] || { [ "$(cat /tmp/xbian_revision.old | grep -m1 .)" -lt 10 ] || return 0; }
 
-        echo "installing update to Beta 1.1 hotfix"
+        echo "updating to 1.0 Beta 1.1 hotfix"
 	echo "1.0Beta1.1" > /etc/xbian_version
 
 	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
@@ -405,7 +415,6 @@ EOF
             echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log
         fi
     fi
-    mountpoint -q /boot && mount -o remount /boot
 
 
 	cd /usr/share/polkit-1/actions
@@ -432,11 +441,13 @@ EOF
         }
 ############################## 1.0-1.1 fix END   ###################################
 
-        version1012() {
+        version102x() {
 
             1011f 
-            echo "installing update to 1.0 Beta 2"
-            cp -ar --remove-destination /var/tmp/xbian_update/files_to_overwrite/* / > /dev/null 2>&1
+            echo "updating to 1.0 Beta 2"
+            find /etc -iname \*.dpkg-new | xargs -L1 rm -f
+            find /var/tmp/xbian_update/files_to_overwrite -type l -printf "/%P\n" | xargs -L1 rm -f
+            cp -arP /var/tmp/xbian_update/files_to_overwrite/* /
 
             if btrfs-auto-snapshot listvol | grep -xq modules; then
                 echo "modules volume already exists"
@@ -467,45 +478,13 @@ EOF
 
             echo "updating services"
             #rcS.d
-            insserv -rf /etc/init.d/checkroot-bootclean.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/hostname.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/kmod > /dev/null 2>&1
-            insserv -fr /etc/init.d/procps > /dev/null 2>&1
-            insserv -fr /etc/init.d/bootmisc.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/screen-cleanup > /dev/null 2>&1
-            insserv -fr /etc/init.d/rpcbind > /dev/null 2>&1
-            insserv -fr /etc/init.d/nfs-common > /dev/null 2>&1
-            insserv -fr /etc/init.d/udev > /dev/null 2>&1 
-
-            insserv -fr /etc/init.d/checkfs.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/checkroot.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/mountall-bootclean.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/mountall.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/mountdevsubfs.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/mountkernfs.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/mountnfs-bootclean.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/mtab.sh > /dev/null 2>&1
-            insserv -fr /etc/init.d/kbd  > /dev/null 2>&1
+            insserv -rf /etc/init.d/checkroot-bootclean.sh hostname.sh kmod procps bootmisc.sh screen-cleanup rpcbind nfs-common udev checkfs.sh checkroot.sh \
+                mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd > /dev/null 2>&1
 
             #rc2.d
-            insserv -fr bootlogs  > /dev/null 2>&1
-            insserv -fr /etc/init.d/cron > /dev/null 2>&1
-            insserv -fr /etc/init.d/anacron > /dev/null 2>&1
-            insserv -fr /etc/init.d/ntp > /dev/null 2>&1
-            insserv -fr /etc/init.d/ssh > /dev/null 2>&1
-            insserv -fr nrg-tools > /dev/null 2>&1
-            insserv -fr cron > /dev/null 2>&1
-            insserv -fr anacron > /dev/null 2>&1
-            insserv -fr iguanaIR > /dev/null 2>&1
-            insserv -fr rsync > /dev/null 2>&1
-            insserv -fr avahi-daemon > /dev/null 2>&1
-            insserv -fr networking > /dev/null 2>&1
-            insserv -fr dbus > /dev/null 2>&1
-            insserv -fr console-setup > /dev/null 2>&1
-            insserv -fr mountnfs.sh > /dev/null 2>&1
-            insserv -fr motd > /dev/null 2>&1
-            insserv -fr openbsd-inetd > /dev/null 2>&1
-            insserv -fr samba > /dev/null 2>&1
+            insserv -fr ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon networking dbus console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
+            insserv -f samba > /dev/null 2>&1
+            insserv -fr hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
 
             #rc6.d
             insserv -fr /etc/init.d/kexec > /dev/null 2>&1
@@ -521,6 +500,8 @@ EOF
             rm -f /etc/init/dbus-reconnect.conf > /dev/null 2>&1
 
             rmo
+            rm -fr /etc/apt/apt.conf.d/50raspi
+            rm -fr /etc/apt/sources.list.d/raspi.list
 
             insserv -f /etc/init.d/unmountnfs.sh > /dev/null 2>&1
             insserv -f > /dev/null 2>&1
@@ -528,12 +509,12 @@ EOF
 
             echo "updating modules"
 
-            sed -i '/frandom/d' /etc/modules
-            sed -i '/bcm2708-rng/d' /etc/modules
-            sed -i '/deadline-iosched/d' /etc/modules
-            sed -i '/cfq-iosched/d' /etc/modules
-	    grep -q usb_storage /etc/modules || echo usb_storage >> /etc/modules  
-
+            sed -i --follow-symlinks '/frandom/d' /etc/modules
+            sed -i --follow-symlinks '/bcm2708-rng/d' /etc/modules
+            sed -i --follow-symlinks '/deadline-iosched/d' /etc/modules
+            sed -i --follow-symlinks '/cfq-iosched/d' /etc/modules
+            sed -i --follow-symlinks '/usb_storage/d' /etc/modules
+            grep -qw lirc_rpi /etc/modules || echo "lirc_rpi" >>  /etc/modules
 
             grep -iv ^"AddressFamily" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new
             grep -iv ^"UseDNS" /etc/ssh/sshd_config.new > /etc/ssh/sshd_config.new.2
@@ -542,16 +523,22 @@ EOF
             echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
             mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
 
-            echo "checking interfaces"
-            if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
-                :
-            else
-                if ip link show eth0 | grep "state UP" | grep -q DEFAULT; then
-                    echo "auto eth0" > /etc/network/interfaces.new
-                    cat /etc/network/interfaces >> /etc/network/interfaces.new
-                    mv /etc/network/interfaces.new /etc/network/interfaces
+            if ! grep -wq "root=/dev/nfs" /proc/cmdline; then
+                echo "checking interfaces"
+                if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
+                    :
+                else
+                    if ip link show eth0 | grep "state UP" | grep -q DEFAULT; then
+                        echo "auto eth0" > /etc/network/interfaces.new
+                        cat /etc/network/interfaces >> /etc/network/interfaces.new
+                        mv /etc/network/interfaces.new /etc/network/interfaces
+                    fi
                 fi
             fi
+
+            chmod -x /etc/network/if-up.d/mountnfs
+            chmod -x /etc/network/if-up.d/openssh-server
+            chmod -x /etc/network/if-up.d/upstart
 
             echo "patching files"
             for f in $(ls /var/tmp/xbian_update/diffs/*_1012 2>/dev/null); do
@@ -567,20 +554,19 @@ EOF
 
             find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
 
-            sed 's/<guires>720<\/guires>/<guires>1080<\/guires>/g' -i /home/xbian/.xbmc/userdata/advancedsettings.xml
-            rm -fr /home/xbian/.xbmc/userdata/autoexec.py
+            #sed -i --follow-symlinks 's/<guires>1080<\/guires>/<guires>720<\/guires>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
 
-            echo "changing virtual filesystem parameters and recreating initramfs.gz."
+            #echo "changing virtual filesystem parameters and recreating initramfs.gz."
             #dpkg-trigger --no-await trigger-xbian-update-initramfs
-            xbian-update-initramfs > /dev/null 2>&1
+            #xbian-update-initramfs > /dev/null 2>&1
 
             if grep -wq "/tmp" /etc/fstab; then
                 grep -wv "/tmp" /etc/fstab > /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
             fi
 
-            if grep -wq "/" /etc/fstab; then
-                grep -wv "/" /etc/fstab >> /etc/fstab.new
+            if grep -wq 'root/@' /etc/fstab; then
+                grep -wv 'root/@' /etc/fstab >> /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
             fi
 
@@ -588,11 +574,21 @@ EOF
                 grep -wv "/home" /etc/fstab > /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
             fi
+            if grep -wq "/lib/modules" /etc/fstab; then
+                grep -wv "/lib/modules" /etc/fstab > /etc/fstab.new
+                mv /etc/fstab.new /etc/fstab
+            fi
+            echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime        0       0" >> /etc/fstab
+            echo "/dev/root             /home                   xbian   subvol=home/@,noatime        0       0" >> /etc/fstab
 
             if grep -wq "/proc" /etc/fstab; then
                 grep -wv "/proc" /etc/fstab > /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
             fi
+
+            grep -wv "/boot" /etc/fstab > /etc/fstab.new
+            mv /etc/fstab.new /etc/fstab
+            echo "/dev/mmcblk0p1         /boot           vfat            rw        0       1" >> /etc/fstab
 
             if ! grep -wq "/run/user" /etc/fstab; then
                 echo "none            /run/user                       tmpfs                   noauto                  0       0" >> /etc/fstab
@@ -603,36 +599,69 @@ EOF
             if ! grep -wq "/sys/kernel/debug" /etc/fstab; then
                 echo "none            /sys/kernel/debug               debugfs                 noauto                  0       0" >> /etc/fstab
             fi
+            if ! grep -wq "/run/shm" /etc/fstab; then
+                echo "none            /run/shm                        tmpfs                   noauto                  0       0" >> /etc/fstab
+            fi
+
+
 
             grep -v ^$ /etc/fstab | sort > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
 
-            grep -v ^"initial-interval " /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.new
-            grep -v ^"reboot " /etc/dhcp/dhclient.new > /etc/dhcp/dhclient.conf
-            echo "initial-interval 1;" >> /etc/dhcp/dhclient.conf
-            echo "reboot 0;" >> /etc/dhcp/dhclient.conf
-            rm -fr /etc/dhcp/dhclient.new
+            grep -v ^"initial-interval\|reboot\|script" /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.new
+            echo "initial-interval 1;" >> /etc/dhcp/dhclient.new
+            echo "reboot 4;" >> /etc/dhcp/dhclient.new
+            echo "script \"/etc/xbian-udhcpc/dhclient-script-xbian\";" >> /etc/dhcp/dhclient.new
+            mv /etc/dhcp/dhclient.new /etc/dhcp/dhclient.conf
 
-            grep -q "initial_turbo=1" /boot/config.txt || echo "initial_turbo=1" >> /boot/config.txt
+            grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=1" >> /boot/config.txt
 
-            grep -q "# SAMBA NetBIOS services" /etc/inetd.conf || echo "# SAMBA NetBIOS services (for PC file and print sharing)
-netbios-ssn stream tcp nowait root /usr/sbin/smbd smbd
-netbios-ns dgram udp wait root /usr/sbin/nmbd nmbd" >> /etc/inetd.conf
+            grep -q ^"ssh " /etc/inetd.conf || echo "
+ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
+" >> /etc/inetd.conf
 
-            if [ ! -e /etc/samba/smb.conf.xbian ]; then
-                mv /etc/samba/smb.conf /etc/samba/smb.conf.xbian
-            fi
-            cp /var/tmp/xbian_update/pchanges/smb.conf /etc/samba/smb.conf
+            grep -v "<destroywindowcontrols>\|<useddsfanart>\|<visualizedirtyregions>\|<streamsilence>\|</advancedsettings>\|<algorithmdirtyregions>\|<nofliptimeout>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
+            echo "
+    <gui>
+        <algorithmdirtyregions>3</algorithmdirtyregions>
+        <nofliptimeout>0</nofliptimeout>
+        <visualizedirtyregions>false</visualizedirtyregions>
+    </gui>
+    <destroywindowcontrols>0</destroywindowcontrols>
+    <useddsfanart>0</useddsfanart>
+</advancedsettings>
+" >> /home/xbian/.xbmc/userdata/advancedsettings.xml.new
+
+#            grep -v "</streamsilence>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
+#            echo "
+#    <gui>
+#        <algorithmdirtyregions>3</algorithmdirtyregions>
+#        <nofliptimeout>0</nofliptimeout>
+#        <visualizedirtyregions>false</visualizedirtyregions>
+#    </gui>
+#    <audio>
+#        <streamsilence>1</streamsilence>
+#    </audio>
+#    <destroywindowcontrols>0</destroywindowcontrols>
+#    <useddsfanart>0</useddsfanart>
+#</advancedsettings>
+#" >> /home/xbian/.xbmc/userdata/advancedsettings.xml.new
+
+            cat /home/xbian/.xbmc/userdata/advancedsettings.xml.new | tr '\n' '%' | sed 's/<gui>%\ *<\/gui>//g' | sed 's/<audio>%\ *<\/audio>//g' | tr '%' '\n' | sed '/^\s*$/d' > /home/xbian/.xbmc/userdata/advancedsettings.xml
+            chown xbian:xbian /home/xbian/.xbmc/userdata/advancedsettings.xml
 
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
-            echo "1.0Beta1.2" > /etc/xbian_version
+            grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
+            grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
+
+            echo "1.0Beta2" > /etc/xbian_version
 
         }
 
-############################## 1.0-1.2 END   ###################################
+############################## 1.0.2-x END   ###################################
         
-        version=$(dpkg-query -W -f='${Version}\n' "xbian-update" | sed 's/[\.-]//g')
+        version=$(printf "%.4s" $(dpkg-query -W -f='${Version}\n' "xbian-update" | sed 's/[\.-]//g'))
         [ -n "$version" ] || vesion='1000'
         while test $(($version / 1000)) -eq 0; do version=$(($version *10)); done
 
@@ -642,19 +671,31 @@ netbios-ns dgram udp wait root /usr/sbin/nmbd nmbd" >> /etc/inetd.conf
         fi
 
         [ $version -lt 1011 ] && version1011
-        [ $version -lt 1012 -o $version -eq 1012 ] && version1012
+        [ $version -lt 1030 ] && version102x
 
-        # update cmdline.txt subvol parameter to what it was during boot
-        subvolume=$(cat /proc/cmdline); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
-        snap=$(cat /proc/cmdline); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
+        if ! grep -wq "root=/dev/nfs" /proc/cmdline; then
 
-        cp /boot/cmdline.new /boot/cmdline.default
-        cat /boot/cmdline.new | eval $(echo "sed 's%rootfsopts=subvol=root\/@%rootfsopts=subvol=$subvolume\/@$snap%'") > /boot/cmdline.txt
-        mv /boot/cmdline.txt /boot/cmdline.new
+            # update cmdline.txt subvol parameter to what it was during boot
+            if grep -q rootfsopts /boot/cmdline.txt.old; then
+                subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
+                snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*};
+            elif grep -q rootflags /boot/cmdline.txt.old; then
+                subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootflags=subvol=}; subvolume=${subvolume%%\/@*};
+                snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootflags=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
+            fi
+        
+            cp /boot/cmdline.new /boot/cmdline.default
+            cat /boot/cmdline.new | eval $(echo "sed 's%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%'") > /boot/cmdline.txt
+            mv /boot/cmdline.txt /boot/cmdline.new
 
-        rootdev=$(cat /proc/cmdline); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
-        cat /boot/cmdline.new | eval $(echo "sed 's%root=LABEL=xbian-root-btrfs%root=$rootdev%'") > /boot/cmdline.txt
-        rm /boot/cmdline.new
+            rootdev=$(cat /boot/cmdline.txt.old); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
+            echo $rootdev | grep -q 'LABEL\|UUID' && { findfs $rootdev && rootdev=$(findfs $rootdev); }
+            cat /boot/cmdline.new | eval $(echo "sed 's%root=/dev/mmcblk0p2%root=$rootdev%'") > /boot/cmdline.txt
+            rm /boot/cmdline.new
+
+        else
+            mv /boot/cmdline.txt.old /boot/cmdline.txt
+        fi
 
 ###############################################################################
 
@@ -666,30 +707,39 @@ netbios-ns dgram udp wait root /usr/sbin/nmbd nmbd" >> /etc/inetd.conf
 cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
+set +e
+
 while { pgrep dpkg >/dev/null|| pgrep apt-get >/dev/null; } ; do sleep 5; done
-echo "XBian update completed, rebooting..."
+[ ! -e /run/noreboot ] ||  exit 0
+test -x /etc/init.d/xbmc && /etc/init.d/xbmc stop &>/dev/null
+test -e /etc/init/xbmc.conf && stop -q xbmc
+echo "XBian update completed, rebooting in 30s..."
 /usr/bin/splash --infinitebar --msgtxt="stopping services..."
 for f in $(ls /etc/rc2.d/S* | sort -r); do
 	[ -x $f ] && $f stop
 done
-apt-get clean
-sleep 5
+umount /boot
+/usr/bin/splash --infinitebar --msgtxt="rebooting in 30s..."
+sleep 30
 sync
-[ ! -e /run/noreboot ] ||  exit 0
-/usr/bin/splash --infinitebar --msgtxt="rebooting..."
 reboot -f
 
 EOF
 	    chmod +x /tmp/xbian-update-reboot
 	    /tmp/xbian-update-reboot &
 	else
-	    start -qn xbian-update-reboot
+	    start -q xbian-update-reboot
 	fi
+
+        sync
+        touch /var/run/reboot-required
+
+elif [ $1 = triggered ]; then
+
+:
 
 fi
 
-sync; mountpoint -q /boot && umount /boot
 
-exit 0
 
 

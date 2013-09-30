@@ -1,17 +1,18 @@
 #!/bin/bash
 
-mountpoint -q /boot || mount /boot
+{ mountpoint -q /boot && [ "$(findmnt -o source -n /boot)" = '/dev/mmcblk0p1' ]; } || { umount /boot >/dev/null 2>&1; mount -t vfat /dev/mmcblk0p1 /boot || { echo "CAN'T MOUNT BOOT"; exit 1; }; }
 
 if [ $1 == "install" -o $1 == "upgrade" ]; then
 
-        insserv -fr xbian-waiter > /dev/null 2>&1
+        sed -i 's/^initramfs /#initramfs /' /boot/config.txt
 
-        if ! test -e /run/noreboot; then
-            stop xbmc >/dev/null 2>&1|| service xbmc stop >/dev/null 2>&1||true
+        if ! pgrep xbmc.bin > /dev/null && ! pgrep xbian-config > /dev/null; then
 
             pkill splash || :
 
             /usr/bin/splash --infinitebar --msgtxt="installing update..." &
+        else
+            touch /run/noreboot
         fi
 
 	if [ -f "/boot/cmdline.txt" ]; then
@@ -20,4 +21,8 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 	[ ! -e "/boot/cmdline.new" ] || rm -f /boot/cmdline.new
 
 	[ ! -e /etc/xbian_revision ] || cp /etc/xbian_revision /tmp/xbian_revision.old
+
+        if [ ! -e /etc/samba/smb.conf.xbian ]; then
+            mv /etc/samba/smb.conf /etc/samba/smb.conf.xbian
+        fi
 fi

@@ -1,4 +1,0 @@
-start on (startup
-          and filesystem
-          and started udev
-          and stopped udevtrigger)

@@ -1,4 +1,13 @@
-start on xbian
-stop on started xbian-fstab and filesystem
+start on mountall or startup
 
-nice -3
+emits mountall
+
+nice -2
+
+pre-start script
+    renice -4 -p 1 || :
+
+    grep -q "root=/dev/nfs" /proc/cmdline || [ -e /dev/root ] || { z=$(cat /proc/cmdline); z=$(echo ${z##* root=} | awk '{print $1}'); ln -s $z /dev/root 2>/dev/null || :; }
+    mount -a -t xbian || :
+end script
+

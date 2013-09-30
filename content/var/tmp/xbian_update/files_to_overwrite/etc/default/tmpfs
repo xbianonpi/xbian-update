@@ -8,12 +8,12 @@
 # mount /run/lock as a tmpfs (separately from /run).  Defaults to yes;
 # set to no to disable (/run/lock will then be part of the /run tmpfs,
 # if available).
-RAMLOCK=yes
+RAMLOCK=no
 
 # mount /run/shm as a tmpfs (separately from /run).  Defaults to yes;
 # set to no to disable (/run/shm will then be part of the /run tmpfs,
 # if available).
-RAMSHM=yes
+RAMSHM=no
 
 # mount /tmp as a tmpfs.  Defaults to no; set to yes to enable (/tmp
 # will be part of the root filesystem if disabled).  /tmp may also be
@@ -24,7 +24,7 @@ RAMTMP=no
 # tmpfs size limits.
 #TMPFS_SIZE=20%VM
 RUN_SIZE=10%
-#LOCK_SIZE=5120
+#LOCK_SIZE=1024000
 #SHM_SIZE=2048
 #TMP_SIZE=20480
 

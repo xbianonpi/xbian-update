@@ -3,32 +3,30 @@
 for f in $(find ./content/usr  -printf '%P\n' -iname \* | grep -v DEBIAN); do
         [ -d ./content/usr/$f ] && continue
         [ -e /usr/$f ] || { rm -vf ./content/usr/$f; continue; }
-        [ -h ./content/usr/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /usr/$f ./content/usr/$f 2>/dev/null; continue; }
+        [ -h ./content/usr/$f ] && { cp --preserve=mode,timestamp -dv --remove-destination $1 -u /usr/$f ./content/usr/$f 2>/dev/null; continue; }
         if ! diff -q ./content/usr/$f /usr/$f > /dev/null; then
-                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /usr/$f ./content/usr/$f
+                cp --preserve=mode,timestamp -v  --remove-destination $1 -u /usr/$f ./content/usr/$f
         fi
 done
 for f in $(find ./content/etc  -printf '%P\n' -iname \* | grep -v DEBIAN); do
         [ -d ./content/etc/$f ] && continue
         [ -e /etc/$f ] || { rm -v -f ./content/etc/$f; continue; }
-        [ -h ./content/etc/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /etc/$f ./content/etc/$f 2>/dev/null; continue; }
-        if ! diff -q ./content/etc/$f /etc/$f > /dev/null; then
-                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /etc/$f ./content/etc/$f
-        fi
+        [ -h ./content/etc/$f ] && { cp --preserve=mode,timestamp -dv --remove-destination $1 -u /etc/$f ./content/etc/$f 2>/dev/null; continue; }
+        diff -q ./content/etc/$f /etc/$f > /dev/null || cp --preserve=mode,timestamp -dv --remove-destination $1 -u /etc/$f ./content/etc/$f
 done
 for f in $(find ./content/var/tmp/xbian_update/files_to_overwrite  -printf '%P\n' -iname \* | grep -v DEBIAN); do
         [ -d ./content/var/tmp/xbian_update/files_to_overwrite/$f ] && continue
         [ -e /$f ] || { rm -fv ./content/var/tmp/xbian_update/files_to_overwrite/$f; continue; }
-        [ -h /$f ] && { cp --preserve=mode,timestamp -dv -a  --remove-destination $1 -u /$f ./content/var/tmp/xbian_update/files_to_overwrite/$f 2>/dev/null; continue; }
+        [ -h /$f ] && { cp --preserve=mode,timestamp -dv  --remove-destination $1 -u /$f ./content/var/tmp/xbian_update/files_to_overwrite/$f 2>/dev/null; continue; }
         if ! diff -q ./content/var/tmp/xbian_update/files_to_overwrite/$f /$f > /dev/null 2>&1 || test -h ./content/var/tmp/xbian_update/files_to_overwrite/$f ; then
-                cp --preserve=mode,timestamp -va --remove-destination $1 /$f ./content/var/tmp/xbian_update/files_to_overwrite/$f
+                cp --preserve=mode,timestamp -v --remove-destination $1 /$f ./content/var/tmp/xbian_update/files_to_overwrite/$f
         fi
 done
 for f in $(find ./content/lib  -printf '%P\n' -iname \* | grep -v DEBIAN); do
         [ -d ./content/lib/$f ] && continue
         [ -e /lib/$f ] || { rm -vf ./content/lib/$f; continue; }
-        [ -h ./content/lib/$f ] && { cp --preserve=mode,timestamp -dv -a --remove-destination $1 -u /lib/$f ./content/lib/$f 2>/dev/null; continue; }
+        [ -h ./content/lib/$f ] && { cp --preserve=mode,timestamp -dv --remove-destination $1 -u /lib/$f ./content/lib/$f 2>/dev/null; continue; }
         if ! diff -q ./content/lib/$f /lib/$f > /dev/null; then
-                cp --preserve=mode,timestamp -av  --remove-destination $1 -u /lib/$f ./content/lib/$f
+                cp --preserve=mode,timestamp -v  --remove-destination $1 -u /lib/$f ./content/lib/$f
         fi
 done

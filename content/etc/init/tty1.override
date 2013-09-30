@@ -1,3 +1,4 @@
-start on (stopped xbmc-preload and started portmap) or xbmc-failed-start or failsafe-boot
+start on (stopped xbmc-preload or xbmc-failed-start or failsafe-boot) and runlevel [!06]
+stop on runlevel [06]
 
 pre-start exec touch /run/tty1.running

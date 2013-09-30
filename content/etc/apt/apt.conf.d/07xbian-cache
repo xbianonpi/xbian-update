@@ -1,0 +1,5 @@
+Dir::Cache {
+#  archives "";
+#  srcpkgcache "";
+#  pkgcache "/run/shm/apt.cache";
+}

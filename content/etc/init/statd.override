@@ -1,4 +1,4 @@
-start on started portmap and mounted MOUNTPOINT=/lib/modules
+start on started mounted-run
 
 pre-start script
     do_modprobe() {
@@ -8,6 +8,8 @@ pre-start script
     if [ -f "$DEFAULTFILE" ]; then
         . "$DEFAULTFILE"
     fi
+
+    ! grep -q "root=/dev/nfs" /proc/cmdline || NEED_STATD=yes
 
     if [ -z "$NEED_STATD" ]; then
         NEED_STATD=no

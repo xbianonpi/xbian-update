@@ -1,17 +1,11 @@
-APT::Periodic::RandomSleep 0;
-APT::Periodic::Update-Package-Lists 1;
-APT::Periodic::AutocleanInterval 7;
-APT::Periodic::Enable 1;
-APT::Periodic::Verbose 1;
 APT::Install-Recommends "0";
 APT::Install-Suggests "0";
-APT::dir::tmp "/run/shm";
 APT::Get::AllowUnauthenticated "0";
 
 DPkg::NoTriggers "true";
 PackageManager::Configure "smart";
 DPkg::ConfigurePending "true";
-DPkg::TriggersPending "true";
+#DPkg::TriggersPending "true";
 
 Dpkg::Options {
    "--force-confdef";
@@ -19,3 +13,5 @@ Dpkg::Options {
 }
 
 Acquire::PDiffs "0";
+Acquire::GzipIndexes "false";
+Acquire::CompressionTypes::Order:: "gz";

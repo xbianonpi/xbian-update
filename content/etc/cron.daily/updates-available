@@ -2,6 +2,8 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+while pgrep apt-get > /dev/null || pgrep dpkg > /dev/null; do sleep 5; done
+
 exec > /run/motd.dynamic
 uname -snrv 
 /bin/echo -e "\e[5m$(/usr/lib/update-notifier/update-motd-updates-available)\e[25m

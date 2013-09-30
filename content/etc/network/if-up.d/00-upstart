@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+#[ "$IFACE" != lo ] || initctl emit -n startup ON_BOOT=n || :
+
+MARK_DEV_PREFIX="/run/network/ifup."
+
+[ ! -e "$MARK_DEV_PREFIX$IFACE" ] || exit 0
+
+. /etc/network/if-up.d/upstart
+

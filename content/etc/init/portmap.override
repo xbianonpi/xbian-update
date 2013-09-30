@@ -1,6 +1,4 @@
-start on xbian
-
-emits xbian-nowait
+start on started mountall
 
 env STATEDIR=/run/rpcbind
 
@@ -14,7 +12,7 @@ pre-start script
 end script
 
 post-start script
-    nowait=$(cat /etc/fstab| grep -v ^# | awk '{print $3}' | sort | uniq  | grep 'nfs\|nfs4') || :
-    [ -n "$nowait" ] || initctl emit xbian-nowait &
-    exit 0
+        nowait=$(cat /etc/fstab| grep -v ^# | awk '{print $3}' | sort | uniq | grep 'nfs\|nfs4') || :
+        [ -n "$nowait" ] || initctl emit xbian-nowait &
 end script
+
