@@ -1,4 +1,5 @@
 start on mountall or startup
+stop on filesystem
 
 emits mountall
 

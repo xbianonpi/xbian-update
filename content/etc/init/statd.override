@@ -1,4 +1,4 @@
-start on started mounted-run
+start on started mounted-run and started portmap
 
 pre-start script
     do_modprobe() {
