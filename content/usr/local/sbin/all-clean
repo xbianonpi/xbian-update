@@ -3,11 +3,11 @@
 rm -f /home/xbian/*.log
 rm -f /home/xbian/.xbmc/temp/*.log
 for f in $(find /var/log -type f); do echo > $f; done
-find / -iname \*.DS_Store | xargs rm -f
+find / -xdev -iname \*.DS_Store | xargs rm -f
 rm /boot/*.old
-apt-get clean
 apt-get autoclean
 apt-get autoremove
+apt-get clean
 rm -f /home/xbian/.bash_history
 rm -fr /home/xbian/.cache
 rm -fr /home/xbian/.local
@@ -19,8 +19,9 @@ rm -fr /root/.config
 rm -f /etc/apt/preferences.d/media
 rm -fr /home/xbian/.mc
 rm -fr /root/.mc
-#rm -fr /run/*
+mountpoint -q /run || rm -fr /run/*
 rm -fr /tmp/*
 rm -fr /var/tmp/*
 rm -f /var/lib/dpkg/*-old
 rm -f /var/cache/debconf/*-old
+rm -fr /home/xbian/.xbmc/userdata/addon_data/plugin.xbianconfig

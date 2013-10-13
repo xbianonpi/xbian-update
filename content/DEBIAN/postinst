@@ -514,7 +514,7 @@ EOF
             sed -i --follow-symlinks '/deadline-iosched/d' /etc/modules
             sed -i --follow-symlinks '/cfq-iosched/d' /etc/modules
             sed -i --follow-symlinks '/usb_storage/d' /etc/modules
-            grep -qw lirc_rpi /etc/modules || echo "lirc_rpi" >>  /etc/modules
+            #grep -qw lirc_rpi /etc/modules || echo "lirc_rpi" >>  /etc/modules
 
             grep -iv ^"AddressFamily" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new
             grep -iv ^"UseDNS" /etc/ssh/sshd_config.new > /etc/ssh/sshd_config.new.2
@@ -555,6 +555,7 @@ EOF
             find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
 
             #sed -i --follow-symlinks 's/<guires>1080<\/guires>/<guires>720<\/guires>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
+            sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
 
             #echo "changing virtual filesystem parameters and recreating initramfs.gz."
             #dpkg-trigger --no-await trigger-xbian-update-initramfs

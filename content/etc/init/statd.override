@@ -1,4 +1,4 @@
-start on started mounted-run and started portmap
+start on started portmap and net-device-up
 
 pre-start script
     do_modprobe() {
