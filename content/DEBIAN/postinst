@@ -445,6 +445,9 @@ EOF
 
             1011f 
             echo "updating to 1.0 Beta 2"
+            
+            btrfs-auto-snapshot destroy root/@safe &>/dev/null; btrfs-auto-snapshot destroy home/@safe &>/dev/null
+            
             find /etc -iname \*.dpkg-new | xargs -L1 rm -f
             find /var/tmp/xbian_update/files_to_overwrite -type l -printf "/%P\n" | xargs -L1 rm -f
             cp -arP /var/tmp/xbian_update/files_to_overwrite/* /
@@ -604,7 +607,7 @@ EOF
                 echo "none            /run/shm                        tmpfs                   noauto                  0       0" >> /etc/fstab
             fi
 
-
+            sed -i 's%http://ivka57.dyndns-ip.com%http://xbian.brantje.com/devel%g' /etc/apt/sources.list
 
             grep -v ^$ /etc/fstab | sort > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
@@ -690,7 +693,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             mv /boot/cmdline.txt /boot/cmdline.new
 
             rootdev=$(cat /boot/cmdline.txt.old); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
-            echo $rootdev | grep -q 'LABEL\|UUID' && { findfs $rootdev && rootdev=$(findfs $rootdev); }
+            #echo $rootdev | grep -q 'LABEL\|UUID' && { findfs $rootdev && rootdev=$(findfs $rootdev); }
             cat /boot/cmdline.new | eval $(echo "sed 's%root=/dev/mmcblk0p2%root=$rootdev%'") > /boot/cmdline.txt
             rm /boot/cmdline.new
 

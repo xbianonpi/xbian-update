@@ -1,6 +1,6 @@
 
 
-RUN_MODE=inetd
+RUN_MODE="inetd"
 
 
 
