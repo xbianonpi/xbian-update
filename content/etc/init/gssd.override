@@ -11,7 +11,11 @@ pre-start script
 
 	if [ -z "$NEED_GSSD" ]; then
 		NEED_GSSD=no
-		[ "$(grep -w 'nfs4' /etc/fstab | grep -v ^# | awk '{print $3}' | sort | uniq)" != nfs4 ] || NEED_GSSD=yes
+		if [ "$(grep -w 'nfs4' /etc/fstab | grep -v ^# | awk '{print $3}' | sort | uniq)" = nfs4 ]; then
+		    NEED_GSSD=yes
+		elif grep -w 'nfs' /etc/fstab | grep -v ^# | awk '{print $4}' | grep -q vers=4; then
+		    NEED_GSSD=yes
+		fi
 	fi
 
 	[ "x$NEED_GSSD" = xyes ] || { stop; exit 0; }
