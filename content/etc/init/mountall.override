@@ -2,13 +2,21 @@ start on mountall or startup
 stop on filesystem
 
 emits mountall
+emits xbian-nowait
 
 nice -2
 
 pre-start script
     renice -4 -p 1 || :
 
+    cat /etc/fstab| grep -v ^# | awk '{print $3}' | sort | uniq | grep 'nfs\|nfs4' || initctl emit -n xbian-nowait || :
+
     grep -q "root=/dev/nfs" /proc/cmdline || [ -e /dev/root ] || { z=$(cat /proc/cmdline); z=$(echo ${z##* root=} | awk '{print $1}'); ln -s $z /dev/root 2>/dev/null || :; }
     mount -a -t xbian || :
 end script
 
+post-stop script
+    [ -d /run/lock ] || mkdir -p /run/lock
+    [ -d /run/shm ] || mkdir -p /run/shm
+    chmod 1777 /run/lock /run/shm
+end script

@@ -6,7 +6,7 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 
         sed -i 's/^initramfs /#initramfs /' /boot/config.txt
 
-        if ! pgrep xbmc.bin > /dev/null && ! pgrep xbian-config > /dev/null; then
+        if ! pgrep xbmc.bin > /dev/null && [ "$(grep -c . /run/lock/xbian-config.gui 2>/dev/null)" -eq 0 ]; then
 
             pkill splash || :
 

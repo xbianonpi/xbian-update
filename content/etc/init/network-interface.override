@@ -1,7 +1,7 @@
 env AUTOONLY='--allow auto'
 env TO=25
 
-nice -10
+nice -12
 
 pre-start script
     mkdir -p /run/network

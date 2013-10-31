@@ -1,4 +1,5 @@
-start on virtual-filesystems
+#start on virtual-filesystems and (started xbian-net or stopped xbian-net)
+start on (started xbian-net or stopped xbian-net)
 
 nice +3
 

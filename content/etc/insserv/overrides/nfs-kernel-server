@@ -2,9 +2,9 @@
 
 ### BEGIN INIT INFO
 # Provides:          nfs-kernel-server
-# Required-Start:    $remote_fs nfs-common $portmap $time
-# Required-Stop:     $remote_fs $time
-# Should-Start:      $named
+# Required-Start:    $time
+# Required-Stop:     $time
+# Should-Start:      
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Kernel NFS server support
@@ -90,7 +90,7 @@ case "$1" in
 		log_progress_msg "nfsd"
 		
 		# See if rpcbind is running
-		$PREFIX/sbin/rpcinfo -p >/dev/null 2>&1
+		/usr/sbin/rpcinfo -p >/dev/null 2>&1
 		RET=$?
 		if [ $RET != 0 ]; then
 		    echo
@@ -117,7 +117,7 @@ case "$1" in
 		    }
 		fi
 
-		$PREFIX/sbin/rpcinfo -u localhost nfs 3 >/dev/null 2>&1 ||
+		$PREFIX/bin/rpcinfo -u localhost nfs 3 >/dev/null 2>&1 ||
 		    RPCMOUNTDOPTS="$RPCMOUNTDOPTS --no-nfs-version 3"
 
 		[ -z "$ClearAddr" ] || echo "nfsd 127.0.0.1 1" >/proc/net/rpc/auth.unix.ip/channel

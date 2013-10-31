@@ -5,25 +5,9 @@
 
 set -e
 
+UPSTART_JOB_CONF="/etc/default/upstart-job"
 INITSCRIPT="$(basename "$0")"
 JOB="${INITSCRIPT%.sh}"
-
-### BEGIN INIT INFO
-# Provides:          $INITSCRIPT
-# Required-Start:    
-# Required-Stop:     
-# Should-Start:      
-# Should-Stop:       
-# X-Start-Before:    
-# X-Stop-After:      
-# Default-Start:     
-# Default-Stop:      
-# X-Interactive:     false
-# Short-Description: Example initscript
-# Description:       This file should be used to construct scripts to be
-#                    placed in /etc/init.d.
-### END INIT INFO
-
 
 if [ "$JOB" = "upstart-job" ]; then
     if [ -z "$1" ]; then
@@ -44,11 +28,14 @@ fi
 COMMAND="$1"
 shift
 
-
-if [ -z "$DPKG_MAINTSCRIPT_PACKAGE" ]; then
-	ECHO=echo
-else
+ECHO=echo
+ECHO_ERROR=echo
+if [ -e "$UPSTART_JOB_CONF" ]; then
+	. "$UPSTART_JOB_CONF"
+fi
+if [ -n "$DPKG_MAINTSCRIPT_PACKAGE" ]; then
 	ECHO=:
+	ECHO_ERROR=:
 fi
 
 $ECHO "Rather than invoking init scripts through /etc/init.d, use the service(8)"
@@ -125,8 +112,8 @@ reload|force-reload)
     reload "$JOB"
     ;;
 *)
-    $ECHO
-    $ECHO "The script you are attempting to invoke has been converted to an Upstart" 1>&2
-    $ECHO "job, but $COMMAND is not supported for Upstart jobs." 1>&2
+    $ECHO_ERROR
+    $ECHO_ERROR "The script you are attempting to invoke has been converted to an Upstart" 1>&2
+    $ECHO_ERROR "job, but $COMMAND is not supported for Upstart jobs." 1>&2
     exit 1
 esac

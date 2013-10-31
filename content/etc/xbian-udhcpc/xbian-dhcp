@@ -71,7 +71,7 @@ echo Terminated >&2
 if wait $spid; then
     pidfile=$pidfile interface=$interface $0 renew &
 else
-    kill $(cat /run/wpa_supplicant.$interface.pid) >/dev/null 2>&1
-    rm -fr /run/wpa_supplicant.$interface.pid
+    [ ! -e "/run/wpa_supplicant.$interface.pid" ] || kill $(cat /run/wpa_supplicant.$interface.pid) >/dev/null 2>&1
+    rm -fr "/run/wpa_supplicant.$interface.pid"
     pidfile=$pidfile interface=$interface $0 deconfig
 fi

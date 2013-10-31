@@ -1,0 +1,4 @@
+pre-start script
+    grep -wq splash /proc/cmdline || touch /run/nosplash || :
+end script
+

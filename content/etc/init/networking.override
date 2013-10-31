@@ -1,0 +1,2 @@
+start on (local-filesystems
+	  and (stopped udevtrigger or container)) or failsafe-boot

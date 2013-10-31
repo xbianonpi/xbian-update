@@ -11,8 +11,3 @@ pre-start script
         [ -f $STATEDIR/portmap.xdr ] || touch $STATEDIR/portmap.xdr || :
 end script
 
-post-start script
-        nowait=$(cat /etc/fstab| grep -v ^# | awk '{print $3}' | sort | uniq | grep 'nfs\|nfs4') || :
-        [ -n "$nowait" ] || initctl emit xbian-nowait &
-end script
-
