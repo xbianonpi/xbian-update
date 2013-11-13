@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 rmo(){
 
 echo "removing non-used services"
@@ -74,13 +75,14 @@ mountkernfs.sh \
 mountnfs-bootclean.sh \
 mountnfs.sh \
 mtab.sh \
-umountnfs.sh \
+networking \
 hostname.sh \
 mountkernfs.sh \
 mountdevsubfs.sh \
 checkroot.sh \
 avahi-daemon \
 dbus \
+rmnologin \
 cron \
 ssh \
 kmod \
@@ -476,6 +478,13 @@ EOF
 
         version102x() {
 
+    insrem() {
+
+        for s in $@; do
+            [ -e $s -o -e /etc/init.d/$s ] && insserv -fr $s 2>/dev/null || :
+        done
+
+    }
             1011f 
             echo "updating to 1.0 Beta 2"
             
@@ -514,21 +523,20 @@ EOF
 
             echo "updating services"
             #rcS.d
-            insserv -rf /etc/init.d/checkroot-bootclean.sh hostname.sh kmod procps bootmisc.sh screen-cleanup rpcbind nfs-common udev checkfs.sh checkroot.sh \
-                mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd > /dev/null 2>&1
+            insrem hostname.sh kmod procps bootmisc.sh screen-cleanup rpcbind nfs-common udev checkfs.sh checkroot.sh \
+                mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd
 
             #rc2.d
-            insserv -fr ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon networking dbus console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
-            insserv -f samba > /dev/null 2>&1
-            insserv -fr hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
+            insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon networking dbus console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
+            insrem hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
 
             #rc6.d
-            insserv -fr /etc/init.d/kexec > /dev/null 2>&1
-            insserv -fr /etc/init.d/kexec-load > /dev/null 2>&1
-            insserv -fr /etc/init.d/kbd  > /dev/null 2>&1
-            insserv -fr xbian-waiter > /dev/null 2>&1
-            insserv -fr rsyslog > /dev/null 2>&1
-            insserv -fr winbind > /dev/null 2>&1
+            insrem /etc/init.d/kexec > /dev/null 2>&1
+            insrem /etc/init.d/kexec-load > /dev/null 2>&1
+            insrem /etc/init.d/kbd  > /dev/null 2>&1
+            insrem xbian-waiter > /dev/null 2>&1
+            insrem rsyslog > /dev/null 2>&1
+            insrem rsync ntp anacron networking screen-cleanup > /dev/null 2>&1
 
             rm -f /etc/init.d/rpcbind > /dev/null 2>&1
             rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
@@ -538,7 +546,7 @@ EOF
             rm -fr /etc/apt/apt.conf.d/50raspi
             rm -fr /etc/apt/sources.list.d/raspi.list
 
-            insserv -f /etc/init.d/unmountnfs.sh > /dev/null 2>&1
+            insserv -f umountnfs.sh  > /dev/null 2>&1
             insserv -f > /dev/null 2>&1
             initctl -q reload-configuration
 
