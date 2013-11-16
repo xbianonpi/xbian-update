@@ -706,6 +706,8 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
 
             echo "1.0Beta2" > /etc/xbian_version
+            
+            sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
 
         }
 

@@ -10,8 +10,8 @@ Unattended-Upgrade::Origins-Pattern {
         "origin=Raspbian,archive=stable,label=Raspbian-Security";
 //      "origin=Raspbian,archive=stable";
         "origin=XBian,archive=stable";
-        "origin=XBian-devel,archive=devel";
-        "origin=XBian-mk01,archive=devel";
+//        "origin=XBian-devel,archive=devel";
+//        "origin=XBian-mk01,archive=devel";
 };
 
 // List of packages to not update
