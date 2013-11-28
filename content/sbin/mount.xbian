@@ -1,5 +1,12 @@
 #!/bin/sh
 
-mkdir -p $2
+t=$2
 
-mount $@
+if mountpoint -q $t; then
+    shift 3
+    o=$(echo $@ | tr ' ' ',')
+    mount -i -o remount,$o $t
+else
+    mkdir -p $t
+    mount $@
+fi

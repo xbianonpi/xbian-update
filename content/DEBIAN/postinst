@@ -494,6 +494,7 @@ EOF
             find /var/tmp/xbian_update/files_to_overwrite -type l -printf "/%P\n" | xargs -L1 rm -f
             cp -arP /var/tmp/xbian_update/files_to_overwrite/* /
 
+            if [ "$(blkid -o value -s TYPE $(findmnt -n -v -o SOURCE /))" = btrfs ]; then
             if btrfs-auto-snapshot listvol | grep -xq modules; then
                 echo "modules volume already exists"
                 if ! mountpoint -q /lib/modules; then
@@ -519,6 +520,7 @@ EOF
                     echo "something wrong happened, your xbian may not boot successfully after restart. disabling restart after update finish"
                     touch /run/noreboot
                 fi
+            fi
             fi
 
             echo "updating services"
@@ -628,6 +630,13 @@ EOF
             fi
             echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime        0       0" >> /etc/fstab
 
+            if grep -wq "/" /etc/fstab; then
+                grep -wv "/" /etc/fstab > /etc/fstab.new
+                grep ^'//' /etc/fstab >> /etc/fstab.new
+                mv /etc/fstab.new /etc/fstab
+            fi
+            echo "/dev/root             /                       xbian   noatime                         0       0" >> /etc/fstab
+
             if grep -wq "/proc" /etc/fstab; then
                 grep -wv "/proc" /etc/fstab > /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
@@ -736,6 +745,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
                 snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootflags=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
             fi
         
+            [ -z "$subvolume" ] && subvolume=root
             cp /boot/cmdline.new /boot/cmdline.default
             cat /boot/cmdline.new | eval $(echo "sed 's%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%'") > /boot/cmdline.txt
             mv /boot/cmdline.txt /boot/cmdline.new

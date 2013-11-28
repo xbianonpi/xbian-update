@@ -9,10 +9,13 @@ nice -2
 pre-start script
     renice -4 -p 1 || :
 
-    cat /etc/fstab| grep -v ^# | awk '{print $3}' | sort | uniq | grep -q 'nfs\|nfs4' || initctl emit -n xbian-nowait || :
+    grep -v ^# /etc/fstab| awk '{print $3}' | sort | grep -q 'nfs\|nfs4' || initctl emit -n xbian-nowait || :
 
-    grep -q "root=/dev/nfs" /proc/cmdline || [ -e /dev/root ] || { z=$(cat /proc/cmdline); z=$(echo ${z##* root=} | awk '{print $1}'); ln -s $z /dev/root 2>/dev/null || :; }
-    mount -a -t xbian || :
+    if ! grep -q "root=/dev/nfs" /proc/cmdline; then
+        mount /
+        [ -e /dev/root ] || { z=$(cat /proc/cmdline); z=$(echo ${z##* root=} | awk '{print $1}'); ln -s $z /dev/root 2>/dev/null || :; }
+        mount -a -t xbian || :
+    fi
 end script
 
 post-stop script
