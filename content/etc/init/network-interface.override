@@ -8,7 +8,11 @@ pre-start script
 
     case $INTERFACE in
         eth?)
-            ifquery -a -l | grep -wq $INTERFACE || { TO=8; AUTOONLY=  ; } || :
+            if ! ifquery -a -l | grep -wq $INTERFACE; then
+                ifconfig $INTERFACE up && sleep 3
+                ifplugstatus $INTERFACE | grep -q 'link beat detected' || { ifconfig $INTERFACE down; stop; exit 0; }
+                TO=8; AUTOONLY=
+            fi
             ;;
     esac
 
