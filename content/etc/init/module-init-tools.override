@@ -1,1 +1,14 @@
 start on started udev
+
+pre-start script
+    set +e
+    modprobe vchiq
+
+    echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+    echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+end script
+
+post-start script
+    rm /lib/modules/$(uname -r)/build || :
+    ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build || :
+end script

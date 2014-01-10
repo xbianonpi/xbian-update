@@ -1,4 +1,4 @@
-start on mountall or startup
+start on started xbian-run
 stop on filesystem
 
 emits mountall
@@ -7,19 +7,20 @@ emits xbian-nowait
 nice -2
 
 pre-start script
-    renice -4 -p 1 || :
+    grep -v ^# /etc/fstab| awk '{print $3}' | grep -q 'nfs\|nfs4\|cifs' || initctl emit -n xbian-nowait || :
 
-    grep -v ^# /etc/fstab| awk '{print $3}' | sort | grep -q 'nfs\|nfs4' || initctl emit -n xbian-nowait || :
-
-    if ! grep -q "root=/dev/nfs" /proc/cmdline; then
-        mount /
-        [ -e /dev/root ] || { z=$(cat /proc/cmdline); z=$(echo ${z##* root=} | awk '{print $1}'); ln -s $z /dev/root 2>/dev/null || :; }
-        mount -a -t xbian || :
+    r="$(findmnt -o FSTYPE / -n)"
+    if [ ! -e /dev/root -a "$r" != nfs -a "$r" != nfs4 ]; then
+        r=$(cat /proc/cmdline | sed 's/ /\n/g' | grep root= | awk -F'=' '{print $2}')
+        [ -b $r ] || r="$(findfs $r)"
+        ln -s $r /dev/root 2>/dev/null || :
     fi
+    /bin/mount -sFa -t xbian || :; /bin/mount / || :
 end script
 
 post-stop script
+    set +e
     [ -d /run/lock ] || mkdir -p /run/lock
     [ -d /run/shm ] || mkdir -p /run/shm
-    chmod 1777 /run/lock /run/shm
+    chmod 1777 /run/lock /run/shm /tmp
 end script

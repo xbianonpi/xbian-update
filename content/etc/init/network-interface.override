@@ -1,7 +1,7 @@
 env AUTOONLY='--allow auto'
 env TO=25
 
-nice -12
+nice -7
 
 pre-start script
     mkdir -p /run/network
@@ -9,8 +9,8 @@ pre-start script
     case $INTERFACE in
         eth?)
             if ! ifquery -a -l | grep -wq $INTERFACE; then
-                ifconfig $INTERFACE up && sleep 3
-                ifplugstatus $INTERFACE | grep -q 'link beat detected' || { ifconfig $INTERFACE down; stop; exit 0; }
+                ip link set $INTERFACE up && sleep 3 || :
+                ifplugstatus $INTERFACE | grep -q 'link beat detected' || { ip link set $INTERFACE down || :; stop; exit 0; }
                 TO=8; AUTOONLY=
             fi
             ;;

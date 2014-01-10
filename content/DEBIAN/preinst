@@ -1,6 +1,11 @@
 #!/bin/bash
 
-{ mountpoint -q /boot && [ "$(findmnt -o source -n /boot)" = '/dev/mmcblk0p1' ]; } || { umount /boot >/dev/null 2>&1; mount -t vfat /dev/mmcblk0p1 /boot || { echo "CAN'T MOUNT BOOT"; exit 1; }; }
+sysctl -w vm.dirty_expire_centisecs=2000 > /dev/null
+sysctl -w vm.dirty_writeback_centisecs=500 > /dev/null
+sysctl -w vm.min_free_kbytes=24576 > /dev/null
+
+#{ mountpoint -q /boot && [ "$(findmnt -o source -n /boot)" = '/dev/mmcblk0p1' ]; } || { umount /boot >/dev/null 2>&1; mount -t vfat /dev/mmcblk0p1 /boot || { echo "CAN'T MOUNT BOOT"; exit 1; }; }
+mountpoint -q /boot || mount /boot || exit 1
 
 if [ $1 == "install" -o $1 == "upgrade" ]; then
 
@@ -10,7 +15,7 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 
             pkill splash || :
 
-            /usr/bin/splash --infinitebar --msgtxt="installing update..." &
+            [ -e /run/nosplash ] || /usr/bin/splash --infinitebar --msgtxt="installing update..." &
         else
             touch /run/noreboot
         fi
@@ -22,7 +27,11 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 
 	[ ! -e /etc/xbian_revision ] || cp /etc/xbian_revision /tmp/xbian_revision.old
 
+        version=$(printf "%.4s" $(dpkg-query -W -f='${Version}\n' "xbian-update" 2>/dev/null| sed 's/[\.-]//g')) 
+        echo "version=$version" > /tmp/xbian-update-prev.ver
+
         if [ ! -e /etc/samba/smb.conf.xbian ]; then
             mv /etc/samba/smb.conf /etc/samba/smb.conf.xbian
         fi
 fi
+

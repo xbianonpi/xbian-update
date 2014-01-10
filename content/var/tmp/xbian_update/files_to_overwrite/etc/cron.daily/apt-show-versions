@@ -1,7 +1,0 @@
-#!/bin/sh
-
-exit 0
-
-[ -f /usr/bin/apt-show-versions ] || exit 0
-
-apt-show-versions -i

@@ -18,6 +18,7 @@ while test $# -ne '0'; do
     esac
 done
 
+trap '' USR2
 pidfile=$PID interface=$IFACE /etc/xbian-udhcpc/xbian-dhcp renew & echo $! > $PID
 wait $!
 exit $?

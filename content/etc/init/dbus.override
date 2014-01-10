@@ -1,4 +1,4 @@
-start on started mounted-run 
+start on started xbian-run
 
 stop on deconfiguring-networking or runlevel [06]
 

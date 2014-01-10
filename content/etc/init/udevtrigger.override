@@ -1,6 +1,6 @@
 start on started udev
 
-script
+pre-start script
     set +e
     udevadm trigger --action=add --subsystem-nomatch=net
     udevadm trigger --action=add --sysname-match=wlan0

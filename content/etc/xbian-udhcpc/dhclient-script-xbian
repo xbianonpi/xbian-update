@@ -14,6 +14,8 @@
 
 # update /etc/resolv.conf based on received values
 make_resolv_conf() {
+    [ ! -x /sbin/resolvconf ] || return 0
+
     local new_resolv_conf
 
     # DHCPv4

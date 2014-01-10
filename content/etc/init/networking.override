@@ -1,2 +1,8 @@
 start on (local-filesystems
 	  and (stopped udevtrigger or container)) or failsafe-boot
+
+pre-start script
+    [ -d /run/network/static-network-up-emitted ] || exit 0
+    stop
+end script
+

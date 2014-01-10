@@ -1,5 +1,4 @@
-#start on virtual-filesystems and (started xbian-net or stopped xbian-net)
-start on (started xbian-net or stopped xbian-net)
+start on started mountall
 
-nice +3
+nice +2
 

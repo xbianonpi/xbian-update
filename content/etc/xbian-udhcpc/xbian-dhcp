@@ -4,19 +4,25 @@
 # Based on the busybox example scripts
 
 exec >> /run/xbian-udhcpc.$interface
-echo "------"
 
 RESOLV_CONF="/etc/resolv.conf"
 . /etc/xbian-initramfs/cnvres-code.sh 
 
+ifdwn() {
+    ip link set ${interface} down
+    return 0
+}
+
 case $1 in
     bound|renew)
+
+        ip link set ${interface} up
 
         case $METHOD in
             dhcp)
                 echo DHCPDISCOVER >&2
                 timeout 60 ipconfig -d $interface -c dhcp > /dev/null 2>&1
-                [ $? -eq 124 ] && exit 1
+                [ $? -eq 124 ] && { echo Terminated >&2; exit 1; }
                 echo bound >&2
                 ;;
             *)
@@ -36,6 +42,7 @@ case $1 in
 	;;
 
     deconfig)
+	interface=${interface} ifdwn
 	if [ -x /sbin/resolvconf ]; then
 	    resolvconf -d "${interface}.udhcpc"
 	fi
@@ -60,18 +67,19 @@ case $1 in
 	;;
 esac
 
+
 if [ $1 != slp ]; then
     pidfile=$pidfile interface=$interface leasetime=$leasetime $0 slp &
     exit 0
 fi
 
-trap '' USR2
-sleep $leasetime & spid=$!; echo $spid > $pidfile
-echo Terminated >&2
-if wait $spid; then
-    pidfile=$pidfile interface=$interface $0 renew &
+trap 'ifdwn' USR2
+sleep $leasetime & spid=$! && echo $spid > $pidfile
+
+if wait "$spid"; then
+    pidfile="$pidfile" interface="$interface" $0 renew &
 else
-    [ ! -e "/run/wpa_supplicant.$interface.pid" ] || kill $(cat /run/wpa_supplicant.$interface.pid) >/dev/null 2>&1
+    pds="$(cat /run/wpa_supplicant.$interface.pid 2>/dev/null)"; [ -z "$pds" ] || kill "$pds" || :
     rm -fr "/run/wpa_supplicant.$interface.pid"
-    pidfile=$pidfile interface=$interface $0 deconfig
+    pidfile="$pidfile" interface="$interface" $0 deconfig
 fi

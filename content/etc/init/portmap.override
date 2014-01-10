@@ -1,8 +1,6 @@
-start on stopped mounted-run
+start on started xbian-run
 
 env STATEDIR=/run/rpcbind
-
-console log
 
 pre-start script
         mkdir -p $STATEDIR

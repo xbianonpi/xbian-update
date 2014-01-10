@@ -1,14 +1,14 @@
 Origin: XBian
 Package: xbian-update
-Version: 1.0.2-11
+Version: 1.0.2-15b
 Section: update
 Essential: Yes
 Priority: optional
-Pre-Depends: udisks, kbd, nfs-common, btrfs-tools (>=1.0-xbian), libcurl3, libva1, xbian-package-config-shell, policykit-1, patch, openbsd-inetd
-Depends: ir-keytable, xbian-package-samba, xbian-package-usbmount, xbian-package-lirc, upstart, avahi-daemon, ntfs-3g, libplist1, pv, usbutils, libafpclient0, python-sqlite, lsof, ntp, cron, console-setup, isc-dhcp-client, update-notifier-common, xbian-package-zram-swap (>=1.0-3.6), libc-bin, libc6, xbian-package-upstart-xbmc-bridge, nfs-common, cifs-utils, exfat-fuse, exfat-utils, fuse, hdparm, hfsplus, hfsprogs, hfsutils, wireless-tools, bc, ntfs-3g, wpasupplicant, xbian-package-firmware (>=1.4-5.1), xbian-package-kernel, xbian-package-xbmc, unattended-upgrades, xbian-update (>=1.0-0.5)
+Pre-Depends: udisks, kbd, nfs-common, btrfs-tools (>=1.0-xbian1), libcurl3, libva1, policykit-1, patch, openbsd-inetd
+Depends: dosfstools, sudo, ifplugd, ir-keytable, xbian-package-samba, xbian-package-usbmount, xbian-package-lirc, upstart, avahi-daemon, ntfs-3g, libplist1, pv, usbutils, libafpclient0, python-sqlite, lsof, ntp, cron, console-setup,  update-notifier-common, xbian-package-zram-swap (>=1.0-3.6), libc-bin, libc6, xbian-package-upstart-xbmc-bridge, nfs-common, cifs-utils, exfat-fuse, exfat-utils, fuse, hdparm, hfsplus, hfsprogs, hfsutils, wireless-tools, bc, ntfs-3g, wpasupplicant, xbian-package-firmware (>=1.4-5.1), xbian-package-kernel, xbian-package-xbmc | xbian-package-xbmc-gotham-nightly, unattended-upgrades, xbian-update (>=1.0-0.5), xbian-package-vnc-server (>=1.0.0-2), xbian-package-xbmc-scripts (>=1.0.1-3), xbian-package-samba (>=2.0.0-3), xbian-package-config-shell (>=2.1.6-57), xbian-package-cec (>=1.1-0.3), xbian-package-config-xbmc (>=1.1.4-6), xbian-package-initramfs-tools (>=1.3.3-2), xbian-package-kernel (>=1.3-5.5), xbian-package-libshairport (>=1.0-1), xbian-package-lirc (>=1.4-8.8), xbian-package-usbmount (>=1.0.4-7), xbian-package-zram-swap (>=1.0-4.3)
 Replaces: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, rpi-update, base-files, upstart
 Conflicts: raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi0, libraspberrypi-bin, libraspberrypi-dev, console-tools, rpi-update, udhcpc, dhcpcd
+Suggests: isc-dhcp-client
 Architecture: armhf
-Breaks: xbian-packate-vnc-server (<<1.0.0-2), xbian-package-xbmc-scripts (<<1.0.1-3), xbian-package-samba (<<2.0.0-3), xbian-package-config-shell (<<2.1.6-48b), xbian-package-cec (<<1.1-0.3), xbian-package-config-xbmc (<<1.1.4-1), xbian-package-initramfs-tools (<<1.3.1-2), xbian-package-kernel (<<1.3-5.5), xbian-package-libshairport (<<1.0-1), xbian-package-lirc (<<1.4-8.8), xbian-package-usbmount (<<1.0.4-7), xbian-package-zram-swap (<<1.0-4.3), xbian-package-xbmc (<<2.9-10.13)
 Maintainer: mk01 <development@xbian.org>
 Description: Updater package to XBian 1.0 Beta2

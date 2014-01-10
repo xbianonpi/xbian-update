@@ -1,0 +1,9 @@
+#!/bin/sh
+
+[ ! -e /run/nosplash ] || exit 0
+#setterm -blank force
+/usr/bin/splash "$@"
+[ $# -eq 1 ] && [ "$@" = '--exit' ] || [ $(fgconsole) -eq 8 ] || start -q xbian-chvt TTYNR=8 
+#setterm -blank poke
+
+exit 0

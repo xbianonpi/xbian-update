@@ -28,3 +28,4 @@ rm -fr /home/xbian/.xbmc/userdata/addon_data/plugin.xbianconfig
 rm -f /home/xbian/.xbian-config-start
 echo 1 > /home/xbian/.xbian-config-start; chown xbian:xbian /home/xbian/.xbian-config-start
 sed -i 's/<systemtotaluptime>.*<\/systemtotaluptime>/<systemtotaluptime>0<\/systemtotaluptime>/g' /home/xbian/.xbmc/userdata/guisettings.xml
+rm /etc/ssh/ssh_host_*

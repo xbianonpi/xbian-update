@@ -1,3 +1,7 @@
 start on ((net-device-up IFACE=lo or started networking) and (started xbmc-done or xbmc-rc)) or failsafe-boot
 
-console log
+console output
+
+pre-start script
+    /usr/local/bin/busybox setconsole /dev/tty7 || :
+end script 

@@ -1,9 +1,9 @@
-APT::Periodic::RandomSleep 60;
+APT::Periodic::RandomSleep 10800;
 APT::Periodic::AutocleanInterval 7;
 APT::Periodic::Enable 1;
 APT::Periodic::Verbose 2;
 APT::Periodic::Download-Upgradeable-Packages "0";
 
 APT::Periodic::MaxAge "1";
-APT::Periodic::MinAge "2";
+APT::Periodic::MinAge "1";
 APT::Periodic::MaxSize "1";
