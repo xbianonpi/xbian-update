@@ -5,7 +5,9 @@ sysctl -w vm.dirty_writeback_centisecs=500 > /dev/null
 sysctl -w vm.min_free_kbytes=24576 > /dev/null
 
 #{ mountpoint -q /boot && [ "$(findmnt -o source -n /boot)" = '/dev/mmcblk0p1' ]; } || { umount /boot >/dev/null 2>&1; mount -t vfat /dev/mmcblk0p1 /boot || { echo "CAN'T MOUNT BOOT"; exit 1; }; }
-mountpoint -q /boot || mount /boot || exit 1
+if grep -wq /boot /etc/fstab; then
+    mountpoint -q /boot || mount /boot || exit 1
+fi
 
 if [ $1 == "install" -o $1 == "upgrade" ]; then
 
@@ -15,7 +17,7 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 
             pkill splash || :
 
-            [ -e /run/nosplash ] || /usr/bin/splash --infinitebar --msgtxt="installing update..." &
+            [ -e /run/nosplash -o -e /run/noreboot ] || /usr/bin/splash --infinitebar --msgtxt="installing update..." &
         else
             touch /run/noreboot
         fi

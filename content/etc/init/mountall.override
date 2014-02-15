@@ -4,18 +4,14 @@ stop on filesystem
 emits mountall
 emits xbian-nowait
 
-nice -2
+nice -3
 
 pre-start script
-    grep -v ^# /etc/fstab| awk '{print $3}' | grep -q 'nfs\|nfs4\|cifs' || initctl emit -n xbian-nowait || :
-
-    r="$(findmnt -o FSTYPE / -n)"
-    if [ ! -e /dev/root -a "$r" != nfs -a "$r" != nfs4 ]; then
-        r=$(cat /proc/cmdline | sed 's/ /\n/g' | grep root= | awk -F'=' '{print $2}')
-        [ -b $r ] || r="$(findfs $r)"
-        ln -s $r /dev/root 2>/dev/null || :
+    if [ ! -e /dev/root ]; then
+        export $(tr " " "\n" < /proc/cmdline | grep root=)
+        [ $root = /dev/nfs ] || ln -s $root /dev/root 2>/dev/null || :
     fi
-    /bin/mount -sFa -t xbian || :; /bin/mount / || :
+    /bin/mount -sa -t xbian || :
 end script
 
 post-stop script
@@ -23,4 +19,5 @@ post-stop script
     [ -d /run/lock ] || mkdir -p /run/lock
     [ -d /run/shm ] || mkdir -p /run/shm
     chmod 1777 /run/lock /run/shm /tmp
+    /bin/mount / || :
 end script

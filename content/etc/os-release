@@ -1,7 +1,7 @@
-PRETTY_NAME="XBian Beta2"
+PRETTY_NAME="XBian RC1"
 NAME="XBian"
 VERSION_ID="knockout"
-VERSION="Beta2"
+VERSION="RC1"
 ID=raspbian
 ID_LIKE=debian
 ANSI_COLOR="1;31"

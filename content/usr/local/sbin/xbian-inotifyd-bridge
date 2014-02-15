@@ -1,0 +1,7 @@
+#!/bin/sh
+
+[ $# -eq 3 ] && { DIR="$2"; FILENAME="$2/$3"; } || { FILENAME="$2"; DIR=''; }
+
+initctl emit -qn inotifyd ACTION=$1 FILENAME="$FILENAME" DIR="$DIR"
+
+exit 0

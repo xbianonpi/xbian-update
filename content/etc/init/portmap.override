@@ -1,4 +1,4 @@
-start on started xbian-run
+start on started mountall
 
 env STATEDIR=/run/rpcbind
 

@@ -104,7 +104,7 @@ do_stop () {
 	    log_action_begin_msg "All processes ended within $seq seconds"
 	    log_action_end_msg 0
 	fi
-	grep -qvw splash /proc/cmdline || /usr/bin/splash --msgtxt="all killed. unmounting fs." --percentage=75
+	grep -qvw splash /proc/cmdline || { /usr/bin/splash --msgtxt="all killed. unmounting fs." --percentage=75; sleep 0.4; }
 }
 
 case "$1" in

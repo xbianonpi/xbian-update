@@ -1,0 +1,12 @@
+#!/bin/sh +e
+
+case $DEVNAME in
+    /dev/fb*)
+        chown root:video /sys$DEVPATH/mode
+        chmod 664 /sys$DEVPATH/mode
+        chown root:video /sys$DEVPATH/bits_per_pixel
+        chmod 664 /sys$DEVPATH/bits_per_pixel
+    ;;
+esac
+
+exit 0

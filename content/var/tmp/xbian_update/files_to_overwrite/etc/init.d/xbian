@@ -1,0 +1,20 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          xbian
+# Required-Start:    
+# Required-Stop:
+# Should-Start:      
+# X-Start-Before:    
+# Default-Start:     S
+# Default-Stop:
+# X-Interactive:     true
+# Short-Description: Set preliminary keymap
+# Description:       Report started serives from upstart. This is normally happening from upstart job, but to save resources on RPI this is more efficient.
+### END INIT INFO
+
+for i in $(initctl list | grep 'start/running' | awk '{print $1}' | uniq); do 
+    echo "reporting to sysv that $i has started"
+    startpar-upstart-inject $i "" started
+done
+
+exit 0

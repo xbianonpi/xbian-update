@@ -1,8 +1,9 @@
 start on started udev
 
-pre-start script
+script
     set +e
     udevadm trigger --action=add --subsystem-nomatch=net
-    udevadm trigger --action=add --sysname-match=wlan0
-    udevadm trigger --action=add --sysname-match=wlan1
+    for n in wlan0 wlan1; do
+        udevadm trigger --action=add --sysname-match=$n
+    done
 end script

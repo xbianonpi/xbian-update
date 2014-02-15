@@ -3,26 +3,24 @@
 #
 # Based on the busybox example scripts
 
-exec >> /run/xbian-udhcpc.$interface
-
 RESOLV_CONF="/etc/resolv.conf"
 . /etc/xbian-initramfs/cnvres-code.sh 
 
 ifdwn() {
-    ip link set ${interface} down
+    ip link set ${interface} down || :
     return 0
 }
 
 case $1 in
     bound|renew)
 
-        ip link set ${interface} up
+        ip link set ${interface} up || :
 
         case $METHOD in
             dhcp)
                 echo DHCPDISCOVER >&2
-                timeout 60 ipconfig -d $interface -c dhcp > /dev/null 2>&1
-                [ $? -eq 124 ] && { echo Terminated >&2; exit 1; }
+                timeout 45 ipconfig -d $interface -c dhcp 1>&2
+                [ $? -eq 124 ] && { echo Terminated >&2; ip link set $interface down || :; exit 1; }
                 echo bound >&2
                 ;;
             *)

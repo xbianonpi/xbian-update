@@ -7,6 +7,8 @@ PackageManager::Configure "smart";
 DPkg::ConfigurePending "true";
 #DPkg::TriggersPending "true";
 
+#Acquire::Languages "none";
+
 Dpkg::Options {
    "--force-confdef";
    "--force-confold";

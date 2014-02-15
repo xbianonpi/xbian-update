@@ -4,7 +4,7 @@ description "Waiting for state"
 task
 normal exit 2 TERM
 
-nice -1
+nice -2
 
 stop on started $WAIT_FOR or stopped $WAIT_FOR or $WAIT_FOR
 

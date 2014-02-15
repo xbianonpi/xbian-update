@@ -1,2 +1,6 @@
 start on stopped xbmc-preload or xbmc-failed-start or failsafe-boot
 stop on runlevel [06]
+
+pre-start script
+    dmesg -D || :
+end script

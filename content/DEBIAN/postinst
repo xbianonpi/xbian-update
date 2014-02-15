@@ -5,6 +5,14 @@
 bp="$(grep -w /boot /etc/fstab | awk '{print $1}')"
 [ -z "$bp" ] && bp=/dev/mmcblk0p1
 
+xbianGroups(){
+    grep -wq input /etc/group || groupadd input || :
+    grep -wq video /etc/group || groupadd video || :
+    grep -wq audio /etc/group || groupadd audio || :
+
+    usermod -a -G audio,video,input xbian
+}
+
 rmo(){
 
 echo "removing non-used services"
@@ -73,6 +81,8 @@ checkroot-bootclean.sh \
 checkroot.sh \
 hostname.sh \
 hwclock.sh \
+dbus \
+nfs-common \
 mountall-bootclean.sh \
 mountall.sh \
 mountdevsubfs.sh \
@@ -99,6 +109,7 @@ udev \
 fake-hwclock \
 udev-mtab \
 upstart-job \
+autofs \
 urandom; do rm -fr /etc/init.d/$f; done
 
 rm -fr /etc/apt/apt.conf.d/20archive 
@@ -148,7 +159,7 @@ if [ $1 == "configure" ]; then
 	echo "5) Changing fanartres"
 
 	if [ $(grep "<fanartres>540</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
-		sed -i --follow-symlinks 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
+		sed -i --follow-symlinks 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
 		if [ $(grep "<fanartres>720</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 			echo "Success: changed fanartres to 720" >> /home/xbian/xbian-update.log; 
 		else
@@ -161,7 +172,7 @@ if [ $1 == "configure" ]; then
 	echo "6) Changing imagres"
 
 	if [ $(grep "<imageres>256</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
-		sed -i --follow-symlinks 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml 
+		sed -i --follow-symlinks 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
 		if [ $(grep "<imageres>540</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
 			echo "Success: changed imageres to 540" >> /home/xbian/xbian-update.log; 
 		else
@@ -440,7 +451,7 @@ EOF
 ############################## 1.0-1.1 END   ###################################
         1011f() {
         echo "checking for Beta 1.1 hotfix"
-        ! grep -xq "1.0Beta1.1" /etc/xbian_version ||  return 0
+        ! grep -xq "1.0Beta1.1" /etc/xbian_version 2>/dev/null||  return 0
         [ ! -e /tmp/xbian_revision.old ] || { [ "$(cat /tmp/xbian_revision.old | grep -m1 .)" -lt 10 ] || return 0; }
 
         echo "updating to 1.0 Beta 1.1 hotfix"
@@ -503,32 +514,33 @@ EOF
             cp -arP /var/tmp/xbian_update/files_to_overwrite/* /
 
             if [ "$(blkid -o value -s TYPE $(findmnt -n -v -o SOURCE /))" = btrfs ]; then
-            if btrfs-auto-snapshot listvol | grep -xq modules; then
-                echo "modules volume already exists"
-                if ! mountpoint -q /lib/modules; then
-                    mv /lib/modules /lib/modules.old
-                    mkdir /lib/modules; mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules
-                    for m in $(ls /lib/modules.old); do
-                        [ -e /lib/modules/$m ] ||  mv /lib/modules.old/$m /lib/modules/$m
-                    done
-                    rm -fr /lib/modules.old
-                fi
-            else
-                echo "moving modules directory"
-                btrfs-auto-snapshot createvol modules > /dev/null 2>&1
-                btrfs-auto-snapshot createvol modules/@ > /dev/null 2>&1
-                td=$(mktemp -d)
-                mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) $td
-                cp -ar /lib/modules/* $td > /dev/null 2>&1
-                umount $td
-                rm -fr /lib/modules/*
-                if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules; then
-                    echo "done"
+                if btrfs-auto-snapshot listvol | grep -xq modules; then
+                    echo "modules volume already exists"
+                    if ! mountpoint -q /lib/modules; then
+                        mv /lib/modules /lib/modules.old
+                        mkdir /lib/modules; mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules
+                        for m in $(ls /lib/modules.old); do
+                            [ -e /lib/modules/$m ] ||  mv /lib/modules.old/$m /lib/modules/$m
+                        done
+                        rm -fr /lib/modules.old
+                    fi
                 else
-                    echo "something wrong happened, your xbian may not boot successfully after restart. disabling restart after update finish"
-                    touch /run/noreboot
+                    echo "moving modules directory"
+                    btrfs-auto-snapshot createvol modules > /dev/null 2>&1
+                    btrfs-auto-snapshot createvol modules/@ > /dev/null 2>&1
+                    td=$(mktemp -d)
+                    if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) $td 2>/dev/null; then
+                	cp -ar /lib/modules/* $td > /dev/null 2>&1
+                        umount $td
+                        rm -fr /lib/modules/*
+                        if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules; then
+                            echo "done"
+                        else
+                            echo "something wrong happened, your xbian may not boot successfully after restart. disabling restart after update finish"
+                            touch /run/noreboot
+                        fi
+                    fi
                 fi
-            fi
             fi
 
             echo "updating services"
@@ -545,8 +557,10 @@ EOF
             insrem /etc/init.d/kexec-load > /dev/null 2>&1
             insrem /etc/init.d/kbd  > /dev/null 2>&1
             insrem xbian-waiter > /dev/null 2>&1
-            insrem rsyslog fake-hwclock > /dev/null 2>&1
+            insrem rsyslog fake-hwclock autofs > /dev/null 2>&1
             insrem rsync ntp anacron networking screen-cleanup > /dev/null 2>&1
+
+            insserv -f -d sendsigs
 
             rm -f /etc/init.d/rpcbind > /dev/null 2>&1
             rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
@@ -559,6 +573,7 @@ EOF
             insserv -f umountnfs.sh  > /dev/null 2>&1
             insserv -f > /dev/null 2>&1
             initctl -q reload-configuration
+            insserv xbian
 
             echo "updating modules"
 
@@ -583,7 +598,7 @@ EOF
                 if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
                     :
                 else
-                    if ip link show eth0 | grep "state UP" | grep -q DEFAULT; then
+                    if ip link show eth0 | grep -q "state UP" && ip addr show eth0 | grep -wq inet ; then
                         echo "auto eth0" > /etc/network/interfaces.new
                         cat /etc/network/interfaces >> /etc/network/interfaces.new
                         mv /etc/network/interfaces.new /etc/network/interfaces
@@ -610,7 +625,7 @@ EOF
             find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
 
             #sed -i --follow-symlinks 's/<guires>1080<\/guires>/<guires>720<\/guires>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
-            sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
+            sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
 
             #echo "changing virtual filesystem parameters and recreating initramfs.gz."
             #dpkg-trigger --no-await trigger-xbian-update-initramfs
@@ -623,6 +638,16 @@ EOF
 
             if grep -wq 'root/@' /etc/fstab; then
                 grep -wv 'root/@' /etc/fstab >> /etc/fstab.new
+                mv /etc/fstab.new /etc/fstab
+            fi
+
+            if grep -wq '/sys/kernel/security' /etc/fstab; then
+                grep -wv '/sys/kernel/security' /etc/fstab >> /etc/fstab.new
+                mv /etc/fstab.new /etc/fstab
+            fi
+
+            if grep -wq '/sys/kernel/debug' /etc/fstab; then
+                grep -wv '/sys/kernel/debug' /etc/fstab >> /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
             fi
 
@@ -659,12 +684,6 @@ EOF
             if ! grep -wq "/run/user" /etc/fstab; then
                 echo "none            /run/user                       tmpfs                   noauto                  0       0" >> /etc/fstab
             fi
-            if ! grep -wq "/sys/kernel/security" /etc/fstab; then
-                echo "none            /sys/kernel/security            securityfs              noauto                  0       0" >> /etc/fstab
-            fi
-            if ! grep -wq "/sys/kernel/debug" /etc/fstab; then
-                echo "none            /sys/kernel/debug               debugfs                 noauto                  0       0" >> /etc/fstab
-            fi
             if ! grep -wq "/run/shm" /etc/fstab; then
                 echo "none            /run/shm                        tmpfs                   noauto                  0       0" >> /etc/fstab
             fi
@@ -677,19 +696,55 @@ EOF
             grep -v ^$ /etc/fstab | sort > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
 
-            grep -v ^"initial-interval\|reboot\|script" /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.new
-            echo "initial-interval 1;" >> /etc/dhcp/dhclient.new
-            echo "reboot 4;" >> /etc/dhcp/dhclient.new
-            echo "script \"/etc/xbian-udhcpc/dhclient-script-xbian\";" >> /etc/dhcp/dhclient.new
-            mv /etc/dhcp/dhclient.new /etc/dhcp/dhclient.conf
+            if test -e /etc/dhcp/dhclient.conf; then
+        	grep -qv ^"initial-interval\|reboot\|script" /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.new
+                echo "initial-interval 1;" >> /etc/dhcp/dhclient.new
+                echo "reboot 4;" >> /etc/dhcp/dhclient.new
+                echo "script \"/etc/xbian-udhcpc/dhclient-script-xbian\";" >> /etc/dhcp/dhclient.new
+                mv /etc/dhcp/dhclient.new /etc/dhcp/dhclient.conf
+            fi
 
             rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd 
 
-            grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=1" >> /boot/config.txt
+            grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
 
             grep -q ^"ssh " /etc/inetd.conf || echo "
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 " >> /etc/inetd.conf
+
+            if [ "$(stat --printf="%s" /home/xbian/.xbmc/userdata/advancedsettings.xml)" -eq 0 ]; then
+cat << \EOF > /home/xbian/.xbmc/userdata/advancedsettings.xml
+<advancedsettings>
+   <network>
+        <cachemembuffersize>20971520</cachemembuffersize>
+   </network>
+   <fanartres>720</fanartres>
+   <imageres>540</imageres>
+   <gputempcommand>echo "$(/opt/vc/bin/vcgencmd measure_temp | grep -o "[0-9]\{2\}") C"</gputempcommand>
+   <cputempcommand>echo "$(/opt/vc/bin/vcgencmd measure_temp | grep -o "[0-9]\{2\}") C"</cputempcommand>
+   <lookandfeel>
+        <webserver>true</webserver>
+        <guires>720</guires>
+   </lookandfeel>
+   <bginfoloadermaxthreads>5</bginfoloadermaxthreads>
+   <video>
+     <adjustrefreshrate>
+       <override>
+         <fps>23.976</fps>
+         <refresh>24.0</refresh>
+       </override>
+     </adjustrefreshrate>
+   </video>
+    <gui>
+        <algorithmdirtyregions>3</algorithmdirtyregions>
+        <nofliptimeout>0</nofliptimeout>
+        <visualizedirtyregions>false</visualizedirtyregions>
+    </gui>
+    <destroywindowcontrols>0</destroywindowcontrols>
+    <useddsfanart>0</useddsfanart>
+</advancedsettings>
+EOF
+            fi
 
             grep -v "<destroywindowcontrols>\|<useddsfanart>\|<visualizedirtyregions>\|<streamsilence>\|</advancedsettings>\|<algorithmdirtyregions>\|<nofliptimeout>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
             echo "
@@ -719,7 +774,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 #" >> /home/xbian/.xbmc/userdata/advancedsettings.xml.new
 
             cat /home/xbian/.xbmc/userdata/advancedsettings.xml.new | tr '\n' '%' | sed 's/<gui>%\ *<\/gui>//g' | sed 's/<audio>%\ *<\/audio>//g' | tr '%' '\n' | sed '/^\s*$/d' > /home/xbian/.xbmc/userdata/advancedsettings.xml
-            chown xbian:xbian /home/xbian/.xbmc/userdata/advancedsettings.xml
+            chown xbian:xbian /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
             rm -f /home/xbian/.xbmc/userdata/advancedsettings.xml.new
 
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
@@ -727,12 +782,15 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
             grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
 
-            echo "1.0Beta2" > /etc/xbian_version
+            echo "1.0RC1" > /etc/xbian_version
             
             sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
     	    sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
 
-            usermod -a -G video xbian
+            xbianGroups
+
+            sed -i '/\/net.*hosts/d' /etc/auto.master
+            sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
 
         }
 
@@ -750,13 +808,19 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
         [ $version -lt 1011 ] && version1011
         [ $version -lt 1030 ] && version102x
 
+
+cat /proc/cpuinfo | grep -i hardware |grep BCM2708 && platform='RPI'
+[ -z "$platform" ] && platform='iMX6'
+
+case $platform in
+    RPI)
         if grep -wq "rootfstype=btrfs" /proc/cmdline; then
 
             # update cmdline.txt subvol parameter to what it was during boot
-            if grep -q rootfsopts /boot/cmdline.txt.old; then
+            if grep -q rootfsopts /boot/cmdline.txt.old 2>/dev/null; then
                 subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
                 snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*};
-            elif grep -q rootflags /boot/cmdline.txt.old; then
+            elif grep -q rootflags /boot/cmdline.txt.old 2>/dev/null; then
                 subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootflags=subvol=}; subvolume=${subvolume%%\/@*};
                 snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootflags=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
             fi
@@ -773,11 +837,19 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             fi
 
         else
-            mv /boot/cmdline.txt.old /boot/cmdline.txt
+            [ -e /boot/cmdline.txt.old ] && mv /boot/cmdline.txt.old /boot/cmdline.txt
         fi
+        ;;
+    iMX6)
+        sed -i --follow-symlinks "s%<algorithmdirtyregions>.*</algorithmdirtyregions>%<algorithmdirtyregions>1</algorithmdirtyregions>%"  /home/xbian/.xbmc/userdata/advancedsettings.xml
+        sed -i --follow-symlinks "s%<nofliptimeout>.*</nofliptimeout>%<nofliptimeout>1000</nofliptimeout>%" /home/xbian/.xbmc/userdata/advancedsettings.xml
+        ;;
+    *)
+        ;;
+esac
 
 ###############################################################################
-        sed -i 's%console=.*? %console=tty7%' /boot/cmdline.txt
+#        sed -i 's%console=.*? %console=tty7%' /boot/cmdline.txt
 
 	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
 	rm -fr /var/tmp/xbian_update
@@ -814,7 +886,7 @@ EOF
 	fi
 
         sync
-        touch /var/run/reboot-required
+        echo "xbian-update" >>  /var/run/reboot-required
 
 elif [ $1 = triggered ]; then
 
