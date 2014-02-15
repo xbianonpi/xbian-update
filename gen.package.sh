@@ -10,7 +10,7 @@ str='strip'
 strargs='--strip-unneeded'
 tot=0
 
-if [ "$(uname -m)" != 'armv6l' ]; then
+if ! dpkg-architecture -iarmhf; then
     arm-linux-gnueabihf-strip > /dev/null 2>&1
     [ $? -eq '127' ] && { echo "please install binutils-arm-linux-gnueabihf"; str=''; true; } || str='arm-linux-gnueabihf-strip'
 fi
