@@ -6,6 +6,10 @@ case $DEVNAME in
         chmod 664 /sys$DEVPATH/mode
         chown root:video /sys$DEVPATH/bits_per_pixel
         chmod 664 /sys$DEVPATH/bits_per_pixel
+        chown root:video /sys$DEVPATH/blank
+        chmod 664 /sys$DEVPATH/blank
+        chown root:video /sys$DEVPATH/state
+        chmod 664 /sys$DEVPATH/state
     ;;
 esac
 

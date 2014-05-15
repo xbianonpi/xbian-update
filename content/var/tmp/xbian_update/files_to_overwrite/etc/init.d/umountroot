@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh +e
 ### BEGIN INIT INFO
 # Provides:          umountroot
 # Required-Start:

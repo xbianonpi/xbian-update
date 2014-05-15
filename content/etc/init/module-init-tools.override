@@ -2,10 +2,14 @@ start on started mountall
 
 pre-start script
     set +e
-    modprobe vchiq
 
-    echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+    if [ $(xbian-arch) = RPI ]; then
+        modprobe vchiq
+        echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+        echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+    else
+        echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+    fi
 
     [ -e /etc/modules.xbian ] || exit 0
     grep '^[^#]' /etc/modules.xbian |
@@ -17,6 +21,11 @@ pre-start script
 end script
 
 post-start script
+    if [ $(xbian-arch) = iMX6 ]; then
+        ps ax | grep -v grep | grep -q brcm_patchram_plus || /usr/local/sbin/brcm_patchram_plus  -d --patchram /lib/firmware/brcm/bcm4329.hcd --baudrate 3000000 --use_baudrate_for_download /dev/ttymxc3 --enable_hci &
+        [ ! -x /sbin/iwconfig ] || iwconfig wlan0 power off || :
+    fi
+
     rm /lib/modules/$(uname -r)/build || :
     ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build || :
 end script

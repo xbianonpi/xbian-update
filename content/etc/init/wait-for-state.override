@@ -10,7 +10,7 @@ stop on started $WAIT_FOR or stopped $WAIT_FOR or $WAIT_FOR
 
 # These are all arguments for use influencing how this job waits
 env TIMEOUT=30
-env MANUAL_OVERRIDE="N"
+env MANUAL_OVERRIDE="Y"
 env WAIT_FOREVER="N"
 env WAIT_STATE="started"
 env TARGET_GOAL="start"
@@ -68,3 +68,8 @@ script
     exit 1
 end script
 
+post-stop script
+    [ -n "$UPSTART_STOP_EVENTS" -a "$UPSTART_STOP_EVENTS" != $WAIT_STATE ] || exit 0
+
+    start -q wait-for-state WAIT_STATE=$WAIT_STATE WAIT_FOR=$WAIT_FOR WAITER=$WAITER ACT=no || :
+end script

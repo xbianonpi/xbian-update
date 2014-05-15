@@ -1,1 +1,2 @@
 start on mountall or startup
+stop on filesystem and (static-network-up or starting rc-sysinit)

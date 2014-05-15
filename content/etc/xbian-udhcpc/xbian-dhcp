@@ -16,17 +16,11 @@ case $1 in
 
         ip link set ${interface} up || :
 
-        case $METHOD in
-            dhcp)
-                echo DHCPDISCOVER >&2
-                timeout 45 ipconfig -d $interface -c dhcp 1>&2
-                [ $? -eq 124 ] && { echo Terminated >&2; ip link set $interface down || :; exit 1; }
-                echo bound >&2
-                ;;
-            *)
-                exit 0
-                ;;
-        esac
+        [ -z "$METHOD" ] && METHOD=dhcp
+        echo DHCPDISCOVER >&2
+        ipconfig -t 60 -d $interface -c $METHOD 1>&2
+        [ $? -eq 124 ] && { echo Terminated >&2; ip link set $interface down || :; exit 1; }
+        echo bound >&2
 
         R=$(update_resolv)
         if echo $R | grep -q nameserver; then 

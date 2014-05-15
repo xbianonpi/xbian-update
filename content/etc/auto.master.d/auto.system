@@ -1,2 +1,3 @@
 /sys/kernel/debug               -fstype=debugfs,noauto                 none
 /sys/kernel/security            -fstype=securityfs,noauto              none
+/sys/kernel/config              -fstype=configfs,noauto                 none

@@ -1,0 +1,2 @@
+# enable adaptive led control (Cubox-i only)
+LED=no

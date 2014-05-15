@@ -1,4 +1,4 @@
-start on started mountall
+start on started mountall or stopped mountall
 
 env STATEDIR=/run/rpcbind
 

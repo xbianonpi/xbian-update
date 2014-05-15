@@ -15,9 +15,12 @@ KERNEL=="event*", MODE="0664", GROUP="input"
 
 SUBSYSTEM=="misc", KERNEL=="uinput", GROUP="input", MODE="0664"
 
-KERNEL=="mxc_hdmi", MODE="0666", GROUP="input"
-KERNEL=="mxc_hdmi_cec", MODE="0666", GROUP="input"
-KERNEL=="mxc_vpu", GROUP="input"
-KERNEL=="mxc_ipu", GROUP="input"
+KERNEL=="mxc_hdmi", MODE="0660", GROUP="video"
+KERNEL=="mxc_hdmi_cec", GROUP="input"
+KERNEL=="mxc_vpu", GROUP="video"
+KERNEL=="mxc_ipu", GROUP="video"
 
-KERNEL=="fb*", ACTION=="add|change", RUN+="/usr/local/bin/modes-cubox"
+KERNEL=="fb[0-1]", ACTION=="add|change", RUN+="/usr/local/bin/modes-cubox"
+
+#KERNEL=="busfreq.13", ACTION=="add|change", ATTR{enable}="0"
+

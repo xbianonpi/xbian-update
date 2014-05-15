@@ -1,0 +1,18 @@
+#!/bin/sh
+LED=no
+
+arch=$(xbian-arch)
+[ ! -e /etc/default/xbian-led ] || . /etc/default/xbian-led 
+
+[ $LED = yes ] || exit 0
+[ $arch = iMX6 ] || exit 0
+
+trg=$2
+if [ ! -e $trg ]; then
+    trg=$(echo $trg | tr -d '\\')
+    [ ! -e $trg ] && exit 0
+fi
+
+echo $1 > $trg || :
+
+exit 0

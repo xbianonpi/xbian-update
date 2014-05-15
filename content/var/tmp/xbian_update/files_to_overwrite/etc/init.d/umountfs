@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh +e
 ### BEGIN INIT INFO
 # Provides:          umountfs
 # Required-Start:
@@ -108,7 +108,7 @@ do_stop () {
 			log_end_msg $?
 		fi
 	fi
-	grep -qvw splash /proc/cmdline || { /usr/bin/splash --msgtxt="system halted." --percentage=97; sleep 0.4; }
+	grep -qw splash /proc/cmdline && { sleep 1; /usr/bin/splash --msgtxt="system halted." --percentage=100; sleep 1; } || :
 }
 
 case "$1" in

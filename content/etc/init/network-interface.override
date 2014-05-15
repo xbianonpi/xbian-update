@@ -1,19 +1,22 @@
 start on net-device-added INTERFACE!=eth0 or started xbian-run
+stop on net-device-removed INTERFACE!=lo and INTERFACE=$INTERFACE
 
 env INTERFACE=lo
 
 env AUTOONLY='--allow auto'
-env TO=25
+env TO=60
 
 nice -12
 
 pre-start script
     mkdir -p /run/network
 
+#    [ "$(xbian-arch)" != iMX6 ] || { ip link set $INTERFACE up; sleep 0; }
+
     case $INTERFACE in
         eth?)
             if ! ifquery -a -l | grep -wq $INTERFACE; then
-                ip link set $INTERFACE up && sleep 5 || :
+                ip link set $INTERFACE up && sleep 3 || :
                 ifplugstatus $INTERFACE | grep -q 'link beat detected' || { ip link set $INTERFACE down || :; stop; exit 0; }
                 TO=8; AUTOONLY=
             fi

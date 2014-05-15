@@ -4,4 +4,5 @@ console output
 
 pre-start script
     dmesg -D || :
-end script 
+    exit 0
+end script

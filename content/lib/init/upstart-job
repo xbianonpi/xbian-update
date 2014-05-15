@@ -1,9 +1,7 @@
-#!/bin/sh -e
+#!/bin/sh +e
 # upstart-job
 #
 # Symlink target for initscripts that have been converted to Upstart.
-
-set -e
 
 UPSTART_JOB_CONF="/etc/default/upstart-job"
 INITSCRIPT="$(basename "$0")"

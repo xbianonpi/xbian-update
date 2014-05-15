@@ -4,20 +4,13 @@ stop on filesystem
 emits mountall
 emits xbian-nowait
 
-nice -3
+nice -1
 
 pre-start script
     if [ ! -e /dev/root ]; then
         export $(tr " " "\n" < /proc/cmdline | grep root=)
         [ $root = /dev/nfs ] || ln -s $root /dev/root 2>/dev/null || :
     fi
-    /bin/mount -sa -t xbian || :
-end script
-
-post-stop script
-    set +e
-    [ -d /run/lock ] || mkdir -p /run/lock
-    [ -d /run/shm ] || mkdir -p /run/shm
-    chmod 1777 /run/lock /run/shm /tmp
-    /bin/mount / || :
+    /bin/mount --no-canonicalize -va -t xbian || :
+    exit 0
 end script

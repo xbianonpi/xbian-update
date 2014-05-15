@@ -1,2 +1,2 @@
-start on started tty1 or stopped xbmc
-stop on runlevel [06] or starting xbmc
+start on started tty1
+stop on stopping tty1

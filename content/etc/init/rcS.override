@@ -1,0 +1,6 @@
+console output
+
+pre-start script
+    dmesg -D || :
+    exit 0
+end script
