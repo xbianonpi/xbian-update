@@ -5,12 +5,74 @@
 bp="$(grep -w /boot /etc/fstab | awk '{print $1}')"
 [ -z "$bp" ] && bp=/dev/mmcblk0p1
 
+rmlibshairport(){
+    if [ -e /var/lib/dpkg/info/xbian-package-libshairport.postrm ]; then
+        grep -wq "exit" /var/lib/dpkg/info/xbian-package-libshairport.postrm || echo "exit 0" >> /var/lib/dpkg/info/xbian-package-libshairport.postrm
+    fi
+}
+
 xbianGroups(){
     grep -wq input /etc/group || groupadd input || :
     grep -wq video /etc/group || groupadd video || :
     grep -wq audio /etc/group || groupadd audio || :
 
     usermod -a -G audio,video,input xbian
+}
+
+adaptAdvancedSettings(){
+            if [ "$(stat --printf="%s" /home/xbian/.xbmc/userdata/advancedsettings.xml)" -eq 0 ]; then
+cat << \EOF > /home/xbian/.xbmc/userdata/advancedsettings.xml
+<advancedsettings>
+   <network>
+        <cachemembuffersize>20971520</cachemembuffersize>
+   </network>
+   <fanartres>720</fanartres>
+   <imageres>540</imageres>
+   <gputempcommand>echo "$(/opt/vc/bin/vcgencmd measure_temp | grep -o "[0-9]\{2\}") C"</gputempcommand>
+   <cputempcommand>echo "$(/opt/vc/bin/vcgencmd measure_temp | grep -o "[0-9]\{2\}") C"</cputempcommand>
+   <lookandfeel>
+        <webserver>true</webserver>
+        <guires>720</guires>
+   </lookandfeel>
+   <bginfoloadermaxthreads>5</bginfoloadermaxthreads>
+   <video>
+     <adjustrefreshrate>
+       <override>
+         <fps>23.976</fps>
+         <refresh>24.0</refresh>
+       </override>
+     </adjustrefreshrate>
+   </video>
+    <gui>
+        <algorithmdirtyregions>3</algorithmdirtyregions>
+        <nofliptimeout>0</nofliptimeout>
+        <visualizedirtyregions>false</visualizedirtyregions>
+    </gui>
+    <destroywindowcontrols>0</destroywindowcontrols>
+    <useddsfanart>0</useddsfanart>
+</advancedsettings>
+EOF
+            fi
+
+            #sed -i --follow-symlinks 's/<guires>1080<\/guires>/<guires>720<\/guires>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
+            sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
+
+            grep -v "<destroywindowcontrols>\|<useddsfanart>\|<visualizedirtyregions>\|<streamsilence>\|</advancedsettings>\|<algorithmdirtyregions>\|<nofliptimeout>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
+            echo "
+    <gui>
+        <algorithmdirtyregions>3</algorithmdirtyregions>
+        <nofliptimeout>0</nofliptimeout>
+        <visualizedirtyregions>false</visualizedirtyregions>
+    </gui>
+    <destroywindowcontrols>0</destroywindowcontrols>
+    <useddsfanart>0</useddsfanart>
+</advancedsettings>
+" >> /home/xbian/.xbmc/userdata/advancedsettings.xml.new
+
+            cat /home/xbian/.xbmc/userdata/advancedsettings.xml.new | tr '\n' '%' | sed 's/<gui>%\ *<\/gui>//g' | sed 's/<audio>%\ *<\/audio>//g' | tr '%' '\n' | sed '/^\s*$/d' > /home/xbian/.xbmc/userdata/advancedsettings.xml
+            chown xbian:xbian /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
+            rm -f /home/xbian/.xbmc/userdata/advancedsettings.xml.new
+
 }
 
 rmo(){
@@ -70,7 +132,6 @@ ssh.conf \
 ssh.override \
 progress-mounted.conf \
 progress-mounting.conf \
-screen-cleanup.conf \
 xbian-fstab.conf \
 xbian.functions \
 container-detect.conf \
@@ -80,15 +141,13 @@ for f in bootmisc.sh \
 checkroot-bootclean.sh \
 checkroot.sh \
 hostname.sh \
-hwclock.sh \
-dbus \
-nfs-common \
 mountall-bootclean.sh \
 mountall.sh \
 mountdevsubfs.sh \
 mountkernfs.sh \
 mountnfs-bootclean.sh \
 mountnfs.sh \
+dbus \
 mtab.sh \
 networking \
 hostname.sh \
@@ -96,7 +155,6 @@ mountkernfs.sh \
 mountdevsubfs.sh \
 checkroot.sh \
 avahi-daemon \
-dbus \
 rmnologin \
 cron \
 ssh \
@@ -108,9 +166,11 @@ procps \
 udev \
 fake-hwclock \
 udev-mtab \
-upstart-job \
 autofs \
-urandom; do rm -fr /etc/init.d/$f; done
+urandom; do 
+    rm -fr /etc/init.d/$f
+    ln -s /lib/init/upstart-job /etc/init.d/$f 
+done
 
 rm -fr /etc/apt/apt.conf.d/20archive 
 rm -fr /lib/udev/rules.d/10-local-rpi.rules
@@ -419,7 +479,6 @@ EOF
 	insserv -fr /etc/init.d/udev-mtab > /dev/null 2>&1
 	insserv -fr /etc/init.d/watchdog > /dev/null 2>&1
 	insserv -fr /etc/init.d/xbmc > /dev/null 2>&1
-	insserv -fr /etc/init.d/hwclock.sh > /dev/null 2>&1
 	insserv -fr /etc/init.d/console-screen.sh > /dev/null 2>&1
 	insserv -fr /etc/init.d/kbd > /dev/null 2>&1
 	insserv -fr /etc/init.d/keyboard-setup > /dev/null 2>&1
@@ -428,7 +487,6 @@ EOF
 	insserv -fr /etc/init.d/plymouth-log > /dev/null 2>&1
 	insserv -fr /etc/init.d/sudo > /dev/null 2>&1
 	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
-	insserv -rf /etc/init.d/dbus > /dev/null 2>&1
 	insserv -rf /etc/init.d/udev > /dev/null 2>&1
 	insserv -rf /etc/init.d/ntp > /dev/null 2>&1
 	insserv -f > /dev/null 2>&1
@@ -448,29 +506,9 @@ EOF
 	#echo "---UPDATE LOG---"
 	#cat "/home/xbian/xbian-update.log"
         }
-############################## 1.0-1.1 END   ###################################
-        1011f() {
-        echo "checking for Beta 1.1 hotfix"
-        ! grep -xq "1.0Beta1.1" /etc/xbian_version 2>/dev/null||  return 0
-        [ ! -e /tmp/xbian_revision.old ] || { [ "$(cat /tmp/xbian_revision.old | grep -m1 .)" -lt 10 ] || return 0; }
-
-        echo "updating to 1.0 Beta 1.1 hotfix"
-	echo "1.0Beta1.1" > /etc/xbian_version
-
-	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
-	insserv -rf /etc/init.d/dbus > /dev/null 2>&1
-
-	locale-gen
-
-    if [ $(grep /boot /etc/fstab | grep -c "noauto") -eq 1 ];	then
-        grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
-        echo "UUID=$(blkid $bp -o value -s UUID)	/boot	vfat	defaults 	0	0" >> /etc/fstab
-        if [ $(grep -c /boot /etc/fstab ) -eq 0 ]; then
-            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log
-        fi
-    fi
-
-
+############################# patchPolkit ######################################
+patchPolkit() {
+        echo "patching polkit"
 	cd /usr/share/polkit-1/actions
 
 cat << \EOF > /tmp/udisks.patch
@@ -491,6 +529,31 @@ EOF
 	    patch -s ./org.freedesktop.udisks.policy < /tmp/udisks.patch || echo "udisks patch failed" >> /home/xbian/xbian-update.log
 	fi
 	rm -fr /tmp/udisks.patch
+}
+
+############################## 1.0-1.1 END   ###################################
+        1011f() {
+        echo "checking for Beta 1.1 hotfix"
+        ! grep -xq "1.0Beta1.1" /etc/xbian_version 2>/dev/null||  return 0
+        [ ! -e /tmp/xbian_revision.old ] || { [ "$(cat /tmp/xbian_revision.old | grep -m1 .)" -lt 10 ] || return 0; }
+
+        echo "updating to 1.0 Beta 1.1 hotfix"
+	echo "1.0Beta1.1" > /etc/xbian_version
+
+	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
+
+	locale-gen
+
+    if [ $(grep /boot /etc/fstab | grep -c "noauto") -eq 1 ];	then
+        grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
+        echo "UUID=$(blkid $bp -o value -s UUID)	/boot	vfat	defaults 	0	0" >> /etc/fstab
+        if [ $(grep -c /boot /etc/fstab ) -eq 0 ]; then
+            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log
+        fi
+    fi
+
+
+        patchPolkit
         
         }
 ############################## 1.0-1.1 fix END   ###################################
@@ -500,18 +563,18 @@ EOF
     insrem() {
 
         for s in $@; do
-            [ -e $s -o -e /etc/init.d/$s ] && insserv -fr $s 2>/dev/null || :
+            [ -e $s -o -e /etc/init.d/$s ] && insserv -r $s >/dev/null 2>&1 || :
         done
 
     }
             1011f 
             echo "updating to 1.0 Beta 2"
-            
+
             btrfs-auto-snapshot destroy root/@safe &>/dev/null; btrfs-auto-snapshot destroy home/@safe &>/dev/null
-            
+
             find /etc -iname \*.dpkg-new | xargs -L1 rm -f
             find /var/tmp/xbian_update/files_to_overwrite -type l -printf "/%P\n" | xargs -L1 rm -f
-            cp -arP /var/tmp/xbian_update/files_to_overwrite/* /
+            cp -arP --remove-destination /var/tmp/xbian_update/files_to_overwrite/* /
 
             if [ "$(blkid -o value -s TYPE $(findmnt -n -v -o SOURCE /))" = btrfs ]; then
                 if btrfs-auto-snapshot listvol | grep -xq modules; then
@@ -545,11 +608,11 @@ EOF
 
             echo "updating services"
             #rcS.d
-            insrem hostname.sh kmod procps bootmisc.sh screen-cleanup rpcbind nfs-common udev checkfs.sh checkroot.sh \
+            insrem hostname.sh kmod procps bootmisc.sh rpcbind udev checkfs.sh checkroot.sh \
                 mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd switch_cpu_governor
 
             #rc2.d
-            insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon networking dbus console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
+            insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon networking console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
             insrem loadcpufreq cpufrequtils hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
 
             #rc6.d
@@ -558,9 +621,9 @@ EOF
             insrem /etc/init.d/kbd  > /dev/null 2>&1
             insrem xbian-waiter > /dev/null 2>&1
             insrem rsyslog fake-hwclock autofs > /dev/null 2>&1
-            insrem rsync ntp anacron networking screen-cleanup > /dev/null 2>&1
+            insrem rsync ntp anacron networking > /dev/null 2>&1
 
-            insserv -f -d sendsigs
+            insserv -f -d sendsigs >/dev/null 2>&1
 
             rm -f /etc/init.d/rpcbind > /dev/null 2>&1
             rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
@@ -572,8 +635,7 @@ EOF
 
             insserv -f umountnfs.sh  > /dev/null 2>&1
             insserv -f > /dev/null 2>&1
-            initctl -q reload-configuration
-            insserv xbian
+            initctl -q reload-configuration >/dev/null 2>&1
 
             echo "updating modules"
 
@@ -623,9 +685,6 @@ EOF
             done < /var/tmp/xbian_update/pchanges/sysctl.conf
 
             find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
-
-            #sed -i --follow-symlinks 's/<guires>1080<\/guires>/<guires>720<\/guires>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
-            sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
 
             #echo "changing virtual filesystem parameters and recreating initramfs.gz."
             #dpkg-trigger --no-await trigger-xbian-update-initramfs
@@ -712,77 +771,13 @@ EOF
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 " >> /etc/inetd.conf
 
-            if [ "$(stat --printf="%s" /home/xbian/.xbmc/userdata/advancedsettings.xml)" -eq 0 ]; then
-cat << \EOF > /home/xbian/.xbmc/userdata/advancedsettings.xml
-<advancedsettings>
-   <network>
-        <cachemembuffersize>20971520</cachemembuffersize>
-   </network>
-   <fanartres>720</fanartres>
-   <imageres>540</imageres>
-   <gputempcommand>echo "$(/opt/vc/bin/vcgencmd measure_temp | grep -o "[0-9]\{2\}") C"</gputempcommand>
-   <cputempcommand>echo "$(/opt/vc/bin/vcgencmd measure_temp | grep -o "[0-9]\{2\}") C"</cputempcommand>
-   <lookandfeel>
-        <webserver>true</webserver>
-        <guires>720</guires>
-   </lookandfeel>
-   <bginfoloadermaxthreads>5</bginfoloadermaxthreads>
-   <video>
-     <adjustrefreshrate>
-       <override>
-         <fps>23.976</fps>
-         <refresh>24.0</refresh>
-       </override>
-     </adjustrefreshrate>
-   </video>
-    <gui>
-        <algorithmdirtyregions>3</algorithmdirtyregions>
-        <nofliptimeout>0</nofliptimeout>
-        <visualizedirtyregions>false</visualizedirtyregions>
-    </gui>
-    <destroywindowcontrols>0</destroywindowcontrols>
-    <useddsfanart>0</useddsfanart>
-</advancedsettings>
-EOF
-            fi
-
-            grep -v "<destroywindowcontrols>\|<useddsfanart>\|<visualizedirtyregions>\|<streamsilence>\|</advancedsettings>\|<algorithmdirtyregions>\|<nofliptimeout>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
-            echo "
-    <gui>
-        <algorithmdirtyregions>3</algorithmdirtyregions>
-        <nofliptimeout>0</nofliptimeout>
-        <visualizedirtyregions>false</visualizedirtyregions>
-    </gui>
-    <destroywindowcontrols>0</destroywindowcontrols>
-    <useddsfanart>0</useddsfanart>
-</advancedsettings>
-" >> /home/xbian/.xbmc/userdata/advancedsettings.xml.new
-
-#            grep -v "</streamsilence>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
-#            echo "
-#    <gui>
-#        <algorithmdirtyregions>3</algorithmdirtyregions>
-#        <nofliptimeout>0</nofliptimeout>
-#        <visualizedirtyregions>false</visualizedirtyregions>
-#    </gui>
-#    <audio>
-#        <streamsilence>1</streamsilence>
-#    </audio>
-#    <destroywindowcontrols>0</destroywindowcontrols>
-#    <useddsfanart>0</useddsfanart>
-#</advancedsettings>
-#" >> /home/xbian/.xbmc/userdata/advancedsettings.xml.new
-
-            cat /home/xbian/.xbmc/userdata/advancedsettings.xml.new | tr '\n' '%' | sed 's/<gui>%\ *<\/gui>//g' | sed 's/<audio>%\ *<\/audio>//g' | tr '%' '\n' | sed '/^\s*$/d' > /home/xbian/.xbmc/userdata/advancedsettings.xml
-            chown xbian:xbian /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
-            rm -f /home/xbian/.xbmc/userdata/advancedsettings.xml.new
-
+            [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
             grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
             grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
 
-            echo "1.0RC1" > /etc/xbian_version
+            echo "1.0RC2" > /etc/xbian_version
             
             sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
     	    sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
@@ -791,6 +786,11 @@ EOF
 
             sed -i '/\/net.*hosts/d' /etc/auto.master
             sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
+	    set -i 's/0x00a00000/0x0a000000/' /boot/config.txt
+
+            [ ! -e /etc/default/nfs-common ] && cp /var/tmp/xbian_update/pchanges/nfs-common /etc/default 
+
+            patchPolkit
 
         }
 
@@ -806,10 +806,15 @@ EOF
         fi
 
         [ $version -lt 1011 ] && version1011
-        [ $version -lt 1030 ] && version102x
+        [ $version -lt 1031 ] && version102x
 
+        rmlibshairport
 
-cat /proc/cpuinfo | grep -i hardware |grep BCM2708 && platform='RPI'
+	if [ -e /dev/rtc0 ]; then
+	    grep -q "UTC" /etc/default/rcS || echo -e "\nUTC=yes\n" >> /etc/default/rcS
+	fi
+
+cat /proc/cpuinfo | grep -i hardware |grep -q BCM2708 && platform='RPI'
 [ -z "$platform" ] && platform='iMX6'
 
 case $platform in
@@ -841,8 +846,6 @@ case $platform in
         fi
         ;;
     iMX6)
-        sed -i --follow-symlinks "s%<algorithmdirtyregions>.*</algorithmdirtyregions>%<algorithmdirtyregions>1</algorithmdirtyregions>%"  /home/xbian/.xbmc/userdata/advancedsettings.xml
-        sed -i --follow-symlinks "s%<nofliptimeout>.*</nofliptimeout>%<nofliptimeout>1000</nofliptimeout>%" /home/xbian/.xbmc/userdata/advancedsettings.xml
         ;;
     *)
         ;;
@@ -894,6 +897,4 @@ elif [ $1 = triggered ]; then
 
 fi
 
-
-
-
+exit 0
