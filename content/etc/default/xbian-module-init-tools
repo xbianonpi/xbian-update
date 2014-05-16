@@ -1,0 +1,7 @@
+# Configuration for module-init-tools
+
+# Changes the CPUFreq governor just after boot, pretending it to be the default
+# governor.
+# Leave empty or commented out to use the actual default governor configured
+# in the kernel.
+#CPUFREQ_GOVERNOR=""
