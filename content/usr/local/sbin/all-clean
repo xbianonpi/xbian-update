@@ -1,5 +1,6 @@
 #!/bin/sh
 
+stop xbmc
 rm -f /home/xbian/*.log
 rm -f /home/xbian/.xbmc/temp/*.log
 for f in $(find /var/log -type f); do echo > $f; done
@@ -19,6 +20,8 @@ rm -fr /root/.config
 rm -f /etc/apt/preferences.d/media
 rm -fr /home/xbian/.mc
 rm -fr /root/.mc
+rm -fr /root/.ssh
+rm -fr /home/xbian/.ssh
 mountpoint -q /run || rm -fr /run/*
 rm -fr /tmp/*
 rm -fr /var/tmp/*
@@ -30,3 +33,5 @@ echo 1 > /home/xbian/.xbian-config-start; chown xbian:xbian /home/xbian/.xbian-c
 sed -i 's/<systemtotaluptime>.*<\/systemtotaluptime>/<systemtotaluptime>0<\/systemtotaluptime>/g' /home/xbian/.xbmc/userdata/guisettings.xml
 rm /etc/ssh/ssh_host_*
 history -c
+umount /mnt/*
+rmdir /mnt/*
