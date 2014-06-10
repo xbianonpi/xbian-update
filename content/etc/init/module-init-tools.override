@@ -36,6 +36,6 @@ post-start script
         [ ! -x /sbin/iwconfig ] || iwconfig wlan0 power off || :
     fi
 
-    rm /lib/modules/$(uname -r)/build || :
+    rm -f /lib/modules/$(uname -r)/build || :
     ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build || :
 end script
