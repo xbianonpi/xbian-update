@@ -32,7 +32,36 @@ end script
 
 post-start script
     if [ $(xbian-arch) = iMX6 ]; then
-        ps ax | grep -v grep | grep -q brcm_patchram_plus || /usr/local/sbin/brcm_patchram_plus  -d --patchram /lib/firmware/brcm/bcm4329.hcd --baudrate 3000000 --use_baudrate_for_download /dev/ttymxc3 --enable_hci &
+        a=`cat /sys/class/mmc_host/mmc0/mmc0\:0001/mmc0\:0001\:1/device`
+
+        HCD=""
+        EXTRA=""
+
+        if [ "$a" = "0x4329" ] ; then
+            HCD="bcm4329.hcd"
+        fi
+ 
+        if [ "$a" = "0x4330" ] ; then
+            HCD="bcm4330.hcd"
+            EXTRA="--no2bytes --enable_lpm --tosleep=50000 "
+        fi
+
+        if [ -n "$HCD" ] ; then
+             echo "Found chip version $a."
+             ps ax | grep -v grep | grep -q brcm_patchram_plus || /usr/local/sbin/brcm_patchram_plus -d --patchram /lib/firmware/brcm/$HCD --baudrate 3000000 --use_baudrate_for_download /dev/ttymxc3 --enable_hci $EXTRA &
+             for i in 1 2 3 4 5 ; do
+                 b=`hciconfig | grep UART | cut -d: -f1`
+                 if [ -n "$b" ] ; then
+                    hciconfig $b up 
+                    break
+                 else 
+                    sleep $i
+                 fi
+             done       
+        else
+           echo " No device Found."
+        fi
+
         [ ! -x /sbin/iwconfig ] || iwconfig wlan0 power off || :
     fi
 
