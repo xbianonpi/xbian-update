@@ -31,11 +31,6 @@ pre-start script
 end script
 
 post-start script
-    if [ $(xbian-arch) = iMX6 ]; then
-        ps ax | grep -v grep | grep -q brcm_patchram_plus || /usr/local/sbin/brcm_patchram_plus  -d --patchram /lib/firmware/brcm/bcm4329.hcd --baudrate 3000000 --use_baudrate_for_download /dev/ttymxc3 --enable_hci &
-        [ ! -x /sbin/iwconfig ] || iwconfig wlan0 power off || :
-    fi
-
     rm -f /lib/modules/$(uname -r)/build || :
     ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build || :
 end script

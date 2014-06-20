@@ -1,0 +1,15 @@
+Package: linux-image-3.10.30-armmp
+Pin: release o=XBian n=stable, release o=XBian n=staging, release o=XBian n=devel
+Pin-Priority: 1001
+
+Package: btrfs-tools
+Pin: release o=XBian n=stable, release o=XBian n=staging, release o=XBian n=devel
+Pin-Priority: 1001
+
+Package: xserver-xorg-video-vivante
+Pin: release o=XBian n=stable, release o=XBian n=staging, release o=XBian n=devel
+Pin-Priority: 1001
+
+Package: linux-headers-3.10.30-armmp
+Pin: release o=XBian n=stable, release o=XBian n=staging, release o=XBian n=devel
+Pin-Priority: 1001

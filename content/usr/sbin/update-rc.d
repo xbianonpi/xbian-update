@@ -296,10 +296,16 @@ sub startstop {
 	    &usage("expected start|stop");
 	}
 
+# MK
+#	if ($argv[1] !~ /^\d\d?$/) {
+#	    &usage("expected NN after $argv[0]");
+#	}
+#	$NN = sprintf("%02d", $argv[1]);
 	if ($argv[1] !~ /^\d\d?$/) {
-	    &usage("expected NN after $argv[0]");
+	    $NN = "99"
+	} else {
+	    $NN = sprintf("%02d", $argv[1]);
 	}
-	$NN = sprintf("%02d", $argv[1]);
 
 	if ($argv[-1] ne '.') {
 	    &usage("start|stop arguments not terminated by \".\"");

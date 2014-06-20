@@ -844,6 +844,9 @@ case $platform in
         else
             [ -e /boot/cmdline.txt.old ] && mv /boot/cmdline.txt.old /boot/cmdline.txt
         fi
+        if grep -q 'compress=lz4' /proc/cmdline; then
+            sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
+        fi
         ;;
     iMX6)
         ;;
