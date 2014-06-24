@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#detect chroot
+if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
+  touch /run/noreboot
+fi
+
 sysctl -w vm.dirty_expire_centisecs=2000 > /dev/null
 sysctl -w vm.dirty_writeback_centisecs=500 > /dev/null
 sysctl -w vm.min_free_kbytes=24576 > /dev/null
