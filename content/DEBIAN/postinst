@@ -190,14 +190,16 @@ if [ $1 == "configure" ]; then
 
 	echo "3) Turning off rainbow screen"
 
-	if grep -q "disable_splash=1" /boot/config.txt;	then
-	        echo "Notice: rainbow already off" >> /home/xbian/xbian-update.log;
-        else
-                echo -e "\ndisable_splash=1\n" >> /boot/config.txt
-		if grep -q "disable_splash=1" /boot/config.txt; then
-			echo "Success: rainbow off" >> /home/xbian/xbian-update.log; 
-		else
-			echo "Error: rainbow off" >> /home/xbian/xbian-update.log; 
+	if [ -f /boot/config.txt ]; then
+		if grep -q "disable_splash=1" /boot/config.txt;	then
+		        echo "Notice: rainbow already off" >> /home/xbian/xbian-update.log;
+	        else
+                	echo -e "\ndisable_splash=1\n" >> /boot/config.txt
+			if grep -q "disable_splash=1" /boot/config.txt; then
+				echo "Success: rainbow off" >> /home/xbian/xbian-update.log; 
+			else
+				echo "Error: rainbow off" >> /home/xbian/xbian-update.log; 
+			fi
 		fi
 	fi
 
@@ -205,15 +207,17 @@ if [ $1 == "configure" ]; then
 
 	echo "4) Changing default overclock"
 
-	if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
-		sed -i 's/core_freq=375/core_freq=275/g' /boot/config.txt
-		if [ $(grep "core_freq=275" /boot/config.txt | wc -l) -eq 1 ];	then
-			echo "Success: changed core_freq to 275" >> /home/xbian/xbian-update.log; 
+	if [ -f /boot/config.txt ]; then
+		if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
+			sed -i 's/core_freq=375/core_freq=275/g' /boot/config.txt
+			if [ $(grep "core_freq=275" /boot/config.txt | wc -l) -eq 1 ];	then
+				echo "Success: changed core_freq to 275" >> /home/xbian/xbian-update.log; 
+			else
+				echo "Error: failed to set core_freq to 275" >> /home/xbian/xbian-update.log; 
+			fi
 		else
-			echo "Error: failed to set core_freq to 275" >> /home/xbian/xbian-update.log; 
+			echo "Notice: core_freq 275 already set" >> /home/xbian/xbian-update.log; 
 		fi
-	else
-		echo "Notice: core_freq 275 already set" >> /home/xbian/xbian-update.log; 
 	fi
 
 	echo "5) Changing fanartres"
@@ -765,7 +769,9 @@ EOF
 
             rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd 
 
-            grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
+            if [ -f /boot/config.txt ]; then
+            	grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
+            fi
 
             grep -q ^"ssh " /etc/inetd.conf || echo "
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
@@ -785,8 +791,10 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             xbianGroups
 
             sed -i '/\/net.*hosts/d' /etc/auto.master
-            sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
-	    set -i 's/0x00a00000/0x0a000000/' /boot/config.txt
+            if [ -f /boot/config.txt ]; then
+            	sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
+	    	set -i 's/0x00a00000/0x0a000000/' /boot/config.txt
+	    fi
 
             [ ! -e /etc/default/nfs-common ] && cp /var/tmp/xbian_update/pchanges/nfs-common /etc/default 
 
