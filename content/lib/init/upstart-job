@@ -6,6 +6,7 @@
 UPSTART_JOB_CONF="/etc/default/upstart-job"
 INITSCRIPT="$(basename "$0")"
 JOB="${INITSCRIPT%.sh}"
+[ "$(dirname "$0")" != /etc/init.d ] && JOB="${JOB#???}"
 
 if [ "$JOB" = "upstart-job" ]; then
     if [ -z "$1" ]; then

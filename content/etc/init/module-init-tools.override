@@ -1,25 +1,32 @@
 start on started mountall
 
 env CPUFREQ_GOVERNOR=
+task
+
+nice -2
 
 pre-start script
-    set +e
-
     [ -e /etc/default/xbian-module-init-tools ] && . /etc/default/xbian-module-init-tools
-    # Assuming nothing changed it yet, this is also the default one.
-    PREVIOUS_GOVERNOR=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
-    [ -z "$CPUFREQ_GOVERNOR" ] && CPUFREQ_GOVERNOR="$PREVIOUS_GOVERNOR"
-    if [ $(xbian-arch) = RPI ]; then
-        modprobe vchiq
-        echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+    if [ -z "$CPUFREQ_GOVERNOR" ]; then
+        # Assuming nothing changed it yet, this is also the default one.
+        PREVIOUS_GOVERNOR=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
+        CPUFREQ_GOVERNOR="$PREVIOUS_GOVERNOR"
     fi
     modprobe -q cpufreq_${CPUFREQ_GOVERNOR} || :
+
+    if [ $(xbian-arch) = RPI ]; then
+        modprobe -q vchiq
+        echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+    fi
+
     # Note: in case the user specifies an invalid governor, the kernel is
     # intelligent enough to not change the current valid governor.  That said,
     # we need to restore the previous one as we changed it to "powersave" on the
     # Raspberry Pi (see above).
-    echo $CPUFREQ_GOVERNOR > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    [ $? -ne 0 ] && echo $PREVIOUS_GOVERNOR > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor || :
+    if ! echo $CPUFREQ_GOVERNOR > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor; then
+        echo $PREVIOUS_GOVERNOR > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor || :
+    fi
 
     [ -e /etc/modules.xbian ] || exit 0
     grep '^[^#]' /etc/modules.xbian |
@@ -28,9 +35,4 @@ pre-start script
             [ "$module" ] || continue
             modprobe $module $args || :
         done
-end script
-
-post-start script
-    rm -f /lib/modules/$(uname -r)/build || :
-    ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build || :
 end script

@@ -11,7 +11,7 @@ nice -12
 pre-start script
     mkdir -p /run/network
 
-#    [ "$(xbian-arch)" != iMX6 ] || { ip link set $INTERFACE up; sleep 0; }
+    [ "$(xbian-arch)" != iMX6 ] || { ip link set $INTERFACE up; sleep 1; }
 
     case $INTERFACE in
         eth?)

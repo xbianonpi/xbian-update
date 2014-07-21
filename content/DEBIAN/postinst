@@ -5,6 +5,11 @@
 bp="$(grep -w /boot /etc/fstab | awk '{print $1}')"
 [ -z "$bp" ] && bp=/dev/mmcblk0p1
 
+do_targetver() {
+    echo "$1" > /etc/xbian_version
+    echo "Updating to $1"
+}
+
 rmlibshairport(){
     if [ -e /var/lib/dpkg/info/xbian-package-libshairport.postrm ]; then
         grep -wq "exit" /var/lib/dpkg/info/xbian-package-libshairport.postrm || echo "exit 0" >> /var/lib/dpkg/info/xbian-package-libshairport.postrm
@@ -84,6 +89,7 @@ bootmisc.sh.conf \
 udev-finish.override \
 udev-finish.conf \
 mountall-net.conf \
+hostname.conf \
 checkfs.sh.conf \
 checkroot-bootclean.sh.conf \
 checkroot.sh.conf \
@@ -765,28 +771,25 @@ EOF
 
             rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd 
 
-            grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
-
             grep -q ^"ssh " /etc/inetd.conf || echo "
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 " >> /etc/inetd.conf
 
-            [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings
+            [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings 2>/dev/null
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
             grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
             grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
 
-            echo "1.0RC2" > /etc/xbian_version
-            
+            do_targetver "1.0RC2"
+
             sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
     	    sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
 
             xbianGroups
 
             sed -i '/\/net.*hosts/d' /etc/auto.master
-            sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
-	    set -i 's/0x00a00000/0x0a000000/' /boot/config.txt
+            [ "$(xbian-arch)" = RPI ] && sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
 
             [ ! -e /etc/default/nfs-common ] && cp /var/tmp/xbian_update/pchanges/nfs-common /etc/default 
 
@@ -814,7 +817,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 	    grep -q "UTC" /etc/default/rcS || echo -e "\nUTC=yes\n" >> /etc/default/rcS
 	fi
 
-cat /proc/cpuinfo | grep -i hardware |grep -q BCM2708 && platform='RPI'
+platform=$(xbian-arch)
 [ -z "$platform" ] && platform='iMX6'
 
 case $platform in
@@ -847,8 +850,11 @@ case $platform in
         if grep -q 'compress=lz4' /proc/cmdline; then
             sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
         fi
+
+        grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
         ;;
     iMX6)
+        rm -f /boot/cmdline.default /boot/cmdline.new
         ;;
     *)
         ;;

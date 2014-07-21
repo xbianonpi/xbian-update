@@ -26,10 +26,12 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
             touch /run/noreboot
         fi
 
-	if [ -f "/boot/cmdline.txt" ]; then
-		mv /boot/cmdline.txt /boot/cmdline.txt.old
-	fi
-	[ ! -e "/boot/cmdline.new" ] || rm -f /boot/cmdline.new
+        if [ "$(xbian-arch)" = RPI ]; then
+            if [ -f "/boot/cmdline.txt" ]; then
+                mv /boot/cmdline.txt /boot/cmdline.txt.old
+            fi
+            [ ! -e "/boot/cmdline.new" ] || rm -f /boot/cmdline.new
+        fi
 
 	[ ! -e /etc/xbian_revision ] || cp /etc/xbian_revision /tmp/xbian_revision.old
 

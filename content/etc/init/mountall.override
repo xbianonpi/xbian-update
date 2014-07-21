@@ -14,3 +14,8 @@ pre-start script
     /bin/mount --no-canonicalize -va -t xbian || :
     exit 0
 end script
+
+post-stop script
+    rm -f /lib/modules/$(uname -r)/build || :
+    ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build || :
+end script
