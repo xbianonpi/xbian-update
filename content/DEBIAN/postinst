@@ -775,7 +775,11 @@ EOF
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 " >> /etc/inetd.conf
 
-            [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings 2>/dev/null
+            [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]\* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings 2>/dev/null
+            if [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]\* | grep -m1 .)" -gt 12 ]; then
+                sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
+                sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
+            fi
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
             grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
