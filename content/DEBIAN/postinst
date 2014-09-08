@@ -654,12 +654,18 @@ EOF
 
             #grep -qw lirc_rpi /etc/modules || echo "lirc_rpi" >>  /etc/modules
 
-            grep -iv ^"AddressFamily" /etc/ssh/sshd_config > /etc/ssh/sshd_config.new
-            grep -iv ^"UseDNS" /etc/ssh/sshd_config.new > /etc/ssh/sshd_config.new.2
-            rm -f /etc/ssh/sshd_config.new
+            sed -e '1,/^Match /w /etc/ssh/ssh_config.head
+/^Match /,$w /etc/ssh/sshd_config.tail'
+            sed  -e '/^AddressFamily \|^UseDNS \|^Match /d' /etc/ssh/ssh_config.head > /etc/ssh/sshd_config.new.2
+            #head -n -1 /etc/ssh/sshd_config.head|grep -iv ^"AddressFamily" -- > /etc/ssh/sshd_config.new
+            #grep -iv ^"UseDNS" /etc/ssh/sshd_config.new > /etc/ssh/sshd_config.new.2
+            #rm -f /etc/ssh/sshd_config.new
             echo "AddressFamily inet" >> /etc/ssh/sshd_config.new.2
             echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
+            cat /etc/ssh/sshd_config.tail>>/etc/ssh/sshd_config.new.2
             mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
+            rm -f /etc/ssh/sshd_config.head
+            rm -f /etc/ssh/sshd_config.tail
 
             if ! grep -wq "root=/dev/nfs" /proc/cmdline; then
                 echo "checking interfaces"
