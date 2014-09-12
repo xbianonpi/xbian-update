@@ -656,8 +656,7 @@ EOF
 
             sed -e '1,/^Match /w /etc/ssh/ssh_config.head
 /^Match /,$w /etc/ssh/sshd_config.tail'
-            sed  -e '/^AddressFamily \|^UseDNS \|^Match /d' /etc/ssh/ssh_config.head > /etc/ssh/sshd_config.new.2
-            echo "AddressFamily inet" >> /etc/ssh/sshd_config.new.2
+            sed  -e '/^UseDNS \|^Match /d' /etc/ssh/ssh_config.head > /etc/ssh/sshd_config.new.2
             echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
             cat /etc/ssh/sshd_config.tail>>/etc/ssh/sshd_config.new.2
             mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
