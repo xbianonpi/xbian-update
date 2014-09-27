@@ -17,8 +17,9 @@ case $1 in
         ip link set ${interface} up || :
 
         [ -z "$METHOD" ] && METHOD=dhcp
+        [ -z "$dhcp_hostname" ] && dhcp_hostname=$(hostname -s)
         echo DHCPDISCOVER >&2
-        ipconfig -t 60 -d $interface -c $METHOD 1>&2
+        ipconfig -t 60 -d $interface -c $METHOD "::::${dhcp_hostname}::" 1>&2
         [ $? -eq 124 ] && { echo Terminated >&2; ip link set $interface down || :; exit 1; }
         echo bound >&2
 
