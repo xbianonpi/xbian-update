@@ -1,0 +1,9 @@
+# Configuration for xbian-update
+
+# Normally upgrading xbian-update results in an automated reboot if XBMC is not
+# running.  This is done to make sure that all daemons are restarted with the
+# appropriate updated configuration.
+# A more advanced user might not want that, as it may break, for example, a
+# development environment.  This is achieved by setting DISABLE_AUTO_REBOOT to
+# "yes please" (yes, it's on purpose).
+#DISABLE_AUTO_REBOOT=""
