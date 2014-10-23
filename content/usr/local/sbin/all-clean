@@ -2,7 +2,7 @@
 
 stop xbmc
 rm -f /home/xbian/*.log
-rm -f /home/xbian/.xbmc/temp/*.log
+rm -f /home/xbian/.xbmc/temp/*.log /home/xbian/.kodi/temp/*.log
 for f in $(find /var/log -type f); do echo > $f; done
 find / -xdev -iname \*.DS_Store | xargs rm -f
 rm /boot/*.old
@@ -27,10 +27,11 @@ rm -fr /tmp/*
 rm -fr /var/tmp/*
 rm -f /var/lib/dpkg/*-old
 rm -f /var/cache/debconf/*-old
-rm -fr /home/xbian/.xbmc/userdata/addon_data/plugin.xbianconfig
+rm -fr /home/xbian/.xbmc/userdata/addon_data/plugin.xbianconfig /home/xbian/.kodi/userdata/addon_data/plugin.xbianconfig
 rm -f /home/xbian/.xbian-config-start
 echo 1 > /home/xbian/.xbian-config-start; chown xbian:xbian /home/xbian/.xbian-config-start
-sed -i 's/<systemtotaluptime>.*<\/systemtotaluptime>/<systemtotaluptime>0<\/systemtotaluptime>/g' /home/xbian/.xbmc/userdata/guisettings.xml
+sed -i 's/<systemtotaluptime>.*<\/systemtotaluptime>/<systemtotaluptime>0<\/systemtotaluptime>/g' /home/xbian/.xbmc/userdata/guisettings.xml >/dev/null 2>&1
+sed -i 's/<systemtotaluptime>.*<\/systemtotaluptime>/<systemtotaluptime>0<\/systemtotaluptime>/g' /home/xbian/.kodi/userdata/guisettings.xml >/dev/null 2>&1
 rm /etc/ssh/ssh_host_*
 history -c
 umount /mnt/*
