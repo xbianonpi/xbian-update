@@ -17,7 +17,7 @@ fi
 
 if [ $1 == "install" -o $1 == "upgrade" ]; then
 
-        if ! pgrep xbmc.bin > /dev/null && { [ ! -e /run/lock/xbian-config.gui ] || [ $(grep -c . /run/lock/xbian-config.gui 2>/dev/null) -eq 0 ]; }; then
+        if ! pgrep xbmc.bin >/dev/null && ! pgrep kodi.bin >/dev/null && { [ ! -e /run/lock/xbian-config.gui ] || [ $(grep -c . /run/lock/xbian-config.gui 2>/dev/null) -eq 0 ]; }; then
 
             pkill splash || :; pkill splash-daemon || :
 
@@ -42,4 +42,3 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
             mv /etc/samba/smb.conf /etc/samba/smb.conf.xbian
         fi
 fi
-
