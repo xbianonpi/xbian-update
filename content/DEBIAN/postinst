@@ -777,8 +777,10 @@ EOF
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 " >> /etc/inetd.conf
 
-            [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]\* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings 2>/dev/null
-            if [ "$(/usr/local/lib/xbmc/xbmc.bin --version | grep -o [0-9]\* | grep -m1 .)" -gt 12 ]; then
+            # The leading 0 ensures we always get an integer.
+            # We also don't check the version for Kodi as it was rebranded in 14.0
+            [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings 2>/dev/null
+            if [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
                 sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
                 sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
             fi
