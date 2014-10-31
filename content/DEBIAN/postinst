@@ -1,6 +1,9 @@
 #!/bin/bash
+PLATFORM=$(xbian-arch)
 
-[ -e /boot/cmdline.new ] && cp /boot/cmdline.new /boot/cmdline.default
+if [ "$PLATFORM" = "RPI" ] && [ -e /boot/cmdline.new ]; then
+	cp /boot/cmdline.new /boot/cmdline.default
+fi
 
 bp="$(grep -w /boot /etc/fstab | awk '{print $1}')"
 [ -z "$bp" ] && bp=/dev/mmcblk0p1
@@ -59,7 +62,6 @@ cat << \EOF > /home/xbian/.xbmc/userdata/advancedsettings.xml
 EOF
             fi
 
-            #sed -i --follow-symlinks 's/<guires>1080<\/guires>/<guires>720<\/guires>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml
             sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
 
             grep -v "<destroywindowcontrols>\|<useddsfanart>\|<visualizedirtyregions>\|<streamsilence>\|</advancedsettings>\|<algorithmdirtyregions>\|<nofliptimeout>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
@@ -77,7 +79,6 @@ EOF
             cat /home/xbian/.xbmc/userdata/advancedsettings.xml.new | tr '\n' '%' | sed 's/<gui>%\ *<\/gui>//g' | sed 's/<audio>%\ *<\/audio>//g' | tr '%' '\n' | sed '/^\s*$/d' > /home/xbian/.xbmc/userdata/advancedsettings.xml
             chown xbian:xbian /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
             rm -f /home/xbian/.xbmc/userdata/advancedsettings.xml.new
-
 }
 
 rmo(){
@@ -183,50 +184,49 @@ rm -fr /lib/udev/rules.d/10-local-rpi.rules
 rm -fr /etc/update-motd.d/updates-notify
 rm -fr /etc/cron.daily/apt-show-versions
 rm -fr /lib/udev/rules.d/99-local-xbian.rules
-
 }
 
 if [ $1 == "configure" ]; then
 
-	rm /home/xbian/xbian-update.log >/dev/null 2>&1
+	rm -f /home/xbian/xbian-update.log >/dev/null 2>&1
 
         version1011() {
 
 	echo "installing update to 1.0-1.1"; 
 
-	echo "3) Turning off rainbow screen"
-
-	if grep -q "disable_splash=1" /boot/config.txt;	then
-	        echo "Notice: rainbow already off" >> /home/xbian/xbian-update.log;
-        else
-                echo -e "\ndisable_splash=1\n" >> /boot/config.txt
-		if grep -q "disable_splash=1" /boot/config.txt; then
-			echo "Success: rainbow off" >> /home/xbian/xbian-update.log; 
-		else
-			echo "Error: rainbow off" >> /home/xbian/xbian-update.log; 
+	if [ "$PLATFORM" = "RPI" ]; then
+		echo "3) Turning off rainbow screen"
+		if grep -q "disable_splash=1" /boot/config.txt;	then
+		        echo "Notice: rainbow already off" >> /home/xbian/xbian-update.log;
+	        else
+        	        echo -e "\ndisable_splash=1\n" >> /boot/config.txt
+			if grep -q "disable_splash=1" /boot/config.txt; then
+				echo "Success: rainbow off" >> /home/xbian/xbian-update.log; 
+			else
+				echo "Error: rainbow off" >> /home/xbian/xbian-update.log; 
+			fi
 		fi
+
+		echo "4) Changing default overclock"
+	        if grep -q "core_freq=375" /boot/config.txt; then
+        	        sed -i 's/core_freq=375/core_freq=275/g' /boot/config.txt
+                	if grep -q "core_freq=275" /boot/config.txt;  then
+                        	echo "Success: changed core_freq to 275" >> /home/xbian/xbian-update.log;
+	                else
+        	                echo "Error: failed to set core_freq to 275" >> /home/xbian/xbian-update.log;
+                	fi
+	        else
+        	        echo "Notice: core_freq 275 already set" >> /home/xbian/xbian-update.log;
+	        fi
 	fi
 
 	grep "rootfstype=ext4" /proc/cmdline && tune2fs -L xbian-root-btrfs $(findmnt -n -o SOURCE /)
 
-	echo "4) Changing default overclock"
-
-	if [ $(grep "core_freq=375" /boot/config.txt| wc -l) -eq 1 ];	then
-		sed -i 's/core_freq=375/core_freq=275/g' /boot/config.txt
-		if [ $(grep "core_freq=275" /boot/config.txt | wc -l) -eq 1 ];	then
-			echo "Success: changed core_freq to 275" >> /home/xbian/xbian-update.log; 
-		else
-			echo "Error: failed to set core_freq to 275" >> /home/xbian/xbian-update.log; 
-		fi
-	else
-		echo "Notice: core_freq 275 already set" >> /home/xbian/xbian-update.log; 
-	fi
-
 	echo "5) Changing fanartres"
 
-	if [ $(grep "<fanartres>540</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+	if [ grep -q "<fanartres>540</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml; then
 		sed -i --follow-symlinks 's:<fanartres>540</fanartres>:<fanartres>720</fanartres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
-		if [ $(grep "<fanartres>720</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+		if [ grep -q "<fanartres>720</fanartres>" /home/xbian/.xbmc/userdata/advancedsettings.xml; then
 			echo "Success: changed fanartres to 720" >> /home/xbian/xbian-update.log; 
 		else
 			echo "Error: failed to set fanartres to 720" >> /home/xbian/xbian-update.log; 
@@ -237,9 +237,9 @@ if [ $1 == "configure" ]; then
 
 	echo "6) Changing imagres"
 
-	if [ $(grep "<imageres>256</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+	if [ grep -q "<imageres>256</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml; then
 		sed -i --follow-symlinks 's:<imageres>256</imageres>:<imageres>540</imageres>:g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
-		if [ $(grep "<imageres>540</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml| wc -l) -eq 1 ];	then
+		if [ grep -q "<imageres>540</imageres>" /home/xbian/.xbmc/userdata/advancedsettings.xml; then
 			echo "Success: changed imageres to 540" >> /home/xbian/xbian-update.log; 
 		else
 			echo "Error: failed to set imageres to 540" >> /home/xbian/xbian-update.log; 
@@ -274,19 +274,20 @@ if [ $1 == "configure" ]; then
 		echo "Notice: avahi-deamon defaults already modified" >> /home/xbian/xbian-update.log; 
 	fi
 
-	echo "9) Disable watchdog"
-
-	if [ $(grep "run_watchdog=1"  /etc/default/watchdog| wc -l) -eq 1 ];	then
-		sed -i --follow-symlinks 's:run_watchdog=1:run_watchdog=0:g' /etc/default/watchdog
-                update-rc.d watchdog remove >/dev/null 2>&1
-                sed -i --follow-symlinks '/bcm2708_wdog/d' /etc/modules
-		if [ $(grep "run_watchdog=0" /etc/default/watchdog| wc -l) -eq 1 ];	then
-			echo "Success: disabled watchdog" >> /home/xbian/xbian-update.log; 
+	if [ "$PLATFORM" = "RPI" ]; then
+		echo "9) Disable watchdog"
+		if [ $(grep "run_watchdog=1"  /etc/default/watchdog| wc -l) -eq 1 ];	then
+			sed -i --follow-symlinks 's:run_watchdog=1:run_watchdog=0:g' /etc/default/watchdog
+			update-rc.d watchdog remove >/dev/null 2>&1
+        	        sed -i --follow-symlinks '/bcm2708_wdog/d' /etc/modules
+			if [ $(grep "run_watchdog=0" /etc/default/watchdog| wc -l) -eq 1 ];	then
+				echo "Success: disabled watchdog" >> /home/xbian/xbian-update.log; 
+			else
+				echo "Error: failed to disable watchdog" >> /home/xbian/xbian-update.log; 
+			fi
 		else
-			echo "Error: failed to disable watchdog" >> /home/xbian/xbian-update.log; 
+			echo "Notice: watchdog already disabled" >> /home/xbian/xbian-update.log; 
 		fi
-	else
-		echo "Notice: watchdog already disabled" >> /home/xbian/xbian-update.log; 
 	fi
 
     echo "10) Symlink /usr/lib/vfp to /opt/vc/lib"
@@ -508,10 +509,8 @@ EOF
 	echo "Success: files removed" >> /home/xbian/xbian-update.log
 
         echo "1.0Beta1" > /etc/xbian_version
-
-	#echo "---UPDATE LOG---"
-	#cat "/home/xbian/xbian-update.log"
         }
+
 ############################# patchPolkit ######################################
 patchPolkit() {
         echo "patching polkit"
@@ -536,8 +535,8 @@ EOF
 	fi
 	rm -fr /tmp/udisks.patch
 }
-
 ############################## 1.0-1.1 END   ###################################
+
         1011f() {
         echo "checking for Beta 1.1 hotfix"
         ! grep -xq "1.0Beta1.1" /etc/xbian_version 2>/dev/null||  return 0
@@ -694,10 +693,6 @@ EOF
 
             find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
 
-            #echo "changing virtual filesystem parameters and recreating initramfs.gz."
-            #dpkg-trigger --no-await trigger-xbian-update-initramfs
-            #xbian-update-initramfs > /dev/null 2>&1
-
             if grep -wq "/tmp" /etc/fstab; then
                 grep -wv "/tmp" /etc/fstab > /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
@@ -718,13 +713,11 @@ EOF
                 mv /etc/fstab.new /etc/fstab
             fi
 
-#            if [ $(grep -w '/dev/root' /etc/fstab | grep -wc '/home') -ne 1 -o $(grep -w '/dev/root' /etc/fstab | grep -w '/home' | grep -c 'subvol=') -ne 1 ]; then
                 if grep -wq "/home" /etc/fstab; then
                     grep -wv "/home" /etc/fstab > /etc/fstab.new
                     mv /etc/fstab.new /etc/fstab
                 fi
                 echo "/dev/root             /home                   xbian   subvol=home/@,noatime,nobootwait           0       0" >> /etc/fstab
-#            fi
 
             if grep -wq "/lib/modules" /etc/fstab; then
                 grep -wv "/lib/modules" /etc/fstab > /etc/fstab.new
@@ -784,6 +777,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
                 sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
                 sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
             fi
+
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
             grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
@@ -797,14 +791,14 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             xbianGroups
 
             sed -i '/\/net.*hosts/d' /etc/auto.master
-            [ "$(xbian-arch)" = RPI ] && sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
+            if [ "$PLATFORM" = "RPI" ]; then
+		sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
+	    fi
 
             [ ! -e /etc/default/nfs-common ] && cp /var/tmp/xbian_update/pchanges/nfs-common /etc/default 
 
             patchPolkit
-
         }
-
 ############################## 1.0.2-x END   ###################################
         
         [ -e /tmp/xbian-update-prev.ver ] && . /tmp/xbian-update-prev.ver
@@ -813,7 +807,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 
         if [ -e /run/xbian-update-force ]; then
             version='1000'
-            rm /tmp/xbian_revision.old || :
+            rm -f /tmp/xbian_revision.old || :
         fi
 
         [ $version -lt 1011 ] && version1011
@@ -825,10 +819,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 	    grep -q "UTC" /etc/default/rcS || echo -e "\nUTC=yes\n" >> /etc/default/rcS
 	fi
 
-platform=$(xbian-arch)
-[ -z "$platform" ] && platform='iMX6'
-
-case $platform in
+case $PLATFORM in
     RPI)
         if grep -wq "rootfstype=btrfs" /proc/cmdline; then
 
@@ -855,6 +846,7 @@ case $platform in
         else
             [ -e /boot/cmdline.txt.old ] && mv /boot/cmdline.txt.old /boot/cmdline.txt
         fi
+
         if grep -q 'compress=lz4' /proc/cmdline; then
             sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
         fi
