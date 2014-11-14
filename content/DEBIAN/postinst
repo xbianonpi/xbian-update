@@ -567,10 +567,13 @@ EOF
 
     insrem() {
 
+        slist=''
+
         for s in $@; do
-            [ -e $s -o -e /etc/init.d/$s ] && insserv -r $s >/dev/null 2>&1 || :
+            [ -e $s -o -e /etc/init.d/$s ] && slist="$slist $s"
         done
 
+        insserv -r $slist >/dev/null 2>&1 || :
     }
             1011f 
             echo "updating to 1.0 Beta 2"
@@ -621,11 +624,8 @@ EOF
             insrem loadcpufreq cpufrequtils hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
 
             #rc6.d
-            insrem /etc/init.d/kexec > /dev/null 2>&1
-            insrem /etc/init.d/kexec-load > /dev/null 2>&1
-            insrem /etc/init.d/kbd  > /dev/null 2>&1
-            insrem xbian-waiter > /dev/null 2>&1
-            insrem rsyslog fake-hwclock autofs > /dev/null 2>&1
+            insrem /etc/init.d/kexec /etc/init.d/kexec-load > /dev/null 2>&1
+            insrem /etc/init.d/kbd xbian-waiter fake-hwclock autofs > /dev/null 2>&1
             insrem rsync ntp anacron networking > /dev/null 2>&1
 
             insserv -f -d sendsigs >/dev/null 2>&1
@@ -653,14 +653,7 @@ EOF
 
             #grep -qw lirc_rpi /etc/modules || echo "lirc_rpi" >>  /etc/modules
 
-            sed -e '1,/^Match /w /etc/ssh/ssh_config.head
-/^Match /,$w /etc/ssh/sshd_config.tail'
-            sed  -e '/^UseDNS \|^Match /d' /etc/ssh/ssh_config.head > /etc/ssh/sshd_config.new.2
-            echo "UseDNS no" >> /etc/ssh/sshd_config.new.2
-            cat /etc/ssh/sshd_config.tail>>/etc/ssh/sshd_config.new.2
-            mv /etc/ssh/sshd_config.new.2 /etc/ssh/sshd_config
-            rm -f /etc/ssh/sshd_config.head
-            rm -f /etc/ssh/sshd_config.tail
+            grep -q UseDNS /etc/ssh/sshd_config || sed -i '/UsePAM.*/a UseDNS no' /etc/ssh/sshd_config
 
             if ! grep -wq "root=/dev/nfs" /proc/cmdline; then
                 echo "checking interfaces"
@@ -783,7 +776,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
             grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
 
-            do_targetver "1.0RC2"
+            do_targetver "1.0RC3"
 
             sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
     	    sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
@@ -798,6 +791,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             [ ! -e /etc/default/nfs-common ] && cp /var/tmp/xbian_update/pchanges/nfs-common /etc/default 
 
             patchPolkit
+            update-rc.d -f samba remove >/dev/null 2>&1; rm -f /etc/init.d/samba
         }
 ############################## 1.0.2-x END   ###################################
         
