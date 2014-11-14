@@ -1,6 +1,6 @@
 #!/bin/sh
 
-return 0
+#return 0
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
