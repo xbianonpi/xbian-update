@@ -11,7 +11,7 @@ nice -12
 pre-start script
     mkdir -p /run/network
 
-    [ "$(xbian-arch)" != iMX6 ] || { ip link set $INTERFACE up; sleep 1; }
+    [ "$(xbian-arch)" != iMX6 ] || { ip link set $INTERFACE up; sleep 3; }
 
     case $INTERFACE in
         eth?)
@@ -21,11 +21,15 @@ pre-start script
                 TO=8; AUTOONLY=
             fi
             ;;
+        wlan?)
+            [ ! -x /sbin/iwconfig ] || iwconfig $INTERFACE power off || :
+            ;;
     esac
 
     if [ "$INTERFACE" = lo ]; then
 	# bring this up even if /etc/network/interfaces is broken
-	ifconfig lo 127.0.0.1 up || true
+	ip a replace 127.0.0.1/8 dev lo || true
+	ip link set dev lo up || :
 	initctl emit -n net-device-up \
 	    IFACE=lo LOGICAL=lo ADDRFAM=inet METHOD=loopback || true
     fi
