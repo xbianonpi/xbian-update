@@ -48,6 +48,10 @@ while($#ARGV >= 0 && ($_ = $ARGV[0]) =~ /^-/) {
 	&usage("unknown option");
 }
 
+if ($notreally eq 0) {
+	$force++;
+}
+
 sub save_last_action {
     # No-op (archive removed)
 }
