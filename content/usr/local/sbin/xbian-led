@@ -1,18 +1,18 @@
 #!/bin/sh
 LED=no
 
+LEDFRONT="/sys/class/leds/imx6\:red\:front/ /sys/devices/soc0/pwmleds.23/leds/imx6\:red\:front/"
+
 arch=$(xbian-arch)
 [ ! -e /etc/default/xbian-led ] || . /etc/default/xbian-led 
 
 [ $LED = yes ] || exit 0
 [ $arch = iMX6 ] || exit 0
 
-trg=$2
-if [ ! -e $trg ]; then
-    trg=$(echo $trg | tr -d '\\')
-    [ ! -e $trg ] && exit 0
-fi
-
-echo $1 > $trg || :
+for l in $(eval echo \$LED$1); do
+    [ ! -e $l/$2 ] && l=$(echo $l | tr -d '\\')
+    [ ! -e $l/$2 ] && exit 0
+    echo $3 > $l/$2 || :
+done
 
 exit 0
