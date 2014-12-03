@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #detect chroot
-if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
+if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/. 2>/dev/null)" ]; then
   touch /run/noreboot
   touch /run/noreboot-chroot
 fi
