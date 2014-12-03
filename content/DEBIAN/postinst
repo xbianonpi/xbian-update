@@ -792,6 +792,8 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 
             patchPolkit
             update-rc.d -f samba remove >/dev/null 2>&1; rm -f /etc/init.d/samba
+
+            [ -e /usr/lib/avahi/avahi-daemon-check-dns.sh ] && sed -i 's%^PATH%#PATH%' /usr/lib/avahi/avahi-daemon-check-dns.sh 2>/dev/null || :
         }
 ############################## 1.0.2-x END   ###################################
         
