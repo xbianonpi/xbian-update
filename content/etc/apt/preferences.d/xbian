@@ -33,3 +33,7 @@ Pin-Priority: 1001
 Package: firmware-imx
 Pin: release o=XBian
 Pin-Priority: 1001
+
+Package: libcurl3 curl libcurl3-gnutls
+Pin: release o=XBian
+Pin-Priority: 1001

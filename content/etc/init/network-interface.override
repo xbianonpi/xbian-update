@@ -10,15 +10,14 @@ nice -12
 
 pre-start script
     mkdir -p /run/network
-
-    [ "$(xbian-arch)" != iMX6 ] || { ip link set $INTERFACE up; sleep 3; }
-
     case $INTERFACE in
         eth?)
             if ! ifquery -a -l | grep -wq $INTERFACE; then
-                ip link set $INTERFACE up && sleep 3 || :
+                ip link set $INTERFACE up  || :; sleep 3
                 ifplugstatus $INTERFACE | grep -q 'link beat detected' || { ip link set $INTERFACE down || :; stop; exit 0; }
                 TO=8; AUTOONLY=
+            elif [ "$(xbian-arch)" = iMX6 ]; then
+                ip link set $INTERFACE up || :; sleep 2
             fi
             ;;
         wlan?)
