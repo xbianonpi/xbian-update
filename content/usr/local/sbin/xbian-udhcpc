@@ -4,7 +4,7 @@ env >> /run/xbian-udhcpc.$IFACE
 echo "command parameters $@" >> /run/xbian-udhcpc.$IFACE
 
 while test $# -ne '0'; do
-    case $1 in 
+    case $1 in
         -n)
             shift
             ;;
@@ -15,10 +15,15 @@ while test $# -ne '0'; do
         -i)
             shift 2
             ;;
+        -H)
+            dhcp_hostname=$2
+            shift 2
+            ;;
     esac
 done
 
 trap '' USR2
-pidfile=$PID interface=$IFACE /etc/xbian-udhcpc/xbian-dhcp renew & echo $! > $PID
+pidfile=$PID interface=$IFACE dhcp_hostname=$dhcp_hostname \
+    /etc/xbian-udhcpc/xbian-dhcp renew & echo $! > $PID
 wait $!
 exit $?
