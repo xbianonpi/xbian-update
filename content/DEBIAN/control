@@ -1,6 +1,6 @@
 Origin: XBian
 Package: xbian-update
-Version: 1.0.2-120
+Version: 1.0.2-121
 Section: update
 Essential: Yes
 Priority: optional
