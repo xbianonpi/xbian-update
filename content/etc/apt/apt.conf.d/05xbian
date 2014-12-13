@@ -18,3 +18,5 @@ Acquire::PDiffs "0";
 Acquire::GzipIndexes "false";
 Acquire::CompressionTypes::Order:: "gz";
 
+APT::Get::Upgrade-Allow-New "true";
+Dpkg::Progress "true";
