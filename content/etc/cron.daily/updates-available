@@ -2,10 +2,9 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-while pgrep apt-get > /dev/null || pgrep dpkg > /dev/null; do sleep 5; done
-
-[ ! -e /run/motd.dynamic ] || [ $(stat --print=%Y /run/motd.dynamic) -le $(stat --print=%Y /var/lib/apt/periodic/update-success-stamp) ] ||exit 0
+[ ! -e /run/motd.dynamic ] || \
+	[ $(stat --print=%Y /run/motd.dynamic) -le "$(stat --print=%Y /var/lib/apt/periodic/update-success-stamp 2>/dev/null|| echo 9999999999)" ] ||exit 0
 exec > /run/motd.dynamic
 uname -snrv 
-/bin/echo -e "\e[5m$(/usr/lib/update-notifier/update-motd-updates-available)\e[25m
+/bin/echo -e "\e[5m$(nr=$(xbian-apt-show-versions -u | grep -c .); [ $nr -ne 0 ] && { echo; echo $nr packages can be updated; } )\e[25m
 "
