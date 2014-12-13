@@ -8,12 +8,15 @@ nice -1
 
 pre-start script
     [ ! -e /run/mountall.runok ] || { stop; exit 0; }
-    if [ ! -e /dev/root ]; then
-        export $(tr " " "\n" < /proc/cmdline | grep root=)
-        [ $root = /dev/nfs ] || ln -s $root /dev/root 2>/dev/null || :
+    if [ "$(findmnt -o FSTYPE -r -n /)" != zfs ]; then
+        if [ ! -e /dev/root ]; then
+            export $(tr " " "\n" < /proc/cmdline | grep root=)
+            [ $root = /dev/nfs ] || ln -s $root /dev/root 2>/dev/null || :
+        fi
+        exec /bin/mount --no-canonicalize -va -t xbian || :
+    else
+        zfs mount -a ||:
     fi
-    /bin/mount --no-canonicalize -va -t xbian || :
-    exit 0
 end script
 
 post-stop script
