@@ -1,10 +1,21 @@
 #!/bin/sh
 
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+pgrep $(basename $0) > /dev/null && exit 0 || :
+
+if [ "$1" != do ]; then
+    $0 do &
+    exit 0
+fi
+
+while pgrep apt-get > /dev/null || pgrep dpkg > /dev/null; do sleep 5; done
 
 [ ! -e /run/motd.dynamic ] || \
-	[ $(stat --print=%Y /run/motd.dynamic) -le "$(stat --print=%Y /var/lib/apt/periodic/update-success-stamp 2>/dev/null|| echo 9999999999)" ] ||exit 0
+[ $(stat --print=%Y /run/motd.dynamic) -le "$(stat --print=%Y /var/lib/apt/periodic/update-success-stamp 2>/dev/null|| echo 9999999999)" -o -e /var/lib/apt/periodic/dpkg-run ] ||exit 0
+
+rm -f /var/lib/apt/periodic/dpkg-run
+
 exec > /run/motd.dynamic
 uname -snrv 
-/bin/echo -e "\e[5m$(nr=$(xbian-apt-show-versions -u | grep -c .); [ $nr -ne 0 ] && { echo; echo $nr packages can be updated; } )\e[25m
+/bin/echo -e "\e[5m$(nr=$(xbian-apt-show-versions -nu | grep -c .); [ $nr -ne 0 ] && { echo; echo $nr packages can be updated; } )\e[25m
 "
+
