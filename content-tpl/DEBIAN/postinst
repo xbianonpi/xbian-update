@@ -737,7 +737,7 @@ EOF
                 echo "none            /run/lock                       tmpfs                   noauto                  0       0" >> /etc/fstab
             fi
 
-            grep -v ^$ /etc/fstab | sort > /etc/fstab.new
+            grep -v ^$ /etc/fstab > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
 
             if test -e /etc/dhcp/dhclient.conf; then
