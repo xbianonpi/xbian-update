@@ -14,9 +14,9 @@ pre-start script
 
         if [ -z "$NEED_IDMAPD" ]; then
                 NEED_IDMAPD=no
-                if [ "$(grep -w 'nfs4' /etc/fstab | grep -v ^# | awk '{print $3}' | sort | uniq)" = nfs4 ]; then
-                    NEED_IDMAPD=yes
-                elif grep -w 'nfs' /etc/fstab | grep -v ^# | awk '{print $4}' | grep -q vers=4; then
+                for f in $(grep -w 'nfs' /etc/fstab | grep -v ^# | awk '{print $4}' | sort | uniq); \
+                    do case $f in *vers=3*) continue; ;; *) NEED_IDMAPD=yes; ;; esac; done
+                if test $NEED_IDMAPD=no && [ "$(grep -w 'nfs4' /etc/fstab | grep -v ^# | awk '{print $3}')" ]; then
                     NEED_IDMAPD=yes
                 fi
         fi

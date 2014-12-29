@@ -7,7 +7,7 @@ UPSTART_JOB_CONF="/etc/default/upstart-job"
 INITSCRIPT="$(basename "$0")"
 JOB="${INITSCRIPT%.sh}"
 dr="$(dirname "$0")"
-[ -z "${dr#/etc/rc?\.d}" ] && JOB="${JOB#???}"
+[ -z "${dr#/etc/rc?\.d}" ] && { JOB="${JOB#???}"; initctl status $JOB >/dev/null 2>&1 || exit 0; } || :
 
 if [ "$JOB" = "upstart-job" ]; then
     if [ -z "$1" ]; then
@@ -28,7 +28,8 @@ fi
 COMMAND="$1"
 shift
 
-ECHO=echo
+#ECHO=echo
+ECHO=:
 ECHO_ERROR=echo
 if [ -e "$UPSTART_JOB_CONF" ]; then
 	. "$UPSTART_JOB_CONF"

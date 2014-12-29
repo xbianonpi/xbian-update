@@ -1,6 +1,6 @@
 nice +3
 
-#console log
+console log
 
 pre-start script
     [ $RUNLEVEL -ne 0 -a $RUNLEVEL -ne 6 ] || dmesg -D || :
