@@ -1,3 +1,5 @@
 .DS_Store
 md5sums
 .gen.changes
+content/DEBIAN/*
+content/etc/motd

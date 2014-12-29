@@ -1,0 +1,10 @@
+#!/bin/bash
+
+version=$(printf "%.4s" $(dpkg-query -W -f='${Version}\n' "xbian-update" 2>/dev/null| sed 's/[\.-]//g')) 
+echo "version=$version" > /tmp/xbian-update-prev.ver
+
+if [ $1 == "upgrade" ]; then
+	if [ -f /home/xbian/update.log ]; then
+		rm /home/xbian/update.log;
+	fi
+fi

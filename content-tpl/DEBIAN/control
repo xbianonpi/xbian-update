@@ -1,6 +1,6 @@
 Origin: XBian
 Package: xbian-update
-Version: 20141228-0
+Version: __DATE__
 Section: update
 Essential: Yes
 Priority: optional
@@ -12,4 +12,4 @@ Suggests: isc-dhcp-client
 Breaks: xbian-package-config-xbmc (<<1.1.4-6)
 Architecture: armhf
 Maintainer: mk01 <development@xbian.org>
-Description: Updater package to XBian 20141228-0
+Description: Updater package to XBian __DATE__

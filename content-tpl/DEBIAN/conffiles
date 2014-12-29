@@ -1,0 +1,3 @@
+etc/default/xbian-led
+etc/default/xbian-module-init-tools
+etc/default/xbian-update
