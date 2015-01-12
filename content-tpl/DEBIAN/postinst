@@ -767,8 +767,6 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
             grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
 
-            do_targetver "__DATE__"
-
             sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
     	    sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
 
@@ -787,6 +785,15 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             [ -e /usr/lib/avahi/avahi-daemon-check-dns.sh ] && sed -i 's%^PATH%#PATH%' /usr/lib/avahi/avahi-daemon-check-dns.sh 2>/dev/null || :
         }
 ############################## 1.0.2-x END   ###################################
+updates_2015() {
+        do_targetver "__DATE__"
+
+        ! test -e /usr/local/include/xbian-config/config/services || \
+            grep -q 'xbian-firewall' /usr/local/include/xbian-config/config/services || echo 'xbian-firewall:' >> /usr/local/include/xbian-config/config/services
+
+        ! test -e /etc/init/nmbd.conf || touch /etc/init/nmbd.conf
+}
+############################## 2015 END   ###################################
         
         [ -e /tmp/xbian-update-prev.ver ] && . /tmp/xbian-update-prev.ver
         [ -n "$version" ] || version='1000'
@@ -797,8 +804,10 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             rm -f /tmp/xbian_revision.old || :
         fi
 
-        [ $version -lt 1011 ] && version1011
-        [ $version -lt 1031 ] && version102x
+        dpkg --compare-versions $version lt 1011 && version1011
+        dpkg --compare-versions $version lt 20150331 && version102x
+
+        updates_2015
 
         rmlibshairport
 
