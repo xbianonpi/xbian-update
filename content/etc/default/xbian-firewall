@@ -1,3 +1,0 @@
-# enable simple firewall by default (enabled is only traffic from local network segment)
-ENABLEFW=no
-
