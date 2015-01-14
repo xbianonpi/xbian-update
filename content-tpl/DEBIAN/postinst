@@ -741,11 +741,9 @@ EOF
             mv /etc/fstab.new /etc/fstab
 
             if test -e /etc/dhcp/dhclient.conf; then
-        	grep -qv ^"initial-interval\|reboot\|script" /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.new
-                echo "initial-interval 1;" >> /etc/dhcp/dhclient.new
-                echo "reboot 4;" >> /etc/dhcp/dhclient.new
-                echo "script \"/etc/xbian-udhcpc/dhclient-script-xbian\";" >> /etc/dhcp/dhclient.new
-                mv /etc/dhcp/dhclient.new /etc/dhcp/dhclient.conf
+                sed -i 's%^initial-interval .*%initial-interval 1;%' /etc/dhcp/dhclient.conf
+                sed -i 's%^reboot .*%reboot 4;%' /etc/dhcp/dhclient.conf
+                sed -i 's%^script .*%script "/etc/xbian-udhcpc/dhclient-script-xbian";%' /etc/dhcp/dhclient.conf
             fi
 
             rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd 
