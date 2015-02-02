@@ -849,7 +849,7 @@ case $PLATFORM in
 
         grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
         ;;
-    iMX6)
+    iMX6|BPI)
         rm -f /boot/cmdline.default /boot/cmdline.new
         ;;
     *)
