@@ -570,7 +570,10 @@ EOF
         slist=''
 
         for s in $@; do
-            [ -e $s -o -e /etc/init.d/$s ] && slist="$slist $s"
+            if [ -e $s -o -e /etc/init.d/$s ]; then
+                slist="$slist $(basename $s)"
+                update-rc.d -f $(basename $s) remove
+            fi
         done
 
         insserv -r $slist >/dev/null 2>&1 || :
@@ -847,7 +850,7 @@ case $PLATFORM in
 
         grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
         ;;
-    iMX6)
+    iMX6|BPI)
         rm -f /boot/cmdline.default /boot/cmdline.new
         ;;
     *)
