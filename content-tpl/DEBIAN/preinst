@@ -33,14 +33,12 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
             touch /run/noreboot
         fi
 
-        if [ "$(xbian-arch)" = RPI ]; then
-            if [ -f "/boot/cmdline.txt" ]; then
-                mv /boot/cmdline.txt /boot/cmdline.txt.old
-            fi
-            [ ! -e "/boot/cmdline.new" ] || rm -f /boot/cmdline.new
+        if [ -f "/boot/cmdline.txt" ]; then
+            mv /boot/cmdline.txt /boot/cmdline.txt.old
         fi
+        [ ! -e "/boot/cmdline.new" ] || rm -f /boot/cmdline.new
 
-	[ ! -e /etc/xbian_revision ] || cp /etc/xbian_revision /tmp/xbian_revision.old
+        [ ! -e /etc/xbian_revision ] || cp /etc/xbian_revision /tmp/xbian_revision.old
 
         version=$(printf "%.4s" $(dpkg-query -W -f='${Version}\n' "xbian-update" 2>/dev/null| sed 's/[\.-]//g')) 
         echo "version=$version" > /tmp/xbian-update-prev.ver

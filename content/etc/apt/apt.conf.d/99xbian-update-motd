@@ -1,2 +1,0 @@
-Dpkg::Post-Invoke {"test -x /etc/cron.daily/updates-available || exit 0 ; /etc/cron.daily/updates-available";};
-APT::Update::Post-Invoke-Success {"test -x /etc/cron.daily/updates-available || exit 0 ; /etc/cron.daily/updates-available";};

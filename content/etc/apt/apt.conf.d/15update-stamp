@@ -1,3 +1,0 @@
-APT::Update::Post-Invoke-Success {"touch /var/lib/apt/periodic/update-success-stamp 2>/dev/null || true";};
-APT::Update::Post-Invoke {"touch /var/lib/apt/periodic/update-stamp 2>/dev/null || true";};
-Dpkg::Post-Invoke {"touch /var/lib/apt/periodic/dpkg-run 2>/dev/null || true";};

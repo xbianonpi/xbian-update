@@ -572,7 +572,7 @@ EOF
         for s in $@; do
             if [ -e $s -o -e /etc/init.d/$s ]; then
                 slist="$slist $(basename $s)"
-                update-rc.d -f $(basename $s) remove
+                update-rc.d -f $(basename $s) remove >/dev/null 2>&1 || :
             fi
         done
 
