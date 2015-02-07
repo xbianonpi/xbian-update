@@ -849,6 +849,20 @@ case $PLATFORM in
         fi
 
         grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
+        
+        # Set GPU memory split on Raspberry Pi 2.
+        # This is left out of the various update functions to allow upgrading from old models.
+        if grep -q "BCM2709" /proc/cpuinfo; then
+        	grep -q "^gpu_mem_1024=" /boot/config.txt || echo "gpu_mem_1024=256" >> /boot/config.txt
+        fi
+
+	# Remove downclocking from Raspberry Pi 2.
+        if grep -q "BCM2709" /proc/cpuinfo; then
+        	sed -i '/arm_freq=840/d' /boot/config.txt
+        	sed -i '/core_freq=320/d' /boot/config.txt
+        	sed -i '/sdram_freq=400/d' /boot/config.txt
+        fi         
+
         ;;
     iMX6|BPI)
         rm -f /boot/cmdline.default /boot/cmdline.new
