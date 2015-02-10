@@ -861,7 +861,10 @@ case $PLATFORM in
         	sed -i '/arm_freq=840/d' /boot/config.txt
         	sed -i '/core_freq=320/d' /boot/config.txt
         	sed -i '/sdram_freq=400/d' /boot/config.txt
-        fi         
+        fi
+
+        test -f /etc/init/smbd.conf || touch /etc/init/smbd.conf;
+        test -f /etc/init/nmbd.conf || touch /etc/init/nmbd.conf;
 
         ;;
     iMX6|BPI)
