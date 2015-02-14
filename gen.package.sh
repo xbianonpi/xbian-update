@@ -12,7 +12,11 @@ tot=0
 
 if ! dpkg-architecture -iarmhf; then
     arm-linux-gnueabihf-strip > /dev/null 2>&1
-    [ $? -eq '127' ] && { echo "please install binutils-arm-linux-gnueabihf"; str=''; true; } || str='arm-linux-gnueabihf-strip'
+    [ $? -eq '127' ] && { str=''; true; } || str='arm-linux-gnueabihf-strip'
+    arm-linux-gnu-strip > /dev/null 2>&1
+    [ $? -eq '127' ] && { str=''; true; }|| str='arm-linux-gnu-strip'
+    [ -z "$str" ] && { echo "please install binutils-arm-linux-gnueabihf on Debian or arm-linux-gnu-strip on CentOS"; str=''; true; }
+
 fi
 
 package=$(cat ./content/DEBIAN/control | grep Package | awk '{print $2}')
