@@ -6,7 +6,7 @@ task
 nice -2
 
 pre-start script
-    [ -e /etc/default/xbian-module-init-tools ] && . /etc/default/xbian-module-init-tools
+    [ ! -e /etc/default/xbian-module-init-tools ] || . /etc/default/xbian-module-init-tools || :
 
     if [ -z "$CPUFREQ_GOVERNOR" ]; then
         # Assuming nothing changed it yet, this is also the default one.
