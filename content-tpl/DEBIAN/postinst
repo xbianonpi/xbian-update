@@ -930,6 +930,7 @@ that risk?\n \
         fi
 }
 EOF
+	fi
 
 	if ! status -q xbian-update-reboot; then
 cat << \EOF > /tmp/xbian-update-reboot
