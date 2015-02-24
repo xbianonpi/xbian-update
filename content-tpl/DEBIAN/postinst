@@ -863,9 +863,6 @@ case $PLATFORM in
         	sed -i '/sdram_freq=400/d' /boot/config.txt
         fi
 
-        test -f /etc/init/smbd.conf || touch /etc/init/smbd.conf;
-        test -f /etc/init/nmbd.conf || touch /etc/init/nmbd.conf;
-
         ;;
     iMX6|BPI)
         rm -f /boot/cmdline.default /boot/cmdline.new
@@ -880,6 +877,59 @@ esac
 	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
 	rm -fr /var/tmp/xbian_update
 
+        test -f /etc/init/smbd.conf || touch /etc/init/smbd.conf;
+        test -f /etc/init/nmbd.conf || touch /etc/init/nmbd.conf;
+
+	if ! grep -q  "apt-get()" /etc/profile; then
+cat << \EOF >> /etc/profile
+ask() {
+    # http://djm.me/ask
+    while true; do
+
+        if [ "${2:-}" = "Y" ]; then
+            prompt="Y/n"
+            default=Y
+        elif [ "${2:-}" = "N" ]; then
+            prompt="y/N"
+            default=N
+        else
+            prompt="y/n"
+            default=
+        fi
+
+        # Ask the question
+        read -p "$1 [$prompt] " REPLY
+
+        # Default?
+        if [ -z "$REPLY" ]; then
+            REPLY=$default
+        fi
+
+        # Check if the reply is valid
+        case "$REPLY" in
+            Y*|y*) return 0 ;;
+            N*|n*) return 1 ;;
+        esac
+
+    done
+}
+
+apt-get() {
+        if [[ $@ == "dist-upgrade" ]]; then
+                echo -e " ----------- WARNING -----------\n \
+Running 'apt-get dist-upgrade'\n \
+can break your system badly.\n \
+Are you sure you want to take\n \
+that risk?\n \
+----------- WARNING -----------";
+                if ask ""; then
+                        command apt-get dist-upgrade
+                fi
+        else
+                command apt-get "$@"
+        fi
+}
+EOF
 
 	if ! status -q xbian-update-reboot; then
 cat << \EOF > /tmp/xbian-update-reboot
