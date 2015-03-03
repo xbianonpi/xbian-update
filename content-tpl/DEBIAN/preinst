@@ -40,7 +40,7 @@ if [ $1 == "install" -o $1 == "upgrade" ]; then
 
         [ ! -e /etc/xbian_revision ] || cp /etc/xbian_revision /tmp/xbian_revision.old
 
-        version=$(printf "%.4s" $(dpkg-query -W -f='${Version}\n' "xbian-update" 2>/dev/null| sed 's/[\.-]//g')) 
+        version=$(printf "%.8s" $(dpkg-query -W -f='${Version}\n' "xbian-update" 2>/dev/null| sed 's/[\.-]//g')) 
         echo "version=$version" > /tmp/xbian-update-prev.ver
 
         if [ ! -e /etc/samba/smb.conf.xbian ]; then

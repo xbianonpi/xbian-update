@@ -537,32 +537,6 @@ EOF
 }
 ############################## 1.0-1.1 END   ###################################
 
-        1011f() {
-        echo "checking for Beta 1.1 hotfix"
-        ! grep -xq "1.0Beta1.1" /etc/xbian_version 2>/dev/null||  return 0
-        [ ! -e /tmp/xbian_revision.old ] || { [ "$(cat /tmp/xbian_revision.old | grep -m1 .)" -lt 10 ] || return 0; }
-
-        echo "updating to 1.0 Beta 1.1 hotfix"
-	echo "1.0Beta1.1" > /etc/xbian_version
-
-	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
-
-	locale-gen
-
-    if [ $(grep /boot /etc/fstab | grep -c "noauto") -eq 1 ];	then
-        grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
-        echo "UUID=$(blkid $bp -o value -s UUID)	/boot	vfat	defaults 	0	0" >> /etc/fstab
-        if [ $(grep -c /boot /etc/fstab ) -eq 0 ]; then
-            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log
-        fi
-    fi
-
-
-        patchPolkit
-        
-        }
-############################## 1.0-1.1 fix END   ###################################
-
         version102x() {
 
     insrem() {
@@ -578,7 +552,6 @@ EOF
 
         insserv -r $slist >/dev/null 2>&1 || :
     }
-            1011f 
             echo "updating to 1.0 Beta 2"
 
             btrfs-auto-snapshot destroy root/@safe &>/dev/null; btrfs-auto-snapshot destroy home/@safe &>/dev/null
@@ -792,7 +765,9 @@ updates_2015() {
         ! test -e /usr/local/include/xbian-config/config/services || \
             grep -q 'xbian-firewall' /usr/local/include/xbian-config/config/services || echo 'xbian-firewall:' >> /usr/local/include/xbian-config/config/services
 
-        ! test -e /etc/init/nmbd.conf || touch /etc/init/nmbd.conf
+        test -e /etc/init/nmbd.conf || touch /etc/init/nmbd.conf
+
+        test -e /etc/apt/apt.conf.d/03forceloop || echo "APT::Force-LoopBreak true;" > /etc/apt/apt.conf.d/03forceloop
 }
 ############################## 2015 END   ###################################
         
@@ -806,7 +781,7 @@ updates_2015() {
         fi
 
         dpkg --compare-versions $version lt 1011 && version1011
-        dpkg --compare-versions $version lt 20150331 && version102x
+        dpkg --compare-versions $version lt 20151231 && version102x
 
         updates_2015
 
