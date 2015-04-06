@@ -20,7 +20,9 @@ case $1 in
         [ -z "$dhcp_hostname" ] && dhcp_hostname=$(hostname -s)
         echo DHCPDISCOVER >&2
         # <client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
-        ipconfig -t 60 "::::${dhcp_hostname}:${interface}:${METHOD}" 1>&2
+        ipconfig -t 30 "::::${dhcp_hostname}:${interface}:${METHOD}"  1>/dev/null || \
+            ip link set $interface down; 
+            ipconfig -t 60 "::::${dhcp_hostname}:${interface}:${METHOD}" 1>/dev/null
         [ $? -eq 124 ] && { echo Terminated >&2; ip link set $interface down || :; exit 1; }
         echo bound >&2
 
@@ -66,17 +68,16 @@ case $1 in
 	;;
 esac
 
-
-if [ $1 != slp ]; then
+if [ "$1" = bound ]; then
     pidfile=$pidfile interface=$interface leasetime=$leasetime $0 slp &
     exit 0
 fi
 
-trap 'ifdwn' USR2
-sleep $leasetime & spid=$! && echo $spid > $pidfile
+trap 'ifdwn' USR2 KILL TERM
+sleep $((leasetime + 50)) & spid=$! && echo $spid > $pidfile
 
 if wait "$spid"; then
-    pidfile="$pidfile" interface="$interface" $0 renew &
+    pidfile="$pidfile" interface="$interface" exec $0 renew
 else
     pds="$(cat /run/wpa_supplicant.$interface.pid 2>/dev/null)"; [ -z "$pds" ] || kill "$pds" || :
     rm -fr "/run/wpa_supplicant.$interface.pid"

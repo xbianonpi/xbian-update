@@ -19,11 +19,16 @@ while test $# -ne '0'; do
             dhcp_hostname=$2
             shift 2
             ;;
+        *)
+            shift
+            ;;
     esac
 done
 
+[ -n "$PID" ] || PID=/run/udhcpc.$IFACE.pid
+
 trap '' USR2
 pidfile=$PID interface=$IFACE dhcp_hostname=$dhcp_hostname \
-    /etc/xbian-udhcpc/xbian-dhcp renew & echo $! > $PID
+    /etc/xbian-udhcpc/xbian-dhcp bound & echo $! > $PID
 wait $!
 exit $?
