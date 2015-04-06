@@ -35,3 +35,12 @@ pre-start script
 
     exec timeout $TO ifup -v $AUTOONLY $INTERFACE
 end script
+
+post-stop script
+    if ! ifquery -a -l | grep -wq $INTERFACE; then
+         AUTOONLY=
+    fi
+
+    ifdown --force -v $AUTOONLY $INTERFACE
+    ifdown --force -v --allow hotplug $INTERFACE
+end script
