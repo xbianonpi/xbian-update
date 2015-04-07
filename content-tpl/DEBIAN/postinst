@@ -855,6 +855,9 @@ esac
         test -f /etc/init/smbd.conf || touch /etc/init/smbd.conf;
         test -f /etc/init/nmbd.conf || touch /etc/init/nmbd.conf;
 
+        . /var/lib/dpkg/info/xbian-update.functions
+        deployconfig /etc/default/tmpfs.template /etc/default/tmpfs
+
 	if ! grep -q  "apt-get()" /etc/profile; then
 cat << \EOF >> /etc/profile
 ask() {

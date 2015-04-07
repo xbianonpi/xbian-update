@@ -1,0 +1,32 @@
+
+function deployconfig()
+{
+    [ -n "$1" -a -n "$2" ] || return 1
+
+    newconfig=$1
+    currentconfig=$2
+
+    [ -e $newconfig ] || mv $newconfig $currentconfig
+
+    if [ -e $newconfig ]; then
+        OPTIONS=$(grep -E "^\w+=.+" $newconfig)
+        ADVANCED_OPTIONS="USER HOME GROUP DAEMON_ARGS DAEMON_LIRC PATH ZTEMPXBMC DEBUG SCR_CPUFREQ_GOV"
+        ALL_OPTIONS="$OPTIONS $ADVANCED_OPTIONS"
+
+        for option in $ALL_OPTIONS; do
+            opt_name=${option%%=*}
+            if grep -q "^${opt_name}=" $currentconfig; then
+                old_opt_value=$(grep ^${opt_name}= $currentconfig | tr "'" "\"")
+                if grep -q "^${opt_name}=" $newconfig; then
+                    sed -i "s%${opt_name}=.*%${old_opt_value}%" $newconfig
+                else
+                    echo $old_opt_value >> $newconfig
+                fi
+            fi
+        done
+
+        mv $newconfig $currentconfig
+    fi
+
+}
+
