@@ -9,8 +9,8 @@ function deployconfig()
     [ -e $newconfig ] || mv $newconfig $currentconfig
 
     if [ -e $newconfig ]; then
-        OPTIONS=$(grep -E "^\w+=.+" $newconfig)
-        ADVANCED_OPTIONS="USER HOME GROUP DAEMON_ARGS DAEMON_LIRC PATH ZTEMPXBMC DEBUG SCR_CPUFREQ_GOV"
+        OPTIONS=$(grep -E "^\w+=.+" $newconfig; grep -E "^#\w+=.+" $newconfig)
+        ADVANCED_OPTIONS=""
         ALL_OPTIONS="$OPTIONS $ADVANCED_OPTIONS"
 
         for option in $ALL_OPTIONS; do
@@ -18,7 +18,7 @@ function deployconfig()
             if grep -q "^${opt_name}=" $currentconfig; then
                 old_opt_value=$(grep ^${opt_name}= $currentconfig | tr "'" "\"")
                 if grep -q "^${opt_name}=" $newconfig; then
-                    sed -i "s%${opt_name}=.*%${old_opt_value}%" $newconfig
+                    sed -i "s|${opt_name}=.*|${old_opt_value}|" $newconfig
                 else
                     echo $old_opt_value >> $newconfig
                 fi
@@ -28,5 +28,6 @@ function deployconfig()
         mv $newconfig $currentconfig
     fi
 
+    sed -i "s|%VM$|%|g" /etc/default/tmpfs
 }
 
