@@ -1,7 +1,6 @@
 
 function deployconfig()
 {
-set -x
     [ -n "$1" -a -n "$2" ] || return 1
 
     newconfig=$1

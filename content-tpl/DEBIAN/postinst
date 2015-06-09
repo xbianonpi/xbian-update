@@ -730,10 +730,11 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 
             # The leading 0 ensures we always get an integer.
             # We also don't check the version for Kodi as it was rebranded in 14.0
-            [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings 2>/dev/null
-            if [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
-                sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
-                sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
+            [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -le 12 ] && \
+                                                        [ -e /usr/local/lib/xbmc/xbmc.bin ] && adaptAdvancedSettings 2>/dev/null
+            if [ "0$(/usr/local/lib/kodi/kodi.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
+                sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
+                sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
             fi
 
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
@@ -768,6 +769,11 @@ updates_2015() {
         test -e /etc/init/nmbd.conf || touch /etc/init/nmbd.conf
 
         test -e /etc/apt/apt.conf.d/03forceloop || echo "APT::Force-LoopBreak true;" > /etc/apt/apt.conf.d/03forceloop
+
+        cp /home/xbian/.kodi/userdata/advancedsettings.xml /home/xbian/.kodi/userdata/advancedsettings.xml.xbian_update
+        for f in visualizedirtyregions destroywindowcontrols useddsfanart; do
+            sed -i --follow-symlinks "/<$f>/d" /home/xbian/.kodi/userdata/advancedsettings.xml
+        done
 }
 ############################## 2015 END   ###################################
         
