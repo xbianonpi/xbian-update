@@ -1,4 +1,5 @@
-start on started mountall or stopped mountall
+start on starting statd
+stop on unmounted-remote-filesystems or stopped statd
 
 env STATEDIR=/run/rpcbind
 
