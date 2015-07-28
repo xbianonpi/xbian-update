@@ -1,1 +1,1 @@
-telnet zswap.enabled=1 zswap.compressor=lz4 console=tty1 root=/dev/mmcblk0p2 rootflags=subvol=root/@,autodefrag,compress=lz4 rootfstype=btrfs rootwait logo.nologo quiet noswap loglevel=0 partswap startevent=mountall selinux=0 splash nohdparm --startup-event mountall
+telnet zswap.enabled=1 zswap.compressor=lz4 console=tty1 root=/dev/mmcblk0p2 rootflags=subvol=root/@,autodefrag,compress=lzo rootfstype=btrfs rootwait logo.nologo quiet noswap loglevel=0 partswap startevent=mountall selinux=0 splash nohdparm --startup-event mountall
