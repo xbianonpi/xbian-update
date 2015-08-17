@@ -774,6 +774,20 @@ updates_2015() {
         for f in visualizedirtyregions destroywindowcontrols useddsfanart; do
             sed -i --follow-symlinks "/<$f>/d" /home/xbian/.kodi/userdata/advancedsettings.xml
         done
+
+cat <<\EOF > /etc/xbian_banner
+-------------------------------------------------------------------
+      Y88b d88P  888888b.   8888888        d8888 888b    888
+       Y88o88P   888  .88P    888        d88P888 88888b  888
+        Y888P    8888888K.    888       d88P 888 888Y88b 888
+        d888b    888  "Y88b   888      d88P  888 888 Y88b888
+      d88P Y88b  888   d88P   888    d8888888888 888   Y8888
+     d88P   Y88b 8888888P"  8888888 d88P     888 888    Y888
+-------------------------------------------------------------------
+EOF
+
+	sed -i '/Banner/d' /etc/ssh/sshd_config
+	echo "Banner /etc/xbian_banner" >> /etc/ssh/sshd_config
 }
 ############################## 2015 END   ###################################
         
@@ -914,6 +928,21 @@ that risk?\n \
         fi
 }
 EOF
+	fi
+
+###############################################################################
+	if [ "$PLATFORM" = "RPI" ]; then
+		echo "19) enable lirc via DT"
+		if grep -q "dtoverlay=lirc-rpi" /boot/config.txt;	then
+		        echo "Notice: lirc already enabled or manually disabled" >> /home/xbian/xbian-update.log;
+	        else
+        	        echo -e "\ndtoverlay=lirc-rpi\n" >> /boot/config.txt
+			if grep -q "dtoverlay=lirc-rpi" /boot/config.txt; then
+				echo "Success: enabled lirc" >> /home/xbian/xbian-update.log; 
+			else
+				echo "Error: lirc off" >> /home/xbian/xbian-update.log; 
+			fi
+		fi
 	fi
 
 	if ! status -q xbian-update-reboot; then
