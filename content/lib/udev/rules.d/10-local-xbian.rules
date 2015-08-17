@@ -16,6 +16,7 @@ KERNEL=="event*", MODE="0664", GROUP="input"
 SUBSYSTEM=="misc", KERNEL=="uinput", GROUP="input", MODE="0664"
 
 KERNEL=="mxc_hdmi", MODE="0660", GROUP="video"
+KERNEL=="mxc_dcic*", MODE="0660", GROUP="video"
 KERNEL=="mxc_hdmi_cec", GROUP="input"
 KERNEL=="mxc_vpu", GROUP="video"
 KERNEL=="mxc_ipu", GROUP="video"
