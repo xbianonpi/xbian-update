@@ -1,0 +1,35 @@
+
+function deployconfig()
+{
+    [ -n "$1" -a -n "$2" ] || return 1
+
+    newconfig=$1
+    currentconfig=$2
+
+    [ -e $newconfig ] || mv $newconfig $currentconfig
+
+    if [ -e $newconfig ]; then
+        OPTIONS=$(grep -E "^[\#]*\w+=.+" $newconfig)
+        ADVANCED_OPTIONS=""
+        ALL_OPTIONS="$OPTIONS $ADVANCED_OPTIONS"
+
+        for option in $ALL_OPTIONS; do
+            opt_name=${option%%=*}; opt_name=${opt_name##\#}
+            if grep -q "^[\#]*${opt_name}=" $currentconfig; then
+                old_opt_value=$(grep "^[\#]*$opt_name=*" $currentconfig | tr "'" "\"")
+
+                new_opt_value=$(grep "^[\#]*$opt_name=*" $newconfig)
+                if [ -n "$new_opt_value" ]; then
+                    sed -i "s|$new_opt_value|$old_opt_value|" $newconfig
+                else
+                    echo $old_opt_value >> $newconfig
+                fi
+            fi
+        done
+
+        mv $newconfig $currentconfig
+    fi
+
+    sed -i "s|%VM$|%|g" /etc/default/tmpfs
+}
+
