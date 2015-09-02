@@ -23,5 +23,11 @@ KERNEL=="mxc_ipu", GROUP="video"
 
 KERNEL=="fb[0-1]", ACTION=="add|change", RUN+="/usr/local/bin/modes-cubox"
 
+KERNEL=="vc-cma" MODE="0660", GROUP="video"
+KERNEL=="vchiq" MODE="0660", GROUP="video"
+KERNEL=="vcio" MODE="0660", GROUP="video"
+KERNEL=="vc-mem" MODE="0660", GROUP="video"
+KERNEL=="vcsm" MODE="0660", GROUP="video"
+
 #KERNEL=="busfreq.13", ACTION=="add|change", ATTR{enable}="0"
 
