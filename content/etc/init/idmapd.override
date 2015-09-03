@@ -23,10 +23,6 @@ pre-start script
 
         [ "x$NEED_IDMAPD" = xyes ] || { stop; exit 0; }
 
-        do_modprobe nfs
-
-        do_modprobe sunrpc
-
         if ! mountpoint -q "$PIPEFS_MOUNTPOINT"; then
             mkdir -p "$PIPEFS_MOUNTPOINT"
             mount -t rpc_pipefs rpc_pipefs "$PIPEFS_MOUNTPOINT" || true

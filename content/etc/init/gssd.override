@@ -9,21 +9,9 @@ pre-start script
 		. "$DEFAULTFILE"
 	fi
 
-	if [ -z "$NEED_GSSD" ]; then
-		NEED_GSSD=no
-		if [ "$(grep -w 'nfs4' /etc/fstab | grep -v ^# | awk '{print $3}' | sort | uniq)" = nfs4 ]; then
-		    NEED_GSSD=yes
-		elif grep -w 'nfs' /etc/fstab | grep -v ^# | awk '{print $4}' | grep -q vers=4; then
-		    NEED_GSSD=yes
-		fi
-	fi
-
 	[ "x$NEED_GSSD" = xyes ] || { stop; exit 0; }
 
-	do_modprobe nfs4
 	do_modprobe rpcsec_gss_krb5
-
-	do_modprobe sunrpc
 
 	if ! mountpoint -q "$PIPEFS_MOUNTPOINT"; then
 		mkdir -p "$PIPEFS_MOUNTPOINT"
