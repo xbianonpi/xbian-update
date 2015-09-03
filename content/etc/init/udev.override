@@ -1,4 +1,3 @@
-start on started mountall
+start on started xbian-run
 
-nice +1
-
+nice -3
