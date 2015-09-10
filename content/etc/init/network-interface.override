@@ -1,4 +1,4 @@
-start on net-device-added INTERFACE!=eth0 or started xbian-run
+start on net-device-added INTERFACE!=eth0 and started xbian-run
 stop on net-device-removed INTERFACE!=lo and INTERFACE=$INTERFACE
 
 env INTERFACE=lo
@@ -16,8 +16,6 @@ pre-start script
                 ip link set $INTERFACE up  || :; sleep 3
                 ifplugstatus $INTERFACE | grep -q 'link beat detected' || { ip link set $INTERFACE down || :; stop; exit 0; }
                 TO=8; AUTOONLY=
-            elif [ "$(xbian-arch)" = iMX6 ]; then
-                ip link set $INTERFACE up || :; sleep 2
             fi
             ;;
         wlan?)

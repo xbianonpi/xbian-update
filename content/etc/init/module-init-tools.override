@@ -1,4 +1,4 @@
-start on started mountall and started udev
+start on mounted MOUNTPOINT=/lib/modules and started udev
 
 env CPUFREQ_GOVERNOR=
 task
