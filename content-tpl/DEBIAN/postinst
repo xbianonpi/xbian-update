@@ -786,8 +786,9 @@ cat <<\EOF > /etc/xbian_banner
 -------------------------------------------------------------------
 EOF
 
-	sed -i '/Banner/d' /etc/ssh/sshd_config
-	echo "Banner /etc/xbian_banner" >> /etc/ssh/sshd_config
+        if ! grep -q "Banner" /etc/ssh/sshd_config; then
+            echo "Banner /etc/xbian_banner" >> /etc/ssh/sshd_config
+        fi
 }
 ############################## 2015 END   ###################################
         
