@@ -1,6 +1,6 @@
 xbian ALL=(ALL) NOPASSWD: /sbin/initctl, /usr/local/sbin/xbian-config, /sbin/halt, /sbin/reboot, /usr/bin/splash, \
     /usr/bin/renice, /sbin/start, /sbin/stop, /sbin/status, /bin/fuser, /sbin/restart, /usr/bin/pkill, /usr/sbin/btrfs-auto-snapshot, \
-    /bin/mount, /bin/umount, /bin/kill, /usr/local/sbin/splash-daemon, /bin/rm -fr /run/splash/splash.pid, /bin/mkdir -p -m 777 /run/splash \
+    /bin/mount, /bin/umount, /bin/kill, /usr/local/sbin/splash-daemon, /bin/rm -fr /run/splash/splash.pid, /bin/mkdir -p -m 777 /run/splash, \
     /usr/bin/setterm
 
 Defaults env_keep+=http_proxy
