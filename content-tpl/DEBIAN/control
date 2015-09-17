@@ -9,7 +9,7 @@ Depends: iptables, lsb-release, autofs, nfs-common, dosfstools, sudo, ifplugd, i
 Replaces: update-notifier-common, sysv-rc, rpcbind, raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi-bin, libraspberrypi-dev, console-tools, rpi-update, base-files, upstart
 Conflicts: dphys-swapfile, raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi-bin, console-tools, rpi-update, udhcpc, dhcpcd
 Suggests: isc-dhcp-client
-Breaks: xbian-package-config-xbmc (<<1.1.4-6)
+Breaks: xbian-package-config-xbmc (<<1.1.4-6), xbian-package-xbmc-scripts (<<1.2.5)
 Architecture: armhf
 Maintainer: mk01 <development@xbian.org>
 Description: Updater package to XBian __DATE__

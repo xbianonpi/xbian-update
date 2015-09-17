@@ -1,4 +1,4 @@
-start on (stopped udevtrigger and stopped xbian-net) or runlevel [2345] or stopped networking RESULT=failed PROCESS=post-stop EXIT_STATUS=100
+start on (stopped udevtrigger and started xbian-net) or runlevel [2345] or stopped networking RESULT=failed PROCESS=post-stop EXIT_STATUS=100
 
 post-stop script
     if [ -z "$UPSTART_STOP_EVENTS" ]; then
