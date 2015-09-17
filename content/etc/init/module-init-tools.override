@@ -15,7 +15,7 @@ pre-start script
     fi
     modprobe -q cpufreq_${CPUFREQ_GOVERNOR} || :
 
-    if [ $(xbian-arch) = RPI ]; then
+    if [ $(xbian-arch) = RPI ] && modinfo vchiq >/dev/null 2>&1; then
         modprobe -q vchiq
         echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
     fi
