@@ -13,6 +13,12 @@ do_targetver() {
     echo "Updating to $1"
 }
 
+kodi_getver() {
+    local vr
+    vr=$(xbian-apt-show-versions xbian-package-xbmc xbian-package-xbmc-6q | awk '$2 !~ /not/ {print $2}')
+    echo ${vr%%.*}
+}
+
 rmlibshairport(){
     if [ -e /var/lib/dpkg/info/xbian-package-libshairport.postrm ]; then
         grep -wq "exit" /var/lib/dpkg/info/xbian-package-libshairport.postrm || echo "exit 0" >> /var/lib/dpkg/info/xbian-package-libshairport.postrm
@@ -730,9 +736,8 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 
             # The leading 0 ensures we always get an integer.
             # We also don't check the version for Kodi as it was rebranded in 14.0
-            [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -le 12 ] && \
-                                                        [ -e /usr/local/lib/xbmc/xbmc.bin ] && adaptAdvancedSettings 2>/dev/null
-            if [ "0$(/usr/local/lib/kodi/kodi.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
+            [ $(kodi_getver) -le 12 ] && [ -e /usr/local/lib/xbmc/xbmc.bin ] && adaptAdvancedSettings 2>/dev/null
+            if [ $(kodi_getver) -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
                 sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
                 sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
             fi
