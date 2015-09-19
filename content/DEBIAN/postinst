@@ -13,6 +13,12 @@ do_targetver() {
     echo "Updating to $1"
 }
 
+kodi_getver() {
+    local vr
+    vr=$(xbian-apt-show-versions xbian-package-xbmc xbian-package-xbmc-6q | awk '$2 !~ /not/ {print $2}')
+    echo ${vr%%.*}
+}
+
 rmlibshairport(){
     if [ -e /var/lib/dpkg/info/xbian-package-libshairport.postrm ]; then
         grep -wq "exit" /var/lib/dpkg/info/xbian-package-libshairport.postrm || echo "exit 0" >> /var/lib/dpkg/info/xbian-package-libshairport.postrm
@@ -537,32 +543,6 @@ EOF
 }
 ############################## 1.0-1.1 END   ###################################
 
-        1011f() {
-        echo "checking for Beta 1.1 hotfix"
-        ! grep -xq "1.0Beta1.1" /etc/xbian_version 2>/dev/null||  return 0
-        [ ! -e /tmp/xbian_revision.old ] || { [ "$(cat /tmp/xbian_revision.old | grep -m1 .)" -lt 10 ] || return 0; }
-
-        echo "updating to 1.0 Beta 1.1 hotfix"
-	echo "1.0Beta1.1" > /etc/xbian_version
-
-	insserv -rf /etc/init.d/avahi-daemon > /dev/null 2>&1
-
-	locale-gen
-
-    if [ $(grep /boot /etc/fstab | grep -c "noauto") -eq 1 ];	then
-        grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
-        echo "UUID=$(blkid $bp -o value -s UUID)	/boot	vfat	defaults 	0	0" >> /etc/fstab
-        if [ $(grep -c /boot /etc/fstab ) -eq 0 ]; then
-            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log
-        fi
-    fi
-
-
-        patchPolkit
-        
-        }
-############################## 1.0-1.1 fix END   ###################################
-
         version102x() {
 
     insrem() {
@@ -570,12 +550,14 @@ EOF
         slist=''
 
         for s in $@; do
-            [ -e $s -o -e /etc/init.d/$s ] && slist="$slist $s"
+            if [ -e $s -o -e /etc/init.d/$s ]; then
+                slist="$slist $(basename $s)"
+                update-rc.d -f $(basename $s) remove >/dev/null 2>&1 || :
+            fi
         done
 
         insserv -r $slist >/dev/null 2>&1 || :
     }
-            1011f 
             echo "updating to 1.0 Beta 2"
 
             btrfs-auto-snapshot destroy root/@safe &>/dev/null; btrfs-auto-snapshot destroy home/@safe &>/dev/null
@@ -741,11 +723,9 @@ EOF
             mv /etc/fstab.new /etc/fstab
 
             if test -e /etc/dhcp/dhclient.conf; then
-        	grep -qv ^"initial-interval\|reboot\|script" /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.new
-                echo "initial-interval 1;" >> /etc/dhcp/dhclient.new
-                echo "reboot 4;" >> /etc/dhcp/dhclient.new
-                echo "script \"/etc/xbian-udhcpc/dhclient-script-xbian\";" >> /etc/dhcp/dhclient.new
-                mv /etc/dhcp/dhclient.new /etc/dhcp/dhclient.conf
+                sed -i 's%^initial-interval .*%initial-interval 1;%' /etc/dhcp/dhclient.conf
+                sed -i 's%^reboot .*%reboot 4;%' /etc/dhcp/dhclient.conf
+                sed -i 's%^script .*%script "/etc/xbian-udhcpc/dhclient-script-xbian";%' /etc/dhcp/dhclient.conf
             fi
 
             rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd 
@@ -756,10 +736,10 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 
             # The leading 0 ensures we always get an integer.
             # We also don't check the version for Kodi as it was rebranded in 14.0
-            [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -le 12 ] && adaptAdvancedSettings 2>/dev/null
-            if [ "0$(/usr/local/lib/xbmc/xbmc.bin --version 2>/dev/null | grep -o [0-9]\* | grep -m1 .)" -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
-                sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
-                sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.xbmc/userdata/advancedsettings.xml
+            [ $(kodi_getver) -le 12 ] && [ -e /usr/local/lib/xbmc/xbmc.bin ] && adaptAdvancedSettings 2>/dev/null
+            if [ $(kodi_getver) -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
+                sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
+                sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
             fi
 
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
@@ -786,12 +766,45 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
         }
 ############################## 1.0.2-x END   ###################################
 updates_2015() {
-        do_targetver "20150112-4"
+        do_targetver "20150918-3"
 
         ! test -e /usr/local/include/xbian-config/config/services || \
             grep -q 'xbian-firewall' /usr/local/include/xbian-config/config/services || echo 'xbian-firewall:' >> /usr/local/include/xbian-config/config/services
 
-        ! test -e /etc/init/nmbd.conf || touch /etc/init/nmbd.conf
+        test -e /etc/init/nmbd.conf || touch /etc/init/nmbd.conf
+
+        test -e /etc/apt/apt.conf.d/03forceloop || echo "APT::Force-LoopBreak true;" > /etc/apt/apt.conf.d/03forceloop
+
+        cp /home/xbian/.kodi/userdata/advancedsettings.xml /home/xbian/.kodi/userdata/advancedsettings.xml.xbian_update
+        for f in visualizedirtyregions destroywindowcontrols useddsfanart; do
+            sed -i --follow-symlinks "/<$f>/d" /home/xbian/.kodi/userdata/advancedsettings.xml
+        done
+
+cat <<\EOF > /etc/xbian_banner
+-------------------------------------------------------------------
+      Y88b d88P  888888b.   8888888        d8888 888b    888
+       Y88o88P   888  .88P    888        d88P888 88888b  888
+        Y888P    8888888K.    888       d88P 888 888Y88b 888
+        d888b    888  "Y88b   888      d88P  888 888 Y88b888
+      d88P Y88b  888   d88P   888    d8888888888 888   Y8888
+     d88P   Y88b 8888888P"  8888888 d88P     888 888    Y888
+-------------------------------------------------------------------
+EOF
+
+        if ! grep -q "Banner" /etc/ssh/sshd_config; then
+            echo "Banner /etc/xbian_banner" >> /etc/ssh/sshd_config
+        fi
+
+        #### if already migrated RPI2 to Debian/Jessie, but didn't change xbian.list to rpi2-jessie, do it now
+        case $(xbian-arch revision) in
+            rpi2)
+                if grep -q '^deb.*debian.net' /etc/apt/sources.list && grep -q 'stable[ ]*main[ ]*rpi-jessie' /etc/apt/sources.list.d/xbian.list; then
+                    sed -i 's/rpi-jessie/rpi2-jessie/g' /etc/apt/sources.list.d/xbian.list
+                fi
+            ;;
+            *)
+            ;;
+        esac
 }
 ############################## 2015 END   ###################################
         
@@ -805,7 +818,7 @@ updates_2015() {
         fi
 
         dpkg --compare-versions $version lt 1011 && version1011
-        dpkg --compare-versions $version lt 20150331 && version102x
+        dpkg --compare-versions $version lt 20151231 && version102x
 
         updates_2015
 
@@ -855,6 +868,13 @@ case $PLATFORM in
         	grep -q "^gpu_mem_1024=" /boot/config.txt || echo "gpu_mem_1024=256" >> /boot/config.txt
         fi
 
+	# Remove downclocking from Raspberry Pi 2.
+        if grep -q "BCM2709" /proc/cpuinfo; then
+        	sed -i '/arm_freq=840/d' /boot/config.txt
+        	sed -i '/core_freq=320/d' /boot/config.txt
+        	sed -i '/sdram_freq=400/d' /boot/config.txt
+        fi
+
         ;;
     iMX6|BPI)
         rm -f /boot/cmdline.default /boot/cmdline.new
@@ -869,6 +889,78 @@ esac
 	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
 	rm -fr /var/tmp/xbian_update
 
+        test -f /etc/init/smbd.conf || touch /etc/init/smbd.conf;
+        test -f /etc/init/nmbd.conf || touch /etc/init/nmbd.conf;
+
+        . /var/lib/dpkg/info/xbian-update.functions
+        deployconfig /etc/default/tmpfs.template /etc/default/tmpfs
+
+	if ! grep -q  "apt-get()" /etc/profile; then
+cat << \EOF >> /etc/profile
+ask() {
+    # http://djm.me/ask
+    while true; do
+
+        if [ "${2:-}" = "Y" ]; then
+            prompt="Y/n"
+            default=Y
+        elif [ "${2:-}" = "N" ]; then
+            prompt="y/N"
+            default=N
+        else
+            prompt="y/n"
+            default=
+        fi
+
+        # Ask the question
+        read -p "$1 [$prompt] " REPLY
+
+        # Default?
+        if [ -z "$REPLY" ]; then
+            REPLY=$default
+        fi
+
+        # Check if the reply is valid
+        case "$REPLY" in
+            Y*|y*) return 0 ;;
+            N*|n*) return 1 ;;
+        esac
+
+    done
+}
+
+apt-get() {
+        if [[ $@ == "dist-upgrade" ]]; then
+                echo -e " ----------- WARNING -----------\n \
+Running 'apt-get dist-upgrade'\n \
+can break your system badly.\n \
+Are you sure you want to take\n \
+that risk?\n \
+----------- WARNING -----------";
+                if ask ""; then
+                        command apt-get dist-upgrade
+                fi
+        else
+                command apt-get "$@"
+        fi
+}
+EOF
+	fi
+
+###############################################################################
+	if [ "$PLATFORM" = "RPI" ]; then
+		echo "19) enable lirc via DT"
+		if grep -q "dtoverlay=lirc-rpi" /boot/config.txt;	then
+		        echo "Notice: lirc already enabled or manually disabled" >> /home/xbian/xbian-update.log;
+	        else
+        	        echo -e "\ndtoverlay=lirc-rpi\n" >> /boot/config.txt
+			if grep -q "dtoverlay=lirc-rpi" /boot/config.txt; then
+				echo "Success: enabled lirc" >> /home/xbian/xbian-update.log; 
+			else
+				echo "Error: lirc off" >> /home/xbian/xbian-update.log; 
+			fi
+		fi
+	fi
 
 	if ! status -q xbian-update-reboot; then
 cat << \EOF > /tmp/xbian-update-reboot
