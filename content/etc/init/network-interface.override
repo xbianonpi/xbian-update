@@ -1,5 +1,5 @@
 start on net-device-added INTERFACE!=eth0 and started xbian-run
-stop on net-device-removed INTERFACE!=lo and INTERFACE=$INTERFACE
+stop on net-device-removed INTERFACE=$INTERFACE
 
 env INTERFACE=lo
 

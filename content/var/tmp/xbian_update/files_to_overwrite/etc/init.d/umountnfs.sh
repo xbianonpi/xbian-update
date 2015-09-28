@@ -3,7 +3,6 @@
 # Provides:          umountnfs
 # Required-Start:
 # Required-Stop:     umountfs
-# Should-Stop:       $network $portmap nfs-common
 # Default-Start:
 # Default-Stop:      0 6
 # Short-Description: Unmount all network filesystems except the root fs.
@@ -74,7 +73,7 @@ do_stop () {
 	if [ "$DIRS" ]
 	then
 		[ "$VERBOSE" = no ] || log_action_begin_msg "Unmounting remote and non-toplevel virtual filesystems"
-		fstab-decode umount $FLAGS $DIRS || :
+		timeout 10 fstab-decode umount $FLAGS $DIRS || :
 		ES=$?
 		[ "$VERBOSE" = no ] || log_action_end_msg $ES
 	fi
@@ -82,7 +81,7 @@ do_stop () {
 	# emit unmounted-remote-filesystems hook point so any upstart jobs
 	# that support remote filesystems can be stopped
 	if [ -x /sbin/initctl ]; then
-		initctl --quiet emit -n unmounted-remote-filesystems 2>/dev/null || true
+		initctl --quiet emit unmounted-remote-filesystems 2>/dev/null || true
 	fi
 }
 

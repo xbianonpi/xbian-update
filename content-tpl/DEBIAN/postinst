@@ -162,7 +162,6 @@ mountnfs-bootclean.sh \
 mountnfs.sh \
 dbus \
 mtab.sh \
-networking \
 hostname.sh \
 mountkernfs.sh \
 mountdevsubfs.sh \
@@ -602,7 +601,7 @@ EOF
                 mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd switch_cpu_governor
 
             #rc2.d
-            insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon networking console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
+            insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
             insrem loadcpufreq cpufrequtils hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
 
             #rc6.d
@@ -612,7 +611,7 @@ EOF
 
             insserv -f -d sendsigs >/dev/null 2>&1
 
-            rm -f /etc/init.d/rpcbind > /dev/null 2>&1
+            rm -f /etc/init.d/rpcbind /etc/init.d/networking > /dev/null 2>&1
             rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
             rm -f /etc/init/dbus-reconnect.conf > /dev/null 2>&1
 

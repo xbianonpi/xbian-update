@@ -100,11 +100,10 @@ do_stop () {
 	    report_unkillable
 	    log_action_begin_msg "Killing all remaining processes"
 	    killall5 -9 $OMITPIDS # SIGKILL
-	    log_action_end_msg 1
 	else
 	    log_action_begin_msg "All processes ended within $seq seconds"
-	    log_action_end_msg 0
 	fi
+	log_action_end_msg 0
 }
 
 case "$1" in
