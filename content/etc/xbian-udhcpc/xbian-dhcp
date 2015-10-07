@@ -17,6 +17,7 @@ case $1 in
         ip link set ${interface} up || :
 
         [ -z "$METHOD" ] && METHOD=dhcp
+        sed -i '/127.0.2.1/d' /etc/hosts
         [ -z "$dhcp_hostname" ] && dhcp_hostname=$(hostname -s)
         echo DHCPDISCOVER >&2
         # <client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
@@ -35,10 +36,16 @@ case $1 in
             fi
         fi
         leasetime=$(cat /run/net-$interface.conf | grep DHCPLEASETIME | awk -F'=' '{print $2}' |tr -d "'")
-        if grep -q 127.0.2.1 /etc/hosts; then
-            sed -i "s%127.0.2.1.*%127.0.2.1 $(hostname)%" /etc/hosts
-        else
-            echo "127.0.2.1 $(hostname)" >> /etc/hosts
+        dnshostname=$(awk -F'=' '$1 ~ /HOSTNAME/ {print $2}' /run/net-$interface.conf | tr -d "'" )
+        if [ -n "$dnshostname" ]; then
+            dnsdomain=$(awk -F'=' '$1 ~ /DNSDOMAIN/ {print $2}' /run/net-$interface.conf | tr -d "'" )
+            [ -z "$dnsdomain" ] || dnshostname=$dnshostname.$dnsdomain
+            hostname "$dnshostname"
+            if grep -q 127.0.2.1 /etc/hosts; then
+                sed -i "s%127.0.2.1.*%127.0.2.1 $dnshostname $(hostname -s)%" /etc/hosts
+            else
+                echo "127.0.2.1 $dnshostname $(hostname -s)" >> /etc/hosts
+            fi
         fi
 	;;
 
