@@ -1,4 +1,4 @@
-start on net-device-up
+start on net-device-up IFACE=lo
 
 pre-start script
     do_modprobe() {
