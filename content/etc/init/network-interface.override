@@ -16,6 +16,8 @@ pre-start script
                 ip link set $INTERFACE up  || :; sleep 3
                 ifplugstatus $INTERFACE | grep -q 'link beat detected' || { ip link set $INTERFACE down || :; stop; exit 0; }
                 TO=8; AUTOONLY=
+            else
+                ip link show dev $INTERFACE | grep ".*$INTERFACE:.*state UP.*" && AUTOONLY="$AUTOONLY --force"
             fi
             ;;
         wlan?)
