@@ -12,6 +12,9 @@ pre-start script
 
 	[ -f /etc/samba/smb.conf ] || { stop; exit 0; }
 
+	sstat=$(xbian-config services status samba || echo 'samba 1')
+	[ $sstat = 'samba 1' -o $sstat = 'samba 3' ] || { stop; exit 0; }
+
 	install -o root -g root -m 755 -d /var/run/samba
 	NMBD_DISABLED=`testparm -s --parameter-name='disable netbios' 2>/dev/null || true`
 
