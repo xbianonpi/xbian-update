@@ -14,18 +14,25 @@ ifdwn() {
 case $1 in
     bound|renew)
 
-        ip link set ${interface} up || :
+        [ "$1" = renew ] || ip link set ${interface} up || :
 
         [ -z "$METHOD" ] && METHOD=dhcp
-        sed -i '/127.0.2.1/d' /etc/hosts
         [ -z "$dhcp_hostname" ] && dhcp_hostname=$(hostname -s)
         echo DHCPDISCOVER >&2
         # <client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
-        ipconfig -t 30 "::::${dhcp_hostname}:${interface}:${METHOD}"  1>/dev/null || \
+        if [ "$1" = renew ]; then
+            tmout=240
+            IPPREV=$(awk -F'=' '$1 ~ /IPV4ADDR/ {print $2}' /run/net-$interface.conf | tr -d "'" )
+        else
+            tmout=60
+            IPPREV=''
+        fi
+        ipconfig -t $tmout "${IPPREV}::::${dhcp_hostname}:${interface}:${METHOD}"  1>/dev/null || \
             ip link set $interface down; 
-            ipconfig -t 60 "::::${dhcp_hostname}:${interface}:${METHOD}" 1>/dev/null
+            ipconfig -t $((tmout * 2)) "${IPPREV}::::${dhcp_hostname}:${interface}:${METHOD}" 1>/dev/null
         [ $? -eq 124 ] && { echo Terminated >&2; ip link set $interface down || :; exit 1; }
         echo bound >&2
+        sed -i '/127.0.2.1/d' /etc/hosts
 
         R=$(update_resolv)
         if echo $R | grep -q nameserver; then 
@@ -81,7 +88,7 @@ if [ "$1" = bound ]; then
 fi
 
 trap 'ifdwn' USR2 KILL TERM
-sleep $((leasetime + 50)) & spid=$! && echo $spid > $pidfile
+sleep $((leasetime - 50)) & spid=$! && echo $spid > $pidfile
 
 if wait "$spid"; then
     pidfile="$pidfile" interface="$interface" exec $0 renew
