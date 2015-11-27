@@ -5,6 +5,8 @@ task
 
 nice -2
 
+console none
+
 pre-start script
     [ ! -e /etc/default/xbian-module-init-tools ] || . /etc/default/xbian-module-init-tools || :
 
