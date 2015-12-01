@@ -10,6 +10,8 @@ case $DEVNAME in
         chmod 664 /sys$DEVPATH/blank
         chown root:video /sys$DEVPATH/state
         chmod 664 /sys$DEVPATH/state
+        chown root:video /sys$DEVPATH/ntsc_mode
+        chmod 664 /sys$DEVPATH/ntsc_mode
     ;;
 esac
 

@@ -6,8 +6,6 @@ script
     # compatibility; should go away soon
     [ -d /dev/.initramfs/varrun ] && cp -a /dev/.initramfs/varrun/* /run/ || true
 
-    mkdir -p /run/sendsigs.omit.d || :
-
     # Background the initial motd seeding
     [ -d "/etc/update-motd.d" ] && run-parts --lsbsysinit /etc/update-motd.d > /run/motd.dynamic || : &
     exit 0

@@ -4,7 +4,7 @@ stop on filesystem
 emits mountall
 emits xbian-nowait
 
-nice -1
+nice -2
 
 pre-start script
     [ ! -e /run/mountall.runok ] || { stop; exit 0; }
