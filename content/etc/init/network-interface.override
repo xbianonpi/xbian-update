@@ -27,8 +27,7 @@ pre-start script
 
     if [ "$INTERFACE" = lo ]; then
 	# bring this up even if /etc/network/interfaces is broken
-	ip a replace 127.0.0.1/8 dev lo || true
-	ip link set dev lo up || :
+	ifconfig lo 127.0.0.1 up || true
 	initctl emit -n net-device-up \
 	    IFACE=lo LOGICAL=lo ADDRFAM=inet METHOD=loopback || true
     fi
