@@ -1,0 +1,50 @@
+#!/bin/sh
+
+exec >/dev/null
+
+__devroot() {
+    [ ! -e /dev/root ] || return 0
+
+    export $(tr " " "\n" < /proc/cmdline | grep root=)
+    [ -n "$root" ] || root=/dev/mmcblk0p2
+    [ $root = /dev/nfs ] || ln -s $root /dev/root 2>/dev/null| :
+}
+
+__devroot
+
+t="$2"
+b=$1
+remount=no
+
+tp=""
+[ "$b" = /dev/root ] && export $(tr " " "\n" < /proc/cmdline | grep rootfstype=)
+[ -z "$rootfstype" ] && export rootfstype=$(blkid $b -o value -s TYPE)
+echo $@ | grep -q remount && remount=yes
+set -- $(echo $@|sed s/nobootwait//g)
+
+if /bin/mountpoint -q "$t" && [ $remount = yes ]; then
+    while test $1 != '-o'; do shift ; done
+    shift
+    /bin/mount -i --no-canonicalize -o remount,$(echo $@) $b $t || :
+elif ! /bin/mountpoint -q "$t"; then
+    trap "initctl emit -n mounted MOUNTPOINT='$2'" TERM EXIT KILL
+
+    [ $rootfstype != nfs ] || exit 0
+    [ $rootfstype != btrfs ] && findmnt -S $b && exit 0
+
+    grep -w $b /etc/fstab | grep -w $t | \
+        while read sa sb sc sd se sf; do
+            [ "$sf" -eq 1 ] || continue
+            [ -x "/sbin/fsck.$rootfstype" ] || continue
+
+            if [ "$rootfstype" = vfat ]; then
+                "/sbin/fsck.$rootfstype" -aw $b
+            else
+                "/sbin/fsck.$rootfstype" -fy $b 2>/dev/null
+            fi
+        done
+
+    /bin/mount -i -t $rootfstype --no-canonicalize $@ || :
+fi
+
+exit 0
