@@ -1,15 +1,15 @@
 start on started xbian-run
 stop on filesystem
 
-emits mountall
 emits xbian-nowait
 
-nice -2
+nice -5
 
 pre-start script
+    [ ! -e /var/log/mountall-orig.log ] || date > /var/log/mountall-orig.log || :
     [ ! -e /run/mountall.runok ] || { stop; exit 0; }
     if [ "$(findmnt -o FSTYPE -r -n /)" != zfs ]; then
-        exec /bin/mount --no-canonicalize -va -t xbian || :
+        exec /bin/mount --no-canonicalize -a -t xbian || :
     else
         zfs mount -a ||:
     fi
