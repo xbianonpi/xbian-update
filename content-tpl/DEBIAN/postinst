@@ -827,6 +827,9 @@ EOF
 	    grep -q "UTC" /etc/default/rcS || echo -e "\nUTC=yes\n" >> /etc/default/rcS
 	fi
 
+        rm -fr /home/xbian/.xbmc/addons/repo.xbian.xbmc || :
+        rm -fr /home/xbian/.kodi/addons/repo.xbian.xbmc || :
+
 case $PLATFORM in
     RPI)
         if grep -wq "rootfstype=btrfs" /proc/cmdline; then
