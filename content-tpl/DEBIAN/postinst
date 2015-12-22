@@ -687,17 +687,17 @@ EOF
 
             grep -v '.* /home ' /etc/fstab > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
-            echo "/dev/root             /home                   xbian   subvol=home/@,noatime,nobootwait           0       0" >> /etc/fstab
+            echo "/dev/root             /home                   xbian   subvol=home/@,noatime,nobootwait,rw           0       0" >> /etc/fstab
 
             if grep -wq "/lib/modules" /etc/fstab; then
                 grep -wv "/lib/modules" /etc/fstab > /etc/fstab.new
                 mv /etc/fstab.new /etc/fstab
             fi
-            echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime,nobootwait        0       0" >> /etc/fstab
+            echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime,nobootwait,rw        0       0" >> /etc/fstab
 
             grep -v '^\/dev\/.* *\/ ' /etc/fstab > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
-            echo "/dev/root             /                       xbian   noatime,nobootwait                         0       0" >> /etc/fstab
+            echo "/dev/root             /                       xbian   noatime,nobootwait,rw                         0       0" >> /etc/fstab
 
             if grep -wq "/proc" /etc/fstab; then
                 grep -wv "/proc" /etc/fstab > /etc/fstab.new
@@ -706,7 +706,7 @@ EOF
 
             grep -wv "/boot" /etc/fstab > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
-            echo "$bp        /boot                   xbian   rw,nobootwait                              0       1" >> /etc/fstab
+            echo "$bp        /boot                   xbian   rw,nobootwait                              1       1" >> /etc/fstab
 
             if ! grep -wq "/run/user" /etc/fstab; then
                 echo "none            /run/user                       tmpfs                   noauto                  0       0" >> /etc/fstab
