@@ -1,4 +1,5 @@
-start on started xbian-run
+start on startup or mountall
+stop on filesystem
 
 pre-start script
     [ ! -e /var/log/mountall-orig.log ] || date > /var/log/mountall-orig.log || :
