@@ -1,4 +1,4 @@
-start on started mounted-run
+start on mounted MOUNTPOINT=/run
 
 pre-start script
 	do_modprobe() {
