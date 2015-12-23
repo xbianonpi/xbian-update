@@ -27,20 +27,23 @@ if /bin/mountpoint -q "$t" && [ $remount = yes ]; then
     shift
     /bin/mount -i --no-canonicalize -o remount,$(echo $@) $b $t || :
 elif ! /bin/mountpoint -q "$t"; then
+
+    [ "$UPSTART_JOB" = mountall ] || \
     trap "initctl emit -n mounted MOUNTPOINT='$2'" TERM EXIT KILL
 
     [ $rootfstype != nfs ] || exit 0
     [ $rootfstype != btrfs ] && findmnt -S $b && exit 0
 
+    [ "$UPSTART_JOB" = mountall ] || \
     grep -w $b /etc/fstab | grep -w $t | \
         while read sa sb sc sd se sf; do
             [ "$sf" -eq 1 ] || continue
             [ -x "/sbin/fsck.$rootfstype" ] || continue
 
             if [ "$rootfstype" = vfat ]; then
-                "/sbin/fsck.$rootfstype" -aw $b
+                "/sbin/fsck.$rootfstype" -aw $b ||:
             else
-                "/sbin/fsck.$rootfstype" -fy $b 2>/dev/null
+                "/sbin/fsck.$rootfstype" -fy $b 2>/dev/null ||:
             fi
         done
 
