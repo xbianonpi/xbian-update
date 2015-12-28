@@ -1,4 +1,4 @@
-start on stopped xbmc-preload or xbmc-failed-start or failsafe-boot
+start on (started xbian-net and stopped xbmc-preload) or xbmc-failed-start or failsafe-boot
 stop on runlevel [06]
 
 pre-start script
