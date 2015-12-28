@@ -609,6 +609,8 @@ EOF
             insrem /etc/init.d/kbd xbian-waiter fake-hwclock autofs > /dev/null 2>&1
             insrem rsync ntp anacron networking > /dev/null 2>&1
 
+            insrem triggerhappy > /dev/null 2>&1
+
             insserv -f -d sendsigs >/dev/null 2>&1
 
             rm -f /etc/init.d/rpcbind /etc/init.d/networking > /dev/null 2>&1
