@@ -6,7 +6,7 @@ env INTERFACE=lo
 env AUTOONLY='--allow auto'
 env TO=60
 
-nice -12
+nice -5
 
 pre-start script
     mkdir -p /run/network
@@ -27,7 +27,6 @@ pre-start script
 
     if [ "$INTERFACE" = lo ]; then
 	# bring this up even if /etc/network/interfaces is broken
-	ifconfig lo 127.0.0.1 up || true
 	initctl emit -n net-device-up \
 	    IFACE=lo LOGICAL=lo ADDRFAM=inet METHOD=loopback || true
     fi
