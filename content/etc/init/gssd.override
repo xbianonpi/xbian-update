@@ -1,4 +1,4 @@
-start on mounted MOUNTPOINT=/run
+start on mounted MOUNTPOINT=/run and mounted MOUNTPOINT=/lib/modules
 
 pre-start script
 	do_modprobe() {

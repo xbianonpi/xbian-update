@@ -1,4 +1,4 @@
-start on mounted MOUNTPOINT=/run
+start on mounted MOUNTPOINT=/run and mounted MOUNTPOINT=/lib/modules
 
 env DEFAULTFILE=/etc/default/nfs-common
 
