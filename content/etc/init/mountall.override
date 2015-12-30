@@ -1,17 +1,13 @@
 start on startup or mountall
-stop on filesystem
 
 pre-start script
     [ ! -e /var/log/mountall-orig.log ] || date > /var/log/mountall-orig.log || :
-    [ ! -e /run/mountall.runok ] || { stop; exit 0; }
     [ "$(findmnt -o FSTYPE -r -n /)" = zfs ] || exit 0
 
     zfs mount -a ||:
 end script
 
 post-stop script
-    [ ! -e /run/mountall.runok ] || exit 0
     rm -f /lib/modules/$(uname -r)/build || :
     ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build || :
-    touch /run/mountall.runok
 end script
