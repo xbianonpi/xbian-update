@@ -68,7 +68,8 @@ cat << \EOF > /home/xbian/.xbmc/userdata/advancedsettings.xml
 EOF
             fi
 
-            sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
+            [ ! -e /home/xbian/.xbmc/userdata/advancedsettings.xml ] || \
+                sed -i --follow-symlinks 's/<bginfoloadermaxthreads>.*<\/bginfoloadermaxthreads>/<bginfoloadermaxthreads>5<\/bginfoloadermaxthreads>/g' /home/xbian/.xbmc/userdata/advancedsettings.xml >/dev/null 2>&1 
 
             grep -v "<destroywindowcontrols>\|<useddsfanart>\|<visualizedirtyregions>\|<streamsilence>\|</advancedsettings>\|<algorithmdirtyregions>\|<nofliptimeout>" /home/xbian/.xbmc/userdata/advancedsettings.xml > /home/xbian/.xbmc/userdata/advancedsettings.xml.new
             echo "
@@ -739,8 +740,10 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
             # We also don't check the version for Kodi as it was rebranded in 14.0
             [ $(kodi_getver) -le 12 ] && [ -e /usr/local/lib/xbmc/xbmc.bin ] && adaptAdvancedSettings 2>/dev/null
             if [ $(kodi_getver) -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
-                sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
-                sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
+                [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
+                    sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
+                [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
+                    sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
             fi
 
             { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
@@ -776,9 +779,11 @@ updates_2015() {
 
         test -e /etc/apt/apt.conf.d/03forceloop || echo "APT::Force-LoopBreak true;" > /etc/apt/apt.conf.d/03forceloop
 
-        cp /home/xbian/.kodi/userdata/advancedsettings.xml /home/xbian/.kodi/userdata/advancedsettings.xml.xbian_update
+        [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
+            cp /home/xbian/.kodi/userdata/advancedsettings.xml /home/xbian/.kodi/userdata/advancedsettings.xml.xbian_update
         for f in visualizedirtyregions destroywindowcontrols useddsfanart; do
-            sed -i --follow-symlinks "/<$f>/d" /home/xbian/.kodi/userdata/advancedsettings.xml
+            [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
+                sed -i --follow-symlinks "/<$f>/d" /home/xbian/.kodi/userdata/advancedsettings.xml
         done
 
 cat <<\EOF > /etc/xbian_banner
