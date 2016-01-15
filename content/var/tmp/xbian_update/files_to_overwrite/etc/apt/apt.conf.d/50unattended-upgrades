@@ -4,15 +4,11 @@ Unattended-Upgrade::Origins-Pattern {
         // Note that this will silently match a different release after
         // migration to the specified archive (e.g. testing becomes the
         // new stable).
-        "o=Debian,a=jessie";
-        "o=Debian,a=stable";
-        "o=Raspbian,a=stable";
-        "o=Raspbian,a=stable-updates";
-//      "o=Raspbian,a=proposed-updates";
-        "origin=Raspbian,archive=stable,label=Raspbian-Security";
+        "a=stable";
+        "a=stable-updates";
         "origin=XBian,archive=stable";
-//        "origin=XBian,archive=staging";
-//        "origin=XBian,archive=devel";
+        "origin=XBian,archive=staging";
+//        "origin=XBian,a=devel";
 };
 
 // List of packages to not update
@@ -36,7 +32,7 @@ Unattended-Upgrade::AutoFixInterruptedDpkg "true";
 // they can be interrupted with SIGUSR1. This makes the upgrade
 // a bit slower but it has the benefit that shutdown while a upgrade
 // is running is possible (with a small delay)
-Unattended-Upgrade::MinimalSteps "false";
+Unattended-Upgrade::MinimalSteps "true";
 
 // Install all unattended-upgrades when the machine is shuting down
 // instead of doing it in the background while the machine is running
