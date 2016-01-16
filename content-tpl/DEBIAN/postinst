@@ -824,7 +824,7 @@ EOF
         fi
 
         dpkg --compare-versions $version lt 1011 && version1011
-        dpkg --compare-versions $version lt 20151231 && version102x
+        dpkg --compare-versions $version lt 20161231 && version102x
 
         updates_2015
 
