@@ -108,7 +108,7 @@ do_stop () {
 			log_end_msg $?
 		fi
 	fi
-	grep -qw splash /proc/cmdline && { sleep 1; /usr/bin/splash --msgtxt="system halted." --percentage=100; sleep 1; } || :
+	grep -qw splash /proc/cmdline && { /usr/bin/splash --msgtxt="system halted." --percentage=100; } || :
 }
 
 case "$1" in

@@ -2,7 +2,7 @@
 ### BEGIN INIT INFO
 # Provides:          sendsigs
 # Required-Start:    
-# Required-Stop:     
+# Required-Stop:     umountnfs
 # Default-Start:
 # Default-Stop:      0 6
 # Short-Description: Kill all remaining processes.
@@ -22,6 +22,14 @@ report_unkillable() {
 		echo "Currently running processes (ps):"
 		ps -ef
 	fi
+}
+
+upstart_killed_jobs () {
+	initctl list | grep 'stop/killed'
+}
+
+upstart_jobs () {
+	initctl list | grep -E '(start/|stop/killed)' | sed -n -e "/process [0-9]/s/.*process //p"
 }
 
 do_stop () {
@@ -53,7 +61,7 @@ do_stop () {
 	# SIGTERM/SIGKILL just like this, so if they're still running,
 	# they're supposed to be
 	if [ -x /sbin/initctl ]; then
-		for pid in $(initctl list | sed -n -e "/process [0-9]/s/.*process //p"); do
+		for pid in $(upstart_jobs); do
 			OMITPIDS="${OMITPIDS:+$OMITPIDS }-o $pid"
 		done
 	fi
@@ -70,7 +78,9 @@ do_stop () {
 	killall5 -15 $OMITPIDS # SIGTERM
 	log_action_end_msg 0
 	alldead=""
+	OMITPIDS0="$OMITPIDS"
 	for seq in 1 2 3 4 5 6 7 8 9 10; do
+		OMITPIDS="$OMITPIDS0"
 		# use SIGCONT/signal 18 to check if there are
 		# processes left.  No need to check the exit code
 		# value, because either killall5 work and it make
@@ -82,7 +92,7 @@ do_stop () {
 		# the list.  If we did miss one starting up, this beats waiting
 		# 10 seconds before shutting down.
 		if [ -x /sbin/initctl ]; then
-		    for pid in $(initctl list | sed -n -e "/process [0-9]/s/.*process //p"); do
+		    for pid in $(upstart_jobs); do
 			OMITPIDS="${OMITPIDS:+$OMITPIDS }-o $pid"
 		    done
 		fi
@@ -95,7 +105,7 @@ do_stop () {
 
 		sleep 1
 	done
-	grep -qw splash /proc/cmdline && /usr/bin/splash --msgtxt="all killed. unmounting fs." --percentage=75 || : &
+	grep -qw splash /proc/cmdline && /usr/bin/splash --msgtxt="all killed. unmounting fs." --percentage=75 || :
 	if [ -z "$alldead" ] ; then
 	    report_unkillable
 	    log_action_begin_msg "Killing all remaining processes"
