@@ -1,4 +1,5 @@
 start on startup or mountall
+stop on starting rcS or runlevel [06]
 
 pre-start script
     [ ! -e /var/log/mountall-orig.log ] || date > /var/log/mountall-orig.log || :
