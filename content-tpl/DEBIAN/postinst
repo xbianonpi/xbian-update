@@ -560,6 +560,13 @@ EOF
     }
             echo "updating to 1.0 Beta 2"
 
+            if ! grep -q '^/usr/sbin/update-rc.d' /var/lib/dpkg/info/sysv-rc.list; then
+                mv /var/tmp/xbian_update/pchanges/update-rc.d /usr/sbin && chmod 755 /usr/sbin/update-rc.d
+                echo "/usr/sbin/update-rc.d" >> /var/lib/dpkg/info/sysv-rc.list
+                (cd /; md5sum usr/sbin/update-rc.d ) >> /var/lib/dpkg/info/sysv-rc.md5sums
+                sed -i '/update-rc.d/d' /var/lib/dpkg/info/xbian-update.{list,md5sums}
+            fi
+
             btrfs-auto-snapshot destroy root/@safe &>/dev/null; btrfs-auto-snapshot destroy home/@safe &>/dev/null
 
             find /etc -iname \*.dpkg-new | xargs -L1 rm -f
