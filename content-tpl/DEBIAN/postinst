@@ -629,7 +629,6 @@ EOF
             rm -fr /etc/apt/apt.conf.d/50raspi
             rm -fr /etc/apt/sources.list.d/raspi.list
 
-            insserv -f umountnfs.sh  > /dev/null 2>&1
             insserv -f > /dev/null 2>&1
             initctl -q reload-configuration >/dev/null 2>&1
 
