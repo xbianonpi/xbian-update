@@ -40,6 +40,7 @@ elif ! /bin/mountpoint -q "$t"; then
             [ "$sf" -eq 1 ] || continue
             [ -x "/sbin/fsck.$rootfstype" ] || continue
 
+            [ -e "$b" ] || exit 1
             if [ "$rootfstype" = vfat ]; then
                 "/sbin/fsck.$rootfstype" -aw $b ||:
             else
