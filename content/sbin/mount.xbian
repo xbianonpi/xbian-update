@@ -28,13 +28,13 @@ if /bin/mountpoint -q "$t" && [ $remount = yes ]; then
     /bin/mount -i --no-canonicalize -o remount,$(echo $@) $b $t || :
 elif ! /bin/mountpoint -q "$t"; then
 
-    [ "$UPSTART_JOB" = mountall ] || \
+    [ "$UPSTART_JOB" = mountall -a "$PROCESS" = main ] || \
     trap "initctl emit -n mounted MOUNTPOINT='$2'" TERM EXIT KILL
 
     [ $rootfstype != nfs ] || exit 0
     [ $rootfstype != btrfs ] && findmnt -S $b && exit 0
 
-    [ "$UPSTART_JOB" = mountall ] || \
+    [ "$UPSTART_JOB" = mountall -a "$PROCESS" = main ] || \
     grep -w $b /etc/fstab | grep -w $t | \
         while read sa sb sc sd se sf; do
             [ "$sf" -eq 1 ] || continue
