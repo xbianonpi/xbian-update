@@ -103,7 +103,7 @@ do_stop () {
 		    break
 		fi
 
-		sleep 1
+		sleep 0.5
 	done
 	grep -qw splash /proc/cmdline && /usr/bin/splash --msgtxt="all killed. unmounting fs." --percentage=75 || :
 	if [ -z "$alldead" ] ; then
