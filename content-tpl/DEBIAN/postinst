@@ -902,7 +902,7 @@ esac
 ###############################################################################
 #        sed -i 's%console=.*? %console=tty7%' /boot/cmdline.txt
 
-	chown -Rc xbian:xbian /home/xbian >/dev/null 2>&1
+	find /home/xbian -xdev -type f -o -type d -print0 | xargs -0 chown xbian:xbian >/dev/null 2>&1
 	rm -fr /var/tmp/xbian_update
 
         test -f /etc/init/smbd.conf || touch /etc/init/smbd.conf;
