@@ -1,5 +1,3 @@
-start on mounted MOUNTPOINT=/run and mounted MOUNTPOINT=/lib/modules
-
 env DEFAULTFILE=/etc/default/nfs-common
 
 pre-start script
@@ -10,6 +8,10 @@ pre-start script
 
         if [ -f "$DEFAULTFILE" ]; then
                 . "$DEFAULTFILE"
+        fi
+
+        if [ "$TYPE" = nfs4 -a "$UPSTART_EVENTS" = mounting ]; then
+                NEED_IDMAPD=yes
         fi
 
         if [ -z "$NEED_IDMAPD" ]; then

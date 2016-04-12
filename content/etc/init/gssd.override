@@ -1,5 +1,3 @@
-start on mounted MOUNTPOINT=/run and mounted MOUNTPOINT=/lib/modules
-
 pre-start script
 	do_modprobe() {
 		modprobe -q "$1" || true
@@ -7,6 +5,10 @@ pre-start script
 
 	if [ -f "$DEFAULTFILE" ]; then
 		. "$DEFAULTFILE"
+	fi
+
+	if [ "$TYPE" = nfs4 -a "$UPSTART_EVENTS" = mounting ]; then
+		NEED_GSSD=yes
 	fi
 
 	[ "x$NEED_GSSD" = xyes ] || { stop; exit 0; }
