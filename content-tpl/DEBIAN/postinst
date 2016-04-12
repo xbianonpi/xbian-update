@@ -177,6 +177,7 @@ motd \
 openbsd-inetd \
 procps \
 udev \
+udev-finish \
 fake-hwclock \
 udev-mtab \
 autofs \
