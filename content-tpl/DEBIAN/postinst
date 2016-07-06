@@ -787,7 +787,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
         }
 ############################## 1.0.2-x END   ###################################
 updates_2015() {
-        do_targetver "20160706-0"
+        do_targetver "__DATE__"
 
         ! test -e /usr/local/include/xbian-config/config/services || \
             grep -q 'xbian-firewall' /usr/local/include/xbian-config/config/services || echo 'xbian-firewall:' >> /usr/local/include/xbian-config/config/services
