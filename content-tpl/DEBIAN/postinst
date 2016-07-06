@@ -33,6 +33,25 @@ xbianGroups(){
     usermod -a -G audio,video,input xbian
 }
 
+superRepo(){
+        KODI="$(cat /var/lib/dpkg/status | grep ^"Description: XBMC" | cut -f 3 -d ' ' | tr -d '()' | cut -f 2 -d '/')"
+        [ -z $KODI ] && KODI="jarvis"
+        for SOURCESXML in $(find /home/xbian -name sources.xml); do
+           if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" $SOURCESXML | wc -l) -eq 0 ]; then
+               sed -i --follow-symlinks "s|<files>|<files>\n\t<default pathversion=\"1\"></default>\n\t<source>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion=\"1\">http://srp.nu/${KODI}/</path>\n\t</source>|g" $SOURCESXML
+               if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" $SOURCESXML | wc -l) -eq 1 ]; then
+                   echo "Success: changed Fusion to SuperRepo in $SOURCESXML" >> /home/xbian/xbian-update.log;
+               else
+                   echo "Error: failed to change Fusion to SuperRepo $SOURCESXML" >> /home/xbian/xbian-update.log;
+               fi
+           else
+               echo "Notice: Updating SuperRepo URL in $SOURCESXML" >> /home/xbian/xbian-update.log;
+               sed -i "s|http://use.superrepo.org/.*</path>|http://srp.nu/${KODI}/</path>|g" $SOURCESXML
+               sed -i "s|http://srp.nu/.*</path>|http://srp.nu/${KODI}/</path>|g" $SOURCESXML
+           fi
+        done
+}
+
 adaptAdvancedSettings(){
             if [ "$(stat --printf="%s" /home/xbian/.xbmc/userdata/advancedsettings.xml)" -eq 0 ]; then
 cat << \EOF > /home/xbian/.xbmc/userdata/advancedsettings.xml
@@ -257,17 +276,8 @@ if [ $1 == "configure" ]; then
 
 	echo "7) Adding SuperRepo"
 
-	if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 0 ];	then
-        sed -i --follow-symlinks 's|<files>|<files>\n\t<default pathversion="1"></default>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion="1">http://use.superrepo.org/Frodo</path>|g' /home/xbian/.xbmc/userdata/sources.xml
-		if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" /home/xbian/.xbmc/userdata/sources.xml| wc -l) -eq 1 ];	then
-			echo "Success: changed Fusion to SuperRepo" >> /home/xbian/xbian-update.log; 
-		else
-			echo "Error: failed to change Fusion to SuperRepo" >> /home/xbian/xbian-update.log; 
-		fi
-	else
-		echo "Notice: Fusion already replaced by SuperRepo" >> /home/xbian/xbian-update.log; 
-	fi
-
+	superRepo
+	
 	echo "8) Modifying avahi-deamon defaults"
 
 	if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=1"  /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
@@ -777,7 +787,7 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
         }
 ############################## 1.0.2-x END   ###################################
 updates_2015() {
-        do_targetver "__DATE__"
+        do_targetver "20160706-0"
 
         ! test -e /usr/local/include/xbian-config/config/services || \
             grep -q 'xbian-firewall' /usr/local/include/xbian-config/config/services || echo 'xbian-firewall:' >> /usr/local/include/xbian-config/config/services
@@ -836,6 +846,8 @@ EOF
         updates_2015
 
         rmlibshairport
+        
+        superRepo
 
 	if [ -e /dev/rtc0 ]; then
 	    grep -q "UTC" /etc/default/rcS || echo -e "\nUTC=yes\n" >> /etc/default/rcS
