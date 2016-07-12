@@ -46,7 +46,7 @@ superRepo(){
                fi
            else
                echo "Notice: Updating SuperRepo URL in $SOURCESXML" >> /home/xbian/xbian-update.log;
-               sed -i "s|http://use.superrepo.org/.*</path>|http://srp.nu/${KODI}/</path>|g" $SOURCESXML
+               sed -i -r "s|http://(use\|mirrors).superrepo.org/.*</path>|http://srp.nu/${KODI}/</path>|g" $SOURCESXML
                sed -i "s|http://srp.nu/.*</path>|http://srp.nu/${KODI}/</path>|g" $SOURCESXML
            fi
         done
