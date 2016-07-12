@@ -34,7 +34,7 @@ xbianGroups(){
 }
 
 superRepo(){
-        KODI="$(cat /var/lib/dpkg/status | grep ^"Description: XBMC" | cut -f 3 -d ' ' | tr -d '()' | cut -f 2 -d '/')"
+        KODI="$(dpkg-query -W --showformat='${Package} %%${Origin}%% %%${Status}%% %%${Description}%%\n'  | grep -i '%%XBian%%' | grep '%%XBMC (' | grep -w '%%install ok installed%%' | cut -f 7 -d ' ' | tr -d '()' | cut -f 2 -d '/')"
         [ -z $KODI ] && KODI="jarvis"
         for SOURCESXML in $(find /home/xbian -name sources.xml); do
            if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" $SOURCESXML | wc -l) -eq 0 ]; then
