@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Note: is called by /lib/udev/rules.d/99-zz-xbian.rules
+# $1: Network device to add into /etc/network/interfaces
+
+if ! grep -q  ^"iface $1" /etc/network/interfaces; then
+    echo ""                   >> /etc/network/interfaces
+    echo "allow-hotplug $1"   >> /etc/network/interfaces
+    echo "iface $1 inet dhcp" >> /etc/network/interfaces
+fi
