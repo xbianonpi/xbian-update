@@ -33,6 +33,11 @@ for f in $(find ./content-tpl -type f -printf "%P\n"); do
     sed -i "s%__DATE__%$version%g" ./content/$f
 done
 
+# Do not owerwrite files in /etc/modprobe.d
+for f in $(find content/etc/modprobe.d/ -type f -name "*.conf" -printf "%f\n"); do
+    echo etc/modprobe.d/$f >> content/DEBIAN/conffiles
+done
+
 # calculate size dynamically. remove first any entry, then add the actual 
 rm_size
 
