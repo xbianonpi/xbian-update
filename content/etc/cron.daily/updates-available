@@ -9,6 +9,14 @@ fi
 
 while pgrep apt-get > /dev/null || pgrep dpkg > /dev/null; do sleep 5; done
 
+[ -e /var/run/reboot-required ] && {
+    exec > /run/motd.dynamic
+    uname -snrv
+    /bin/echo -e "\e[5m"; /bin/echo -e "Upgrades have been installed - Please reboot to complete upgrade\e[25m
+"
+    exit 0
+}
+
 [ ! -e /run/motd.dynamic ] || \
 [ $(stat --print=%Y /run/motd.dynamic) -le "$(stat --print=%Y /var/lib/apt/periodic/update-success-stamp 2>/dev/null|| echo 9999999999)" -o -e /var/lib/apt/periodic/dpkg-run ] ||exit 0
 
