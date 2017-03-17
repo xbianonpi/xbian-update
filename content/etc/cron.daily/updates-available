@@ -7,7 +7,7 @@ if [ "$1" != do ]; then
     exit 0
 fi
 
-while pgrep apt-get > /dev/null || pgrep dpkg > /dev/null; do sleep 5; done
+while pgrep apt-get > /dev/null || pgrep dpkg > /dev/null; do sleep 120; done
 
 [ -e /var/run/reboot-required ] && {
     exec > /run/motd.dynamic
