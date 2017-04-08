@@ -554,237 +554,234 @@ EOF
 }
 ############################## 1.0-1.1 END   ###################################
 
-        version102x() {
+version102x() {
 
-    insrem() {
+        insrem() {
 
-        slist=''
+            slist=''
 
-        for s in $@; do
-            if [ -e $s -o -e /etc/init.d/$s ]; then
-                slist="$slist $(basename $s)"
-                update-rc.d -f $(basename $s) remove >/dev/null 2>&1 || :
-            fi
-        done
-
-        insserv -r $slist >/dev/null 2>&1 || :
-    }
-            echo "updating to 1.0 Beta 2"
-
-            if ! grep -q '^/usr/sbin/update-rc.d' /var/lib/dpkg/info/sysv-rc.list; then
-                mv /var/tmp/xbian_update/pchanges/update-rc.d /usr/sbin && chmod 755 /usr/sbin/update-rc.d
-                echo "/usr/sbin/update-rc.d" >> /var/lib/dpkg/info/sysv-rc.list
-                (cd /; md5sum usr/sbin/update-rc.d ) >> /var/lib/dpkg/info/sysv-rc.md5sums
-                sed -i '/update-rc.d/d' /var/lib/dpkg/info/xbian-update.{list,md5sums}
-            fi
-
-            btrfs-auto-snapshot destroy root/@safe &>/dev/null; btrfs-auto-snapshot destroy home/@safe &>/dev/null
-
-            find /etc -iname \*.dpkg-new | xargs -L1 rm -f
-            find /var/tmp/xbian_update/files_to_overwrite -type l -printf "/%P\n" | xargs -L1 rm -f
-            cp -arP --remove-destination /var/tmp/xbian_update/files_to_overwrite/* /
-
-            if [ "$(blkid -o value -s TYPE $(findmnt -n -v -o SOURCE /))" = btrfs ]; then
-                if btrfs-auto-snapshot listvol | grep -xq modules; then
-                    echo "modules volume already exists"
-                    if ! mountpoint -q /lib/modules; then
-                        mv /lib/modules /lib/modules.old
-                        mkdir /lib/modules; mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules
-                        for m in $(ls /lib/modules.old); do
-                            [ -e /lib/modules/$m ] ||  mv /lib/modules.old/$m /lib/modules/$m
-                        done
-                        rm -fr /lib/modules.old
-                    fi
-                else
-                    echo "moving modules directory"
-                    btrfs-auto-snapshot createvol modules > /dev/null 2>&1
-                    btrfs-auto-snapshot createvol modules/@ > /dev/null 2>&1
-                    td=$(mktemp -d)
-                    if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) $td 2>/dev/null; then
-                	cp -ar /lib/modules/* $td > /dev/null 2>&1
-                        umount $td
-                        rm -fr /lib/modules/*
-                        if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules; then
-                            echo "done"
-                        else
-                            echo "something wrong happened, your xbian may not boot successfully after restart. disabling restart after update finish"
-                            touch /run/noreboot
-                        fi
-                    fi
-                fi
-            fi
-
-            echo "updating services"
-            #rcS.d
-            insrem hostname.sh kmod procps bootmisc.sh rpcbind udev checkfs.sh checkroot.sh \
-                mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd switch_cpu_governor
-
-            #rc2.d
-            insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
-            insrem loadcpufreq cpufrequtils hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
-
-            #rc6.d
-            insrem /etc/init.d/kexec /etc/init.d/kexec-load > /dev/null 2>&1
-            insrem /etc/init.d/kbd xbian-waiter fake-hwclock autofs > /dev/null 2>&1
-            insrem rsync ntp anacron networking > /dev/null 2>&1
-
-            insrem triggerhappy > /dev/null 2>&1
-
-            insserv -f -d sendsigs >/dev/null 2>&1
-
-            rm -f /etc/init.d/rpcbind /etc/init.d/networking > /dev/null 2>&1
-            rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
-            rm -f /etc/init/dbus-reconnect.conf > /dev/null 2>&1
-
-            rmo
-            rm -fr /etc/apt/apt.conf.d/50raspi
-            rm -fr /etc/apt/sources.list.d/raspi.list
-
-            insserv -f > /dev/null 2>&1
-            initctl -q reload-configuration >/dev/null 2>&1
-
-            echo "updating modules"
-
-            sed -i --follow-symlinks '/frandom/d' /etc/modules
-            sed -i --follow-symlinks '/bcm2708-rng/d' /etc/modules
-            sed -i --follow-symlinks '/deadline-iosched/d' /etc/modules
-            sed -i --follow-symlinks '/cfq-iosched/d' /etc/modules
-            sed -i --follow-symlinks '/usb_storage/d' /etc/modules
-            sed -i --follow-symlinks '/vchiq/d' /etc/modules
-
-            #grep -qw lirc_rpi /etc/modules || echo "lirc_rpi" >>  /etc/modules
-
-            grep -q UseDNS /etc/ssh/sshd_config || sed -i '/UsePAM.*/a UseDNS no' /etc/ssh/sshd_config
-
-            if ! grep -wq "root=/dev/nfs" /proc/cmdline; then
-                echo "checking interfaces"
-                if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
-                    :
-                else
-                    if ip link show eth0 | grep -q "state UP" && ip addr show eth0 | grep -wq inet ; then
-                        echo "auto eth0" > /etc/network/interfaces.new
-                        cat /etc/network/interfaces >> /etc/network/interfaces.new
-                        mv /etc/network/interfaces.new /etc/network/interfaces
-                    fi
-                fi
-            fi
-
-            chmod -x /etc/network/if-up.d/mountnfs
-            chmod -x /etc/network/if-up.d/openssh-server
-            chmod -x /etc/network/if-up.d/upstart
-
-            echo "patching files"
-            for f in $(ls /var/tmp/xbian_update/diffs/*_1012 2>/dev/null); do
-                if patch -s -N --dry-run -p0 < $f > /dev/null 2>&1; then
-                    patch -s -p0 < $f || { echo "patch $f failed"; echo "patch $f failed" >> /home/xbian/xbian-update.log; }
+            for s in $@; do
+                if [ -e $s -o -e /etc/init.d/$s ]; then
+                    slist="$slist $(basename $s)"
+                    update-rc.d -f $(basename $s) remove >/dev/null 2>&1 || :
                 fi
             done
 
-            while read line; do 
-                [ -n "$line" ] && grep -v "$line" /etc/sysctl.conf > /etc/sysctl.conf.new
-                mv /etc/sysctl.conf.new /etc/sysctl.conf
-            done < /var/tmp/xbian_update/pchanges/sysctl.conf
+            insserv -r $slist >/dev/null 2>&1 || :
+        }
 
-            find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
+        echo "updating to 1.0 Beta 2"
 
-            grep -v '.* /tmp ' /etc/fstab > /etc/fstab.new
+        if ! grep -q '^/usr/sbin/update-rc.d' /var/lib/dpkg/info/sysv-rc.list; then
+            mv /var/tmp/xbian_update/pchanges/update-rc.d /usr/sbin && chmod 755 /usr/sbin/update-rc.d
+            echo "/usr/sbin/update-rc.d" >> /var/lib/dpkg/info/sysv-rc.list
+            (cd /; md5sum usr/sbin/update-rc.d ) >> /var/lib/dpkg/info/sysv-rc.md5sums
+            sed -i '/update-rc.d/d' /var/lib/dpkg/info/xbian-update.{list,md5sums}
+        fi
+
+        btrfs-auto-snapshot destroy root/@safe &>/dev/null; btrfs-auto-snapshot destroy home/@safe &>/dev/null
+
+        find /etc -iname \*.dpkg-new | xargs -L1 rm -f
+        find /var/tmp/xbian_update/files_to_overwrite -type l -printf "/%P\n" | xargs -L1 rm -f
+        cp -arP --remove-destination /var/tmp/xbian_update/files_to_overwrite/* /
+
+        if [ "$(blkid -o value -s TYPE $(findmnt -n -v -o SOURCE /))" = btrfs ]; then
+            if btrfs-auto-snapshot listvol | grep -xq modules; then
+                echo "modules volume already exists"
+                if ! mountpoint -q /lib/modules; then
+                    mv /lib/modules /lib/modules.old
+                    mkdir /lib/modules; mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules
+                    for m in $(ls /lib/modules.old); do
+                        [ -e /lib/modules/$m ] ||  mv /lib/modules.old/$m /lib/modules/$m
+                    done
+                    rm -fr /lib/modules.old
+                fi
+            else
+                echo "moving modules directory"
+                btrfs-auto-snapshot createvol modules > /dev/null 2>&1
+                btrfs-auto-snapshot createvol modules/@ > /dev/null 2>&1
+                td=$(mktemp -d)
+                if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) $td 2>/dev/null; then
+                    cp -ar /lib/modules/* $td > /dev/null 2>&1
+                    umount $td
+                    rm -fr /lib/modules/*
+                    if mount -t btrfs -o subvol=modules/@ $(findmnt / -n -o SOURCE -v) /lib/modules; then
+                        echo "done"
+                    else
+                        echo "something wrong happened, your xbian may not boot successfully after restart. disabling restart after update finish"
+                        touch /run/noreboot
+                    fi
+                fi
+            fi
+        fi
+
+        echo "updating services"
+        #rcS.d
+        insrem hostname.sh kmod procps bootmisc.sh rpcbind udev checkfs.sh checkroot.sh \
+            mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd switch_cpu_governor
+
+        #rc2.d
+        insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
+        insrem loadcpufreq cpufrequtils hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
+         #rc6.d
+        insrem /etc/init.d/kexec /etc/init.d/kexec-load > /dev/null 2>&1
+        insrem /etc/init.d/kbd xbian-waiter fake-hwclock autofs > /dev/null 2>&1
+        insrem rsync ntp anacron networking > /dev/null 2>&1
+        insrem triggerhappy > /dev/null 2>&1
+        insserv -f -d sendsigs >/dev/null 2>&1
+
+        rm -f /etc/init.d/rpcbind /etc/init.d/networking > /dev/null 2>&1
+        rm -f /etc/init/xbmc-screensaver-wait.conf > /dev/null 2>&1
+        rm -f /etc/init/dbus-reconnect.conf > /dev/null 2>&1
+
+        rmo
+        rm -fr /etc/apt/apt.conf.d/50raspi
+        rm -fr /etc/apt/sources.list.d/raspi.list
+
+        insserv -f > /dev/null 2>&1
+        initctl -q reload-configuration >/dev/null 2>&1
+
+        echo "updating modules"
+
+        sed -i --follow-symlinks '/frandom/d' /etc/modules
+        sed -i --follow-symlinks '/bcm2708-rng/d' /etc/modules
+        sed -i --follow-symlinks '/deadline-iosched/d' /etc/modules
+        sed -i --follow-symlinks '/cfq-iosched/d' /etc/modules
+        sed -i --follow-symlinks '/usb_storage/d' /etc/modules
+        sed -i --follow-symlinks '/vchiq/d' /etc/modules
+
+        #grep -qw lirc_rpi /etc/modules || echo "lirc_rpi" >>  /etc/modules
+
+        grep -q UseDNS /etc/ssh/sshd_config || sed -i '/UsePAM.*/a UseDNS no' /etc/ssh/sshd_config
+
+        if ! grep -wq "root=/dev/nfs" /proc/cmdline; then
+            echo "checking interfaces"
+            if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
+                :
+            else
+                if ip link show eth0 | grep -q "state UP" && ip addr show eth0 | grep -wq inet ; then
+                    echo "auto eth0" > /etc/network/interfaces.new
+                    cat /etc/network/interfaces >> /etc/network/interfaces.new
+                    mv /etc/network/interfaces.new /etc/network/interfaces
+                fi
+            fi
+        fi
+
+        chmod -x /etc/network/if-up.d/mountnfs
+        chmod -x /etc/network/if-up.d/openssh-server
+        chmod -x /etc/network/if-up.d/upstart
+
+        echo "patching files"
+        for f in $(ls /var/tmp/xbian_update/diffs/*_1012 2>/dev/null); do
+            if patch -s -N --dry-run -p0 < $f > /dev/null 2>&1; then
+                patch -s -p0 < $f || { echo "patch $f failed"; echo "patch $f failed" >> /home/xbian/xbian-update.log; }
+            fi
+        done
+
+        while read line; do
+            [ -n "$line" ] && grep -v "$line" /etc/sysctl.conf > /etc/sysctl.conf.new
+            mv /etc/sysctl.conf.new /etc/sysctl.conf
+        done < /var/tmp/xbian_update/pchanges/sysctl.conf
+        find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
+
+        grep -v '.* /tmp ' /etc/fstab > /etc/fstab.new
+        mv /etc/fstab.new /etc/fstab
+
+        if grep -wq 'root/@' /etc/fstab; then
+            grep -wv 'root/@' /etc/fstab >> /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
+        fi
 
-            if grep -wq 'root/@' /etc/fstab; then
-                grep -wv 'root/@' /etc/fstab >> /etc/fstab.new
-                mv /etc/fstab.new /etc/fstab
-            fi
-
-            if grep -wq '/sys/kernel/security' /etc/fstab; then
-                grep -wv '/sys/kernel/security' /etc/fstab >> /etc/fstab.new
-                mv /etc/fstab.new /etc/fstab
-            fi
-
-            if grep -wq '/sys/kernel/debug' /etc/fstab; then
-                grep -wv '/sys/kernel/debug' /etc/fstab >> /etc/fstab.new
-                mv /etc/fstab.new /etc/fstab
-            fi
-
-            grep -v '.* /home ' /etc/fstab > /etc/fstab.new
+        if grep -wq '/sys/kernel/security' /etc/fstab; then
+            grep -wv '/sys/kernel/security' /etc/fstab >> /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
-            echo "/dev/root             /home                   xbian   subvol=home/@,noatime,nobootwait,rw           0       0" >> /etc/fstab
+        fi
 
-            if grep -wq "/lib/modules" /etc/fstab; then
-                grep -wv "/lib/modules" /etc/fstab > /etc/fstab.new
-                mv /etc/fstab.new /etc/fstab
-            fi
-            echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime,nobootwait,rw        0       0" >> /etc/fstab
-
-            grep -v '^\/dev\/.* *\/ ' /etc/fstab > /etc/fstab.new
+        if grep -wq '/sys/kernel/debug' /etc/fstab; then
+            grep -wv '/sys/kernel/debug' /etc/fstab >> /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
-            echo "/dev/root             /                       xbian   noatime,nobootwait,rw                         0       0" >> /etc/fstab
+        fi
 
-            if grep -wq "/proc" /etc/fstab; then
-                grep -wv "/proc" /etc/fstab > /etc/fstab.new
-                mv /etc/fstab.new /etc/fstab
-            fi
+        grep -v '.* /home ' /etc/fstab > /etc/fstab.new
+        mv /etc/fstab.new /etc/fstab
+        echo "/dev/root             /home                   xbian   subvol=home/@,noatime,nobootwait,rw           0       0" >> /etc/fstab
 
-            grep -wv "/boot" /etc/fstab > /etc/fstab.new
+        if grep -wq "/lib/modules" /etc/fstab; then
+            grep -wv "/lib/modules" /etc/fstab > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
-            echo "$bp        /boot                   xbian   noatime,rw,private                                 0       1" >> /etc/fstab
+        fi
+        echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime,nobootwait,rw        0       0" >> /etc/fstab
 
-            if ! grep -wq "/run/user" /etc/fstab; then
-                echo "none            /run/user                       tmpfs                   noauto                  0       0" >> /etc/fstab
-            fi
-            if ! grep -wq "/run/shm" /etc/fstab; then
-                echo "none            /run/shm                        tmpfs                   noauto                  0       0" >> /etc/fstab
-            fi
-            if ! grep -wq "/run/lock" /etc/fstab; then
-                echo "none            /run/lock                       tmpfs                   noauto                  0       0" >> /etc/fstab
-            fi
+        grep -v '^\/dev\/.* *\/ ' /etc/fstab > /etc/fstab.new
+        mv /etc/fstab.new /etc/fstab
+        echo "/dev/root             /                       xbian   noatime,nobootwait,rw                         0       0" >> /etc/fstab
 
-            grep -v ^$ /etc/fstab > /etc/fstab.new
+        if grep -wq "/proc" /etc/fstab; then
+            grep -wv "/proc" /etc/fstab > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
+        fi
 
-            if test -e /etc/dhcp/dhclient.conf; then
-                sed -i 's%^initial-interval .*%initial-interval 1;%' /etc/dhcp/dhclient.conf
-                sed -i 's%^reboot .*%reboot 4;%' /etc/dhcp/dhclient.conf
-                sed -i 's%^script .*%script "/etc/xbian-udhcpc/dhclient-script-xbian";%' /etc/dhcp/dhclient.conf
-            fi
+        grep -wv "/boot" /etc/fstab > /etc/fstab.new
+        mv /etc/fstab.new /etc/fstab
+        echo "$bp        /boot                   xbian   noatime,rw,private                                 0       1" >> /etc/fstab
 
-            rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd 
+        if ! grep -wq "/run/user" /etc/fstab; then
+            echo "none            /run/user                       tmpfs                   noauto                  0       0" >> /etc/fstab
+        fi
+        if ! grep -wq "/run/shm" /etc/fstab; then
+            echo "none            /run/shm                        tmpfs                   noauto                  0       0" >> /etc/fstab
+        fi
+        if ! grep -wq "/run/lock" /etc/fstab; then
+            echo "none            /run/lock                       tmpfs                   noauto                  0       0" >> /etc/fstab
+        fi
 
-            grep -q ^"ssh " /etc/inetd.conf || echo "
+        grep -v ^$ /etc/fstab > /etc/fstab.new
+        mv /etc/fstab.new /etc/fstab
+
+        if test -e /etc/dhcp/dhclient.conf; then
+            sed -i 's%^initial-interval .*%initial-interval 1;%' /etc/dhcp/dhclient.conf
+            sed -i 's%^reboot .*%reboot 4;%' /etc/dhcp/dhclient.conf
+            sed -i 's%^script .*%script "/etc/xbian-udhcpc/dhclient-script-xbian";%' /etc/dhcp/dhclient.conf
+        fi
+
+        rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd
+
+        grep -q ^"ssh " /etc/inetd.conf || echo "
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 " >> /etc/inetd.conf
 
-            # The leading 0 ensures we always get an integer.
-            # We also don't check the version for Kodi as it was rebranded in 14.0
-            [ $(kodi_getver) -le 12 ] && [ -e /usr/local/lib/xbmc/xbmc.bin ] && adaptAdvancedSettings 2>/dev/null
-            if [ $(kodi_getver) -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
-                [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
-                    sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
-                [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
-                    sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
-            fi
+        # The leading 0 ensures we always get an integer.
+        # We also don't check the version for Kodi as it was rebranded in 14.0
+        [ $(kodi_getver) -le 12 ] && [ -e /usr/local/lib/xbmc/xbmc.bin ] && adaptAdvancedSettings 2>/dev/null
+        if [ $(kodi_getver) -gt 12 ] || [ -f /usr/local/lib/kodi/kodi.bin ]; then
+            [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
+                sed -i "s%<algorithmdirtyregions.*algorithmdirtyregions>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
+            [ ! -e /home/xbian/.kodi/userdata/advancedsettings.xml ] || \
+                sed -i "s%<nofliptimeout.*nofliptimeout>%%" /home/xbian/.kodi/userdata/advancedsettings.xml
+        fi
 
-            { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
+        { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
-            grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
-            grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
+        grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
+        grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
 
-            sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
-    	    sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
+        sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
+        sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
 
-            xbianGroups
+        xbianGroups
 
-            sed -i '/\/net.*hosts/d' /etc/auto.master
-            if [ "$PLATFORM" = "RPI" ]; then
-		sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
-	    fi
+        sed -i '/\/net.*hosts/d' /etc/auto.master
+        if [ "$PLATFORM" = "RPI" ]; then
+            sed -i 's/gpu_mem_256=.*/gpu_mem_256=100/' /boot/config.txt
+	fi
 
-            [ ! -e /etc/default/nfs-common ] && cp /var/tmp/xbian_update/pchanges/nfs-common /etc/default 
+        [ ! -e /etc/default/nfs-common ] && cp /var/tmp/xbian_update/pchanges/nfs-common /etc/default
 
-            patchPolkit
-            update-rc.d -f samba remove >/dev/null 2>&1; rm -f /etc/init.d/samba
+        patchPolkit
+        update-rc.d -f samba remove >/dev/null 2>&1; rm -f /etc/init.d/samba
 
-            [ -e /usr/lib/avahi/avahi-daemon-check-dns.sh ] && sed -i 's%^#PATH%PATH%' /usr/lib/avahi/avahi-daemon-check-dns.sh 2>/dev/null || :
-        }
+        [ -e /usr/lib/avahi/avahi-daemon-check-dns.sh ] && sed -i 's%^#PATH%PATH%' /usr/lib/avahi/avahi-daemon-check-dns.sh 2>/dev/null || :
+}
 ############################## 1.0.2-x END   ###################################
 updates_2015() {
         do_targetver "__DATE__"
@@ -830,6 +827,30 @@ EOF
         esac
 }
 ############################## 2015 END   ###################################
+updates_2017() {
+cat <<\EOF > /tmp/001-invoke-rc.d.patch
+--- /usr/sbin/invoke-rc.d.old	2017-01-18 14:17:07.000000000 +0100
++++ /usr/sbin/invoke-rc.d	2017-04-04 18:47:33.307279371 +0200
+@@ -413,8 +413,6 @@
+ 	    RC=101
+ 	elif testexec ${SSLINK} ; then
+ 	    RC=104
+-	else
+-	    RC=101
+ 	fi
+       ;;
+     esac
+EOF
+	patch --batch --dry-run /usr/sbin/invoke-rc.d < /tmp/001-invoke-rc.d.patch &>/dev/null
+	if [ $? == 0 ]; then
+	    patch /usr/sbin/invoke-rc.d < /tmp/001-invoke-rc.d.patch &>/dev/null
+	    echo "Success: applied 001-invoke-rc.d.patch" >> /home/xbian/xbian-update.log
+	else
+	    echo "Error: 001-invoke-rc.d.patch can't be applied" >> /home/xbian/xbian-update.log
+	fi
+}
+############################## 2017 END   ###################################
+
         
         [ -e /tmp/xbian-update-prev.ver ] && . /tmp/xbian-update-prev.ver
         [ -n "$version" ] || version='1000'
@@ -855,6 +876,8 @@ EOF
 
         rm -fr /home/xbian/.xbmc/addons/repo.xbian.xbmc || :
         rm -fr /home/xbian/.kodi/addons/repo.xbian.xbmc || :
+
+        updates_2017
 
 case $PLATFORM in
     RPI)
