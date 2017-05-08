@@ -15,8 +15,8 @@ do_targetver() {
 
 kodi_getver() {
     local vr
-    vr=$(xbian-apt-show-versions xbian-package-xbmc xbian-package-xbmc-6q | awk '$2 !~ /not/ {print $2}')
-    echo ${vr%%.*}
+    vr=$(dpkg -l | grep -E "xbian-package-xbmc |xbian-package-xbmc-6q " | awk '$2 !~ /not/ {print $3}')
+    [ -z $vr ] && echo 0 || echo ${vr%%.*}
 }
 
 rmlibshairport(){
@@ -212,11 +212,9 @@ rm -fr /etc/cron.daily/apt-show-versions
 rm -fr /lib/udev/rules.d/99-local-xbian.rules
 }
 
-if [ $1 == "configure" ]; then
+################################# 1.0-1.1 ######################################
 
-	rm -f /home/xbian/xbian-update.log >/dev/null 2>&1
-
-        version1011() {
+version1011() {
 
 	echo "installing update to 1.0-1.1"; 
 
@@ -307,100 +305,98 @@ if [ $1 == "configure" ]; then
 		fi
 	fi
 
-    echo "10) Symlink /usr/lib/vfp to /opt/vc/lib"
+	echo "10) Symlink /usr/lib/vfp to /opt/vc/lib"
 
-    if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
-        rm -r /usr/lib/vfp
-        if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
-            echo "Error: failed to remove /usr/lib/vfp" >> /home/xbian/xbian-update.log;
-        fi
-    fi
+	if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
+            rm -r /usr/lib/vfp
+            if [ -f "/usr/lib/vfp" -o  -d "/usr/lib/vfp" ];	then
+                echo "Error: failed to remove /usr/lib/vfp" >> /home/xbian/xbian-update.log;
+            fi
+	fi
 
-    ln -s /opt/vc/lib /usr/lib/vfp
-    if [ -L "/usr/lib/vfp" ];	then
-        echo "Success: symlinked /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/xbian-update.log;
-    else
-        echo "Failed: to symlink /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/xbian-update.log;
-    fi
+	ln -s /opt/vc/lib /usr/lib/vfp
+	if [ -L "/usr/lib/vfp" ];	then
+            echo "Success: symlinked /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/xbian-update.log;
+	else
+            echo "Failed: to symlink /usr/lib/vfp to /opt/vc/lib" >> /home/xbian/xbian-update.log;
+	fi
 
-    echo "11) Enable auto fsck on boot"
+	echo "11) Enable auto fsck on boot"
 
-    if [ $(grep "#FSCKFIX=no" /etc/default/rcS| wc -l) -eq 1 ];	then
-        sed -i --follow-symlinks 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
-        if [ $(grep "^FSCKFIX=yes" /etc/default/rcS| wc -l) -eq 1 ];	then
-            echo "Success: enable auto fsck on boot" >> /home/xbian/xbian-update.log;
-        else
-            echo "Error: enable auto fsck on boot" >> /home/xbian/xbian-update.log;
-        fi
-    else
-        echo "Notice: enable auto fsck on boot already set" >> /home/xbian/xbian-update.log;
-    fi
+	if [ $(grep "#FSCKFIX=no" /etc/default/rcS| wc -l) -eq 1 ];	then
+            sed -i --follow-symlinks 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
+            if [ $(grep "^FSCKFIX=yes" /etc/default/rcS| wc -l) -eq 1 ];	then
+                echo "Success: enable auto fsck on boot" >> /home/xbian/xbian-update.log;
+	    else
+                echo "Error: enable auto fsck on boot" >> /home/xbian/xbian-update.log;
+            fi
+	else
+            echo "Notice: enable auto fsck on boot already set" >> /home/xbian/xbian-update.log;
+	fi
 
-    echo "12) Disabling DELAYLOGIN service"
+	echo "12) Disabling DELAYLOGIN service"
 
-    if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ]; then
-        echo "Notice: DELAYLOGIN already disabled" >> /home/xbian/xbian-update.log
-    else
-        sed -i --follow-symlinks 's/DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
-        sed -i --follow-symlinks 's/#DELAYLOGIN=no/DELAYLOGIN=no/g' /etc/default/rcS
-        sed -i --follow-symlinks 's/#DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
-        if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 0 ]; then
-            echo "DELAYLOGIN=no" >> /etc/default/rcS
-        fi
-
-        echo "Success: disabled DELAYLOGIN" >> /home/xbian/xbian-update.log
-    fi
-
-    echo "13) Remove klogd & sysklogd from update-rc.d"
-    update-rc.d klogd remove >/dev/null 2>&1;
-    update-rc.d sysklogd remove >/dev/null 2>&1;
-
-    echo "14a) Removing swapfile from /etc/fstab"
-
-    if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 1 ];	then
-        sed -i --follow-symlinks '/\/var\/swapfile/d' /etc/fstab
-        if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 0 ];	then
-            echo "Success: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
-
-            echo "14b) Removing /var/swapfile"
-
-            if [ -f "/var/swapfile" ];	then
-                swapoff /var/swapfile
-                rm /var/swapfile
-                if [ ! -f "/var/swapfile" ];	then
-                    echo "Success: removing /var/swapfile" >> /home/xbian/xbian-update.log;
-                else
-                    echo "Error: removing /var/swapfile" >> /home/xbian/xbian-update.log;
-                fi
-            else
-                echo "Notice: /var/swapfile already removed" >> /home/xbian/xbian-update.log;
+	if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 1 ]; then
+	    echo "Notice: DELAYLOGIN already disabled" >> /home/xbian/xbian-update.log
+	else
+	    sed -i --follow-symlinks 's/DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
+            sed -i --follow-symlinks 's/#DELAYLOGIN=no/DELAYLOGIN=no/g' /etc/default/rcS
+            sed -i --follow-symlinks 's/#DELAYLOGIN=yes/DELAYLOGIN=no/g' /etc/default/rcS
+            if [ $(grep -c ^"DELAYLOGIN=no" /etc/default/rcS) -eq 0 ]; then
+                echo "DELAYLOGIN=no" >> /etc/default/rcS
             fi
 
-        else
-            echo "Error: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
-        fi
-    else
+            echo "Success: disabled DELAYLOGIN" >> /home/xbian/xbian-update.log
+	fi
+
+	echo "13) Remove klogd & sysklogd from update-rc.d"
+	update-rc.d klogd remove >/dev/null 2>&1;
+	update-rc.d sysklogd remove >/dev/null 2>&1;
+
+	echo "14a) Removing swapfile from /etc/fstab"
+
+	if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 1 ];	then
+            sed -i --follow-symlinks '/\/var\/swapfile/d' /etc/fstab
+            if [ $(grep '/var/swapfile' /etc/fstab| wc -l) -eq 0 ];	then
+                echo "Success: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
+
+                echo "14b) Removing /var/swapfile"
+
+                if [ -f "/var/swapfile" ];	then
+                    swapoff /var/swapfile
+                    rm /var/swapfile
+                    if [ ! -f "/var/swapfile" ];	then
+                        echo "Success: removing /var/swapfile" >> /home/xbian/xbian-update.log;
+                    else
+                        echo "Error: removing /var/swapfile" >> /home/xbian/xbian-update.log;
+                    fi
+                else
+                    echo "Notice: /var/swapfile already removed" >> /home/xbian/xbian-update.log;
+                fi
+            else
+                echo "Error: removing swapfile from /etc/fstab" >> /home/xbian/xbian-update.log;
+            fi
+	else
             echo "Notice: swapfile already removed from /etc/fstab" >> /home/xbian/xbian-update.log;
-    fi
+	fi
 
-    echo "15) Adding /boot to /etc/fstab"
+	echo "15) Adding /boot to /etc/fstab"
 
-    if [ $(grep /boot /etc/fstab | grep -c "noauto,user,uid=0,gid=0") -eq 0 ];	then
-        grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
-        echo "UUID=$(blkid $bp -o value -s UUID)	/boot	vfat	defaults,noauto,user,gid=0,uid=0	0	0" >> /etc/fstab
-        if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
-            echo "Success: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
-
-        else
-            echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
-        fi
-    else
+	if [ $(grep /boot /etc/fstab | grep -c "noauto,user,uid=0,gid=0") -eq 0 ];	then
+	    grep -v /boot /etc/fstab > /etc/fstab.new; mv /etc/fstab.new /etc/fstab
+            echo "UUID=$(blkid $bp -o value -s UUID)	/boot	vfat	defaults,noauto,user,gid=0,uid=0	0	0" >> /etc/fstab
+            if [ $(grep -c /boot /etc/fstab ) -eq 1 ]; then
+                echo "Success: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
+            else
+                echo "Error: adding /boot to /etc/fstab" >> /home/xbian/xbian-update.log;
+            fi
+	else
             echo "Notice: /boot already present in /etc/fstab" >> /home/xbian/xbian-update.log;
-    fi
+	fi
 
 	echo "16) Applying patches"
 
-cat <<\EOF > /tmp/001-tmpfs.patch
+	cat <<\EOF > /tmp/001-tmpfs.patch
 --- a/etc/default/tmpfs
 +++ b/etc/default/tmpfs
 @@ -8,25 +8,25 @@
@@ -440,14 +436,14 @@ EOF
 
 	patch --dry-run /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
 	if [ $? == 0 ]; then
-		patch /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
-		echo "Success: applied 001-tmpfs.patch" >> /home/xbian/xbian-update.log;
+	    patch /etc/default/tmpfs < /tmp/001-tmpfs.patch 2>/dev/null >/dev/null;
+	    echo "Success: applied 001-tmpfs.patch" >> /home/xbian/xbian-update.log;
 	else
-		echo "Error: 001-tmpfs.patch can't be applied" >> /home/xbian/xbian-update.log;
+	    echo "Error: 001-tmpfs.patch can't be applied" >> /home/xbian/xbian-update.log;
 	fi
 	echo "001-tmpfs.patch done"
 
-cat <<\EOF > /tmp/002-sysctl.patch
+	cat <<\EOF > /tmp/002-sysctl.patch
 --- a/etc/sysctl.conf
 +++ b/etc/sysctl.conf
 @@ -4,7 +4,7 @@
@@ -477,10 +473,10 @@ EOF
 
 	patch --dry-run /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
 	if [ $? == 0 ]; then
-		patch /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
-		echo "Success: applied 002-sysctl.patch" >> /home/xbian/xbian-update.log;
+	    patch /etc/sysctl.conf < /tmp/002-sysctl.patch 2>/dev/null >/dev/null;
+	    echo "Success: applied 002-sysctl.patch" >> /home/xbian/xbian-update.log;
 	else
-		echo "Error: 002-sysctl.patch can't be applied" >> /home/xbian/xbian-update.log;
+	    echo "Error: 002-sysctl.patch can't be applied" >> /home/xbian/xbian-update.log;
 	fi
 	echo "002-sysctl.patch done"
 
@@ -488,14 +484,14 @@ EOF
 
 	echo "17) updating sysv init scripts and adapting system"
 	
-        insserv -fr /etc/init.d/checkfs.sh > /dev/null 2>&1
-        insserv -fr /etc/init.d/checkroot.sh > /dev/null 2>&1
-        insserv -fr /etc/init.d/mountall-bootclean.sh > /dev/null 2>&1
-        insserv -fr /etc/init.d/mountall.sh > /dev/null 2>&1
-        insserv -fr /etc/init.d/mountdevsubfs.sh > /dev/null 2>&1
-        insserv -fr /etc/init.d/mountkernfs.sh > /dev/null 2>&1
-        insserv -fr /etc/init.d/mountnfs-bootclean.sh > /dev/null 2>&1
-        insserv -fr /etc/init.d/mtab.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/checkfs.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/checkroot.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/mountall-bootclean.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/mountall.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/mountdevsubfs.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/mountkernfs.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/mountnfs-bootclean.sh > /dev/null 2>&1
+	insserv -fr /etc/init.d/mtab.sh > /dev/null 2>&1
 
 	insserv -fr /etc/init.d/urandom > /dev/null 2>&1
 	insserv -fr /etc/init.d/hdparm > /dev/null 2>&1
@@ -515,9 +511,9 @@ EOF
 	insserv -rf /etc/init.d/ntp > /dev/null 2>&1
 	insserv -f > /dev/null 2>&1
 
-        test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
-        rm -f /etc/nologin
-        rm -fr /var/tmp/{init,init.d,to_remove,etc} 
+	test -e /etc/inittab && mv /etc/inittab /etc/inittab.dist
+	rm -f /etc/nologin
+	rm -fr /var/tmp/{init,init.d,to_remove,etc}
 	echo "Success: sysvinit and initctl updated" >> /home/xbian/xbian-update.log
 
 	echo "18) removing obsolete files"
@@ -525,34 +521,12 @@ EOF
 	rm -f /usr/local/lib/libtag_c.a
 	echo "Success: files removed" >> /home/xbian/xbian-update.log
 
-        echo "1.0Beta1" > /etc/xbian_version
-        }
-
-############################# patchPolkit ######################################
-patchPolkit() {
-        echo "patching polkit"
-	cd /usr/share/polkit-1/actions
-
-cat << \EOF > /tmp/udisks.patch
---- org.freedesktop.udisks.policy       2012-08-01 00:00:00.000000000 +0200
-+++ org.freedesktop.udisks.policy.new   2013-06-30 20:10:16.000000000 +0200
-@@ -81,7 +81,7 @@
-     <message xml:lang="de">Zugriffsrechte werden benötigt um ein Gerät auszuhängen, das ein anderer Benutzer eingehängt hat</message>
-     <message xml:lang="pt_BR">Autenticação é requerida para desmontar dispositivos montados por um outro usuário</message>
-     <defaults>
--      <allow_any>no</allow_any>
-+      <allow_any>yes</allow_any>
-       <allow_inactive>no</allow_inactive>
-       <allow_active>auth_admin</allow_active>
-     </defaults>
-EOF
-
-	if patch -N --dry-run ./org.freedesktop.udisks.policy < /tmp/udisks.patch > /dev/null 2>&1; then
-	    patch -s ./org.freedesktop.udisks.policy < /tmp/udisks.patch || echo "udisks patch failed" >> /home/xbian/xbian-update.log
-	fi
-	rm -fr /tmp/udisks.patch
+	echo "1.0Beta1" > /etc/xbian_version
 }
+
 ############################## 1.0-1.1 END   ###################################
+
+################################# 1.0.2-x ######################################
 
 version102x() {
 
@@ -783,7 +757,38 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
         [ -e /usr/lib/avahi/avahi-daemon-check-dns.sh ] && sed -i 's%^#PATH%PATH%' /usr/lib/avahi/avahi-daemon-check-dns.sh 2>/dev/null || :
 }
 ############################## 1.0.2-x END   ###################################
+
+############################# patchPolkit ######################################
+
+patchPolkit() {
+
+	echo "patching polkit"
+	cd /usr/share/polkit-1/actions
+
+	cat << \EOF > /tmp/udisks.patch
+--- org.freedesktop.udisks.policy       2012-08-01 00:00:00.000000000 +0200
++++ org.freedesktop.udisks.policy.new   2013-06-30 20:10:16.000000000 +0200
+@@ -81,7 +81,7 @@
+     <message xml:lang="de">Zugriffsrechte werden benötigt um ein Gerät auszuhängen, das ein anderer Benutzer eingehängt hat</message>
+     <message xml:lang="pt_BR">Autenticação é requerida para desmontar dispositivos montados por um outro usuário</message>
+     <defaults>
+-      <allow_any>no</allow_any>
++      <allow_any>yes</allow_any>
+       <allow_inactive>no</allow_inactive>
+       <allow_active>auth_admin</allow_active>
+     </defaults>
+EOF
+
+	if patch -N --dry-run ./org.freedesktop.udisks.policy < /tmp/udisks.patch > /dev/null 2>&1; then
+	    patch -s ./org.freedesktop.udisks.policy < /tmp/udisks.patch || echo "udisks patch failed" >> /home/xbian/xbian-update.log
+	fi
+	rm -fr /tmp/udisks.patch
+}
+
+################################# 2015 ######################################
+
 updates_2015() {
+
         do_targetver "__DATE__"
 
         ! test -e /usr/local/include/xbian-config/config/services || \
@@ -800,7 +805,7 @@ updates_2015() {
                 sed -i --follow-symlinks "/<$f>/d" /home/xbian/.kodi/userdata/advancedsettings.xml
         done
 
-cat <<\EOF > /etc/xbian_banner
+	cat <<\EOF > /etc/xbian_banner
 -------------------------------------------------------------------
       Y88b d88P  888888b.   8888888        d8888 888b    888
        Y88o88P   888  .88P    888        d88P888 88888b  888
@@ -826,9 +831,14 @@ EOF
             ;;
         esac
 }
+
 ############################## 2015 END   ###################################
+
+################################# 2017 ######################################
+
 updates_2017() {
-cat <<\EOF > /tmp/001-invoke-rc.d.patch
+
+	cat <<\EOF > /tmp/001-invoke-rc.d.patch
 --- /usr/sbin/invoke-rc.d.old	2017-01-18 14:17:07.000000000 +0100
 +++ /usr/sbin/invoke-rc.d	2017-04-04 18:47:33.307279371 +0200
 @@ -413,8 +413,6 @@
@@ -849,9 +859,13 @@ EOF
 	    echo "Error: 001-invoke-rc.d.patch can't be applied" >> /home/xbian/xbian-update.log
 	fi
 }
+
 ############################## 2017 END   ###################################
 
-        
+if [ $1 == "configure" ]; then
+
+	rm -f /home/xbian/xbian-update.log >/dev/null 2>&1
+
         [ -e /tmp/xbian-update-prev.ver ] && . /tmp/xbian-update-prev.ver
         [ -n "$version" ] || version='1000'
         while test $(($version / 1000)) -eq 0; do version=$(($version *10)); done
