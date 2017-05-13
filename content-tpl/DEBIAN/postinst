@@ -863,7 +863,7 @@ if [ $1 == "configure" ]; then
 
         rmlibshairport
         
-        superRepo
+	:   # SuperRepo removed for Kodi compliancy
 
 	if [ -e /dev/rtc0 ]; then
 	    grep -q "UTC" /etc/default/rcS || echo -e "\nUTC=yes\n" >> /etc/default/rcS
