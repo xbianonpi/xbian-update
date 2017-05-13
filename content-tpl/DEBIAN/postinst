@@ -255,10 +255,8 @@ version1011() {
 
 	echo "7) Adding SuperRepo"
 
-	:
-	
-	# SuperRepo removed for Kodi compliancy
-	
+	:   # SuperRepo removed for Kodi compliancy
+
 	echo "8) Modifying avahi-deamon defaults"
 
 	if [ $(grep "AVAHI_DAEMON_DETECT_LOCAL=1"  /etc/default/avahi-daemon| wc -l) -eq 1 ];	then
