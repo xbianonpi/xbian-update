@@ -1,4 +1,0 @@
-etc/default/xbian-led
-etc/default/xbian-module-init-tools
-etc/default/xbian-update
-etc/init/xbian-firewall.override
