@@ -739,8 +739,26 @@ ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 
         { sleep 1; echo raspberry; echo raspberry; } | smbpasswd -s -a xbian
 
-        grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/10xbian-periodic
-        grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/10xbian-periodic 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/10xbian-periodic
+	cat <<\EOF > /tmp/XBian.hdr
+//
+// This content is managed by xbian-config console application and
+// Kodi's XBian config GUI. Please do not modify this file manually
+// unless you know what you are doing.
+//
+EOF
+        if [ -e /etc/apt/apt.conf.d/10xbian-periodic ]; then
+            mv /etc/apt/apt.conf.d/10xbian-periodic /etc/apt/apt.conf.d/20auto-upgrades
+            if ! grep -q XBian /etc/apt/apt.conf.d/20auto-upgrades; then
+                cat /tmp/XBian.hdr /etc/apt/apt.conf.d/20auto-upgrades > /etc/apt/apt.conf.d/20auto-upgrades.new
+                mv /etc/apt/apt.conf.d/20auto-upgrades.new /etc/apt/apt.conf.d/20auto-upgrades
+            fi
+        elif [ -e /etc/apt/apt.conf.d/20auto-upgrades ]; then
+            ! grep -q XBian /etc/apt/apt.conf.d/20auto-upgrades && mv /tmp/XBian.hdr /etc/apt/apt.conf.d/20auto-upgrades
+        else
+            mv /tmp/XBian.hdr /etc/apt/apt.conf.d/20auto-upgrades
+        fi
+        grep -q "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/20auto-upgrades 2>/dev/null || echo "APT::Periodic::Unattended-Upgrade \"0\";" >> /etc/apt/apt.conf.d/20auto-upgrades
+        grep -q "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/20auto-upgrades 2>/dev/null || echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/20auto-upgrades
 
         sed -i 's/http\:\/\/xbian.brantje.com\/devel wheezy main/http\:\/\/xbian.brantje.com stable main/g' /etc/apt/sources.list
         sed -i 's/KEEPAPT=.*/KEEPAPT=3/' /etc/default/xbian-snap
