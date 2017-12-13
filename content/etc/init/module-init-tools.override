@@ -1,4 +1,4 @@
-start on mounted MOUNTPOINT=/lib/modules and mountall
+start on (mounted MOUNTPOINT=/boot or mounted MOUNTPOINT=/lib/modules)
 
 env CPUFREQ_GOVERNOR=
 task
