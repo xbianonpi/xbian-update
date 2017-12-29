@@ -920,63 +920,63 @@ if [ $1 == "configure" ]; then
 
         updates_2017
 
-case $PLATFORM in
-    RPI)
-        if grep -wq "rootfstype=btrfs" /proc/cmdline &>/dev/null; then
+        case $PLATFORM in
+            RPI)
+                if grep -wq "rootfstype=btrfs" /proc/cmdline &>/dev/null; then
 
-            # update cmdline.txt subvol parameter to what it was during boot
-            if grep -q rootfsopts /boot/cmdline.txt.old 2>/dev/null; then
-                subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
-                snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*};
-            elif grep -q rootflags /boot/cmdline.txt.old 2>/dev/null; then
-                subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootflags=subvol=}; subvolume=${subvolume%%\/@*};
-                snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootflags=subvol=$subvolume"/@"}; snap=${snap%%,*}; 
-            fi
+                    # update cmdline.txt subvol parameter to what it was during boot
+                    if grep -q rootfsopts /boot/cmdline.txt.old 2>/dev/null; then
+                        subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
+                        snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*};
+                    elif grep -q rootflags /boot/cmdline.txt.old 2>/dev/null; then
+                        subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootflags=subvol=}; subvolume=${subvolume%%\/@*};
+                        snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootflags=subvol=$subvolume"/@"}; snap=${snap%%,*};
+                    fi
         
-            [ -z "$subvolume" ] && subvolume=root
-            if [ -e /boot/cmdline.new ]; then
-                cat /boot/cmdline.new | eval $(echo "sed 's%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%'") > /boot/cmdline.txt
-                mv /boot/cmdline.txt /boot/cmdline.new
+                    [ -z "$subvolume" ] && subvolume=root
+                    if [ -e /boot/cmdline.new ]; then
+                        cat /boot/cmdline.new | eval $(echo "sed 's%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%'") > /boot/cmdline.txt
+                        mv /boot/cmdline.txt /boot/cmdline.new
 
-                rootdev=$(cat /boot/cmdline.txt.old); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
-                #echo $rootdev | grep -q 'LABEL\|UUID' && { findfs $rootdev && rootdev=$(findfs $rootdev); }
-                cat /boot/cmdline.new | eval $(echo "sed 's%root=/dev/mmcblk0p2%root=$rootdev%'") > /boot/cmdline.txt
-                rm /boot/cmdline.new
-            fi
+                        rootdev=$(cat /boot/cmdline.txt.old); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
+                        #echo $rootdev | grep -q 'LABEL\|UUID' && { findfs $rootdev && rootdev=$(findfs $rootdev); }
+                        cat /boot/cmdline.new | eval $(echo "sed 's%root=/dev/mmcblk0p2%root=$rootdev%'") > /boot/cmdline.txt
+                        rm /boot/cmdline.new
+                    fi
 
-        else
-            [ -e /boot/cmdline.txt.old ] && mv /boot/cmdline.txt.old /boot/cmdline.txt
-        fi
+                else
+                    [ -e /boot/cmdline.txt.old ] && mv /boot/cmdline.txt.old /boot/cmdline.txt
+                fi
 
-        if grep -q 'compress=lz4' /proc/cmdline &>/dev/null; then
-            sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
-        fi
+                if grep -q 'compress=lz4' /proc/cmdline &>/dev/null; then
+                    sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
+                fi
 
-        grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
+                grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
         
-        # Set GPU memory split on Raspberry Pi 2.
-        # This is left out of the various update functions to allow upgrading from old models.
-        if grep -q "BCM2709" /proc/cpuinfo; then
-        	grep -q "^gpu_mem_1024=" /boot/config.txt || echo "gpu_mem_1024=256" >> /boot/config.txt
-        fi
+                # Set GPU memory split on Raspberry Pi 2.
+                # This is left out of the various update functions to allow upgrading from old models.
+                if grep -q "BCM2709" /proc/cpuinfo; then
+                    grep -q "^gpu_mem_1024=" /boot/config.txt || echo "gpu_mem_1024=256" >> /boot/config.txt
+                fi
 
-	# Remove downclocking from Raspberry Pi 2.
-        if grep -q "BCM2709" /proc/cpuinfo; then
-        	sed -i '/arm_freq=840/d' /boot/config.txt
-        	sed -i '/core_freq=320/d' /boot/config.txt
-        	sed -i '/sdram_freq=400/d' /boot/config.txt
-        fi
+                # Remove downclocking from Raspberry Pi 2.
+                if grep -q "BCM2709" /proc/cpuinfo; then
+                    sed -i '/arm_freq=840/d' /boot/config.txt
+                    sed -i '/core_freq=320/d' /boot/config.txt
+                    sed -i '/sdram_freq=400/d' /boot/config.txt
+                fi
 
-        ;;
-    iMX6|BPI)
-        rm -f /boot/cmdline.default /boot/cmdline.new
-        ;;
-    *)
-        ;;
-esac
+            ;;
+            iMX6|BPI)
+                rm -f /boot/cmdline.default /boot/cmdline.new
+            ;;
+            *)
+            ;;
+        esac
 
-###############################################################################
-#        sed -i 's%console=.*? %console=tty7%' /boot/cmdline.txt
+        ###############################################################################
+        #        sed -i 's%console=.*? %console=tty7%' /boot/cmdline.txt
 
 	find /home/xbian -xdev -type f -o -type d -print0 | xargs -0 chown xbian:xbian >/dev/null 2>&1
 	rm -fr /var/tmp/xbian_update
@@ -988,7 +988,7 @@ esac
         deployconfig /etc/default/tmpfs.template /etc/default/tmpfs
 
 	if ! grep -q  "apt-get()" /etc/profile; then
-cat << \EOF >> /etc/profile
+            cat << \EOF >> /etc/profile
 ask() {
     # http://djm.me/ask
     while true; do
@@ -1039,7 +1039,7 @@ that risk?\n \
 EOF
 	fi
 
-###############################################################################
+        ###############################################################################
 	if [ "$PLATFORM" = "RPI" ]; then
 		echo "19) enable lirc via DT"
 		if grep -q "dtoverlay=lirc-rpi" /boot/config.txt;	then
@@ -1055,7 +1055,7 @@ EOF
 	fi
 
 	if ! status -q xbian-update-reboot; then
-cat << \EOF > /tmp/xbian-update-reboot
+            cat << \EOF > /tmp/xbian-update-reboot
 #!/bin/sh
 
 set +e
