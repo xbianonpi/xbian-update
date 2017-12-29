@@ -897,7 +897,7 @@ if [ $1 == "configure" ]; then
         fi
 
         dpkg --compare-versions $version lt 1011 && version1011
-        dpkg --compare-versions $version lt 20171231 && version102x
+        dpkg --compare-versions $version lt 20181231 && version102x
 
         updates_2015
 
