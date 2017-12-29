@@ -967,6 +967,17 @@ if [ $1 == "configure" ]; then
                     sed -i '/sdram_freq=400/d' /boot/config.txt
                 fi
 
+                if grep -q "dtoverlay=lirc-rpi" /boot/config.txt; then
+                    echo "Notice: lirc already enabled or manually disabled" >> /home/xbian/xbian-update.log
+                else
+                    echo -e "\ndtoverlay=lirc-rpi\n" >> /boot/config.txt
+                    if grep -q "dtoverlay=lirc-rpi" /boot/config.txt; then
+                        echo "Success: enabled lirc" >> /home/xbian/xbian-update.log
+                    else
+                        echo "Error: lirc off" >> /home/xbian/xbian-update.log
+                    fi
+                fi
+
             ;;
             iMX6|BPI)
                 rm -f /boot/cmdline.default /boot/cmdline.new
@@ -1037,21 +1048,6 @@ that risk?\n \
         fi
 }
 EOF
-	fi
-
-        ###############################################################################
-	if [ "$PLATFORM" = "RPI" ]; then
-		echo "19) enable lirc via DT"
-		if grep -q "dtoverlay=lirc-rpi" /boot/config.txt;	then
-		        echo "Notice: lirc already enabled or manually disabled" >> /home/xbian/xbian-update.log;
-	        else
-        	        echo -e "\ndtoverlay=lirc-rpi\n" >> /boot/config.txt
-			if grep -q "dtoverlay=lirc-rpi" /boot/config.txt; then
-				echo "Success: enabled lirc" >> /home/xbian/xbian-update.log; 
-			else
-				echo "Error: lirc off" >> /home/xbian/xbian-update.log; 
-			fi
-		fi
 	fi
 
 	if ! status -q xbian-update-reboot; then
