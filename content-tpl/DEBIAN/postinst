@@ -876,11 +876,15 @@ updates_2017() {
 EOF
 	patch --batch --dry-run /usr/sbin/invoke-rc.d < /tmp/001-invoke-rc.d.patch &>/dev/null
 	if [ $? == 0 ]; then
-	    patch /usr/sbin/invoke-rc.d < /tmp/001-invoke-rc.d.patch &>/dev/null
+	    patch -r- /usr/sbin/invoke-rc.d < /tmp/001-invoke-rc.d.patch &>/dev/null
 	    echo "Success: applied 001-invoke-rc.d.patch" >> /home/xbian/xbian-update.log
 	else
 	    echo "Error: 001-invoke-rc.d.patch can't be applied" >> /home/xbian/xbian-update.log
 	fi
+
+	ln -sr /etc/init.d/mountdevsubfs.sh /etc/rcS.d/S04mountdevsubfs &>/dev/null || :
+	ln -sr /etc/init.d/mountkernfs.sh   /etc/rcS.d/S04mountkernfs   &>/dev/null || :
+	ln -sr /etc/init.d/checkroot.sh     /etc/rcS.d/S04checkroot     &>/dev/null || :
 }
 
 ############################## 2017 END   ###################################
