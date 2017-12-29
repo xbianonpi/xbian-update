@@ -679,19 +679,21 @@ version102x() {
             mv /etc/fstab.new /etc/fstab
         fi
 
-        grep -v '.* /home ' /etc/fstab > /etc/fstab.new
-        mv /etc/fstab.new /etc/fstab
-        echo "/dev/root             /home                   xbian   subvol=home/@,noatime,nobootwait,rw           0       0" >> /etc/fstab
-
-        if grep -wq "/lib/modules" /etc/fstab; then
-            grep -wv "/lib/modules" /etc/fstab > /etc/fstab.new
+        if [ ! -e /proc/mounts -o "$(findmnt / -n -o FSTYPE)" = btrfs ]; then
+            grep -v '.* /home ' /etc/fstab > /etc/fstab.new
             mv /etc/fstab.new /etc/fstab
-        fi
-        echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime,nobootwait,rw        0       0" >> /etc/fstab
+            echo "/dev/root             /home                   xbian   subvol=home/@,noatime,nobootwait,rw           0       0" >> /etc/fstab
 
-        grep -v '^\/dev\/.* *\/ ' /etc/fstab > /etc/fstab.new
-        mv /etc/fstab.new /etc/fstab
-        echo "/dev/root             /                       xbian   noatime,nobootwait,rw                         0       0" >> /etc/fstab
+            if grep -wq "/lib/modules" /etc/fstab; then
+                grep -wv "/lib/modules" /etc/fstab > /etc/fstab.new
+                mv /etc/fstab.new /etc/fstab
+            fi
+            echo "/dev/root             /lib/modules            xbian   subvol=modules/@,noatime,nobootwait,rw        0       0" >> /etc/fstab
+
+            grep -v '^\/dev\/.* *\/ ' /etc/fstab > /etc/fstab.new
+            mv /etc/fstab.new /etc/fstab
+            echo "/dev/root             /                       xbian   noatime,nobootwait,rw                         0       0" >> /etc/fstab
+        fi
 
         if grep -wq "/proc" /etc/fstab; then
             grep -wv "/proc" /etc/fstab > /etc/fstab.new
