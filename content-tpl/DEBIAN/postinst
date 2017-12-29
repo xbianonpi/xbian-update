@@ -631,7 +631,7 @@ version102x() {
 
         grep -q UseDNS /etc/ssh/sshd_config || sed -i '/UsePAM.*/a UseDNS no' /etc/ssh/sshd_config
 
-        if ! grep -wq "root=/dev/nfs" /proc/cmdline; then
+        if ! grep -wq "root=/dev/nfs" /proc/cmdline &>/dev/null; then
             echo "checking interfaces"
             if grep "auto" /etc/network/interfaces | grep -q "eth0"; then
                 :
@@ -922,7 +922,7 @@ if [ $1 == "configure" ]; then
 
 case $PLATFORM in
     RPI)
-        if grep -wq "rootfstype=btrfs" /proc/cmdline; then
+        if grep -wq "rootfstype=btrfs" /proc/cmdline &>/dev/null; then
 
             # update cmdline.txt subvol parameter to what it was during boot
             if grep -q rootfsopts /boot/cmdline.txt.old 2>/dev/null; then
@@ -948,7 +948,7 @@ case $PLATFORM in
             [ -e /boot/cmdline.txt.old ] && mv /boot/cmdline.txt.old /boot/cmdline.txt
         fi
 
-        if grep -q 'compress=lz4' /proc/cmdline; then
+        if grep -q 'compress=lz4' /proc/cmdline &>/dev/null; then
             sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
         fi
 
