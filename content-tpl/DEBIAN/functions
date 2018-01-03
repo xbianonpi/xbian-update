@@ -1,5 +1,5 @@
 
-function deployconfig()
+deployconfig()
 {
     [ -n "$1" -a -n "$2" ] || return 1
 
@@ -33,3 +33,33 @@ function deployconfig()
     sed -i "s|%VM$|%|g" /etc/default/tmpfs
 }
 
+patch_configxbmc()
+{
+    # Starting with Kodi v18 SubString and StringCompare as boolean conditions are not longer available. We have to use
+    # String.Contains and String.IsEqual, introduced with Kodi v17, instead. Note: needed for postinst of package
+    # xbmc-package-xbmc and xbian-package-config-xbmc. May be removed when dropping backward compatibility
+    local file
+    if [ "$(dpkg-query -s xbian-package-xbmc 2>/dev/null | grep -m1 Version | awk '{ print $2 '})" \> "18" ]; then
+        for file in $(grep -m1 -r SubString /usr/local/share/kodi/addons/plugin.xbianconfig/* 2>/dev/null | cut -d ':' -f 1); do
+            sed -i "s/SubString/String.Contains/g" $file
+        done
+        for file in $(grep -m1 -r StringCompare /usr/local/share/kodi/addons/plugin.xbianconfig/* 2>/dev/null | cut -d ':' -f 1); do
+            sed -i "s/StringCompare/String.IsEqual/g" $file
+        done
+    fi
+}
+
+kodi_sendmsg()
+{
+    #
+    # Path definitions xbian-config GUI watches for message file msg4kodi
+    # P ... permanent, survives reboot
+    # V ... volatile, lost by reboot
+    #
+    MSGPATHP='/home/xbian/.kodi/userdata/addon_data/plugin.xbianconfig'
+    MSGPATHV='/run/splash'
+
+    local p=$MSGPATHV
+    [ "$2" = p ] && p=$MSGPATHP
+    pgrep "xbmc.bin|kodi.bin" >/dev/null && su -c "echo -e \"$1\" >> $p/msg4kodi" xbian || :
+}
