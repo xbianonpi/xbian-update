@@ -889,6 +889,21 @@ EOF
 
 ############################## 2017 END   ###################################
 
+################################# 2018 ######################################
+
+updates_2018() {
+
+        for sf in $(find /var/tmp/xbian_update/files_to_recover -type f 2>/dev/null); do
+            df=${sf##/var/tmp/xbian_update/files_to_recover}
+            [ -e "$df" ] || mv $sf $df
+        done
+        for d in eth wlan ra; do
+            grep -q "KERNEL!=\".*$d\*" /lib/udev/rules.d/75-persistent-net-generator.rules || sed -i "s/KERNEL!=\"/KERNEL!=\"$d\*|/g" /lib/udev/rules.d/75-persistent-net-generator.rules
+        done
+}
+
+############################## 2017 END   ###################################
+
 if [ $1 == "configure" ]; then
 
 	rm -f /home/xbian/xbian-update.log >/dev/null 2>&1
@@ -919,6 +934,7 @@ if [ $1 == "configure" ]; then
         rm -fr /home/xbian/.kodi/addons/repo.xbian.xbmc || :
 
         updates_2017
+        updates_2018
 
         case $PLATFORM in
             RPI)
