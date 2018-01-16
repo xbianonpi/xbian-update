@@ -940,29 +940,31 @@ if [ $1 == "configure" ]; then
             RPI)
                 if grep -wq "rootfstype=btrfs" /proc/cmdline &>/dev/null; then
 
-                    # update cmdline.txt subvol parameter to what it was during boot
-                    if grep -q rootfsopts /boot/cmdline.txt.old 2>/dev/null; then
-                        subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
-                        snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*};
-                    elif grep -q rootflags /boot/cmdline.txt.old 2>/dev/null; then
-                        subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootflags=subvol=}; subvolume=${subvolume%%\/@*};
-                        snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootflags=subvol=$subvolume"/@"}; snap=${snap%%,*};
-                    fi
-        
-                    [ -z "$subvolume" ] && subvolume=root
                     if [ -e /boot/cmdline.new ]; then
-                        cat /boot/cmdline.new | eval $(echo "sed 's%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%'") > /boot/cmdline.txt
-                        mv /boot/cmdline.txt /boot/cmdline.new
+                        # update cmdline.txt subvol parameter to what it was during boot
+                        if grep -q rootfsopts /boot/cmdline.txt.old 2>/dev/null; then
+                            subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootfsopts=subvol=}; subvolume=${subvolume%%\/@*};
+                            snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootfsopts=subvol=$subvolume"/@"}; snap=${snap%%,*};
+                        elif grep -q rootflags /boot/cmdline.txt.old 2>/dev/null; then
+                            subvolume=$(cat /boot/cmdline.txt.old); subvolume=${subvolume#*rootflags=subvol=}; subvolume=${subvolume%%\/@*};
+                            snap=$(cat /boot/cmdline.txt.old); snap=${snap#*rootflags=subvol=$subvolume"/@"}; snap=${snap%%,*};
+                        fi
+                        [ -z "$subvolume" ] && subvolume=root
+                        sed -i "s%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%" /boot/cmdline.new
 
-                        rootdev=$(cat /boot/cmdline.txt.old); rootdev=${rootdev##*root=}; rootdev=${rootdev%% *}
-                        #echo $rootdev | grep -q 'LABEL\|UUID' && { findfs $rootdev && rootdev=$(findfs $rootdev); }
-                        cat /boot/cmdline.new | eval $(echo "sed 's%root=/dev/mmcblk0p2%root=$rootdev%'") > /boot/cmdline.txt
-                        rm /boot/cmdline.new
+                        # keep vnc, ip , cnet and root parameter
+                        vnc=$(awk '/vnc /{ print "vnc " }' /boot/cmdline.txt.old 2>/dev/null)
+                        ip=$(awk '/ip=/{ sub(".*ip=","ip="); printf "%s ", $1 }' /boot/cmdline.txt.old 2>/dev/null)
+                        cnet=$(awk '/cnet=/{ sub(".*cnet=","cnet="); printf "%s ", $1 }' /boot/cmdline.txt.old 2>/dev/null)
+                        root=$(awk '{ sub(".*root=",""); print $1 }' /boot/cmdline.txt.old 2>/dev/null)
+                        sed "s%root=/dev/mmcblk0p2%${vnc}${ip}${cnet}root=$root%" /boot/cmdline.new > /boot/cmdline.txt
                     fi
 
                 else
                     [ -e /boot/cmdline.txt.old ] && mv /boot/cmdline.txt.old /boot/cmdline.txt
                 fi
+
+                rm -f /boot/cmdline.new
 
                 if grep -q 'compress=lz4' /proc/cmdline &>/dev/null; then
                     sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
