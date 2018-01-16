@@ -3,8 +3,23 @@
 # Note: is called by /lib/udev/rules.d/99-zz-xbian.rules
 # $1: Network device to add into /etc/network/interfaces
 
-if ! grep -q  ^"iface $1" /etc/network/interfaces; then
-    echo ""                   >> /etc/network/interfaces
-    echo "allow-hotplug $1"   >> /etc/network/interfaces
-    echo "iface $1 inet dhcp" >> /etc/network/interfaces
+[ -e /boot/wpa_supplicant.conf ] && sed 's/\x0D$//' /boot/wpa_supplicant.conf > /etc/wpa_supplicant/wpa_supplicant.conf && \
+    chmod 0600 /etc/wpa_supplicant/wpa_supplicant.conf && rm -rf /boot/wpa_supplicant.conf
+
+if ! grep -q  ^"#*iface $1" /etc/network/interfaces; then
+    . /usr/local/include/xbian-config/modules/network/functions
+    case "$1" in
+        wlan*|ra*)
+            fetchWLANCredentialsFn 'WPA'
+            if [ -n "$WLANKEY" ]; then
+                setInterfaceWlanCredentials "$1" 'WPA' "$SSID" "$WLANKEY"
+            else
+                setInterfaceDhcpFn $1
+            fi
+        ;;
+        *)
+            setInterfaceDhcpFn $1
+        ;;
+    esac
+    setAuto $1
 fi
