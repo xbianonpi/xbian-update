@@ -7,7 +7,7 @@
     chmod 0600 /etc/wpa_supplicant/wpa_supplicant.conf && rm -rf /boot/wpa_supplicant.conf
 
 if ! grep -q  ^"#*iface $1" /etc/network/interfaces; then
-    . /usr/local/include/xbian-config/modules/network/functions
+    GUIMODE=1; . /usr/local/include/xbian-config/modules/network/functions
     case "$1" in
         wlan*|ra*)
             fetchWLANCredentialsFn 'WPA'
