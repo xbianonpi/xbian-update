@@ -1,1 +1,2 @@
 activate trigger-xbian-update-initramfs
+activate trigger-xbian-package-config-shell
