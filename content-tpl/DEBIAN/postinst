@@ -952,12 +952,14 @@ if [ $1 == "configure" ]; then
                         [ -z "$subvolume" ] && subvolume=root
                         sed -i "s%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%" /boot/cmdline.new
 
-                        # keep vnc, ip , cnet and root parameter
-                        vnc=$(awk '/vnc /{ print "vnc " }' /boot/cmdline.txt.old 2>/dev/null)
-                        ip=$(awk '/ip=/{ sub(".*ip=","ip="); printf "%s ", $1 }' /boot/cmdline.txt.old 2>/dev/null)
-                        cnet=$(awk '/cnet=/{ sub(".*cnet=","cnet="); printf "%s ", $1 }' /boot/cmdline.txt.old 2>/dev/null)
+                        # keep vnc, ip, cnet, cma and root parameter
+                        parms=''
+                        for PARM in "vnc" "cma=" "ip=" "cnet="; do
+                            p=$(awk -v a=".*$PARM" -v b="$PARM" "/$PARM/"'{ sub(a,b); print $1 }' /boot/cmdline.txt.old 2>/dev/null)
+                            [ -z "$p" ] || parms="$parms$p "
+                        done
                         root=$(awk '{ sub(".*root=",""); print $1 }' /boot/cmdline.txt.old 2>/dev/null)
-                        sed "s%root=/dev/mmcblk0p2%${vnc}${ip}${cnet}root=$root%" /boot/cmdline.new > /boot/cmdline.txt
+                        sed "s%root=/dev/mmcblk0p2%${parms}root=$root%" /boot/cmdline.new > /boot/cmdline.txt
                     fi
 
                 else
