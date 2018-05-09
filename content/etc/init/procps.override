@@ -1,3 +1,11 @@
 start on started xbian-run
 
 console none
+
+pre-start script
+    if [ "$(awk '/^MemTotal/{ print $2 }' /proc/meminfo)" -gt 600000 ]; then
+        grep -q "vm.min_free_kbytes = 32768" /etc/sysctl.d/00-xbian.conf || sed -i "s/vm.min_free_kbytes.*/vm.min_free_kbytes = 32768/g" /etc/sysctl.d/00-xbian.conf
+        grep -q "vm.dirty_ratio = 75" /etc/sysctl.d/00-xbian.conf || sed -i "s/vm.dirty_ratio.*/vm.dirty_ratio = 75/g" /etc/sysctl.d/00-xbian.conf
+    fi
+    :
+end script
