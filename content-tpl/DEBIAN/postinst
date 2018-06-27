@@ -987,11 +987,13 @@ if [ $1 == "configure" ]; then
                     sed -i '/sdram_freq=400/d' /boot/config.txt
                 fi
 
-                if grep -q "dtoverlay=lirc-rpi" /boot/config.txt; then
+                kver=$(dpkg -l | grep -E "xbian-package-kernel |linux-image-bcm2836 " | awk '$2 !~ /not/ {print $3}')
+                dpkg --compare-versions "$kver" gt "4.13" && ovl=gpio-ir || ovl=lirc-rpi
+                if grep -q "dtoverlay=$ovl" /boot/config.txt; then
                     echo "Notice: lirc already enabled or manually disabled" >> /home/xbian/xbian-update.log
                 else
-                    echo -e "\ndtoverlay=lirc-rpi\n" >> /boot/config.txt
-                    if grep -q "dtoverlay=lirc-rpi" /boot/config.txt; then
+                    echo -e "\ndtoverlay=$ovl\n" >> /boot/config.txt
+                    if grep -q "dtoverlay=$ovl" /boot/config.txt; then
                         echo "Success: enabled lirc" >> /home/xbian/xbian-update.log
                     else
                         echo "Error: lirc off" >> /home/xbian/xbian-update.log
