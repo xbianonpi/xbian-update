@@ -989,7 +989,7 @@ if [ $1 == "configure" ]; then
 
                 kver=$(dpkg -l | grep -E "xbian-package-kernel |linux-image-bcm2836 " | awk '$2 !~ /not/ {print $3}')
                 dpkg --compare-versions "$kver" gt "4.13" && ovl=gpio-ir || ovl=lirc-rpi
-                if grep -q "dtoverlay=$ovl" /boot/config.txt; then
+                if grep -qE "dtoverlay=lirc-rpi|dtoverlay=gpio-ir" /boot/config.txt; then
                     echo "Notice: lirc already enabled or manually disabled" >> /home/xbian/xbian-update.log
                 else
                     echo -e "\ndtoverlay=$ovl\n" >> /boot/config.txt
