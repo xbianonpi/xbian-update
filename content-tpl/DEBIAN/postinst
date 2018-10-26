@@ -968,9 +968,10 @@ if [ $1 == "configure" ]; then
 
                 rm -f /boot/cmdline.new
 
-                if grep -q 'compress=lz4' /proc/cmdline &>/dev/null; then
-                    sed -i 's/compress=lzo/compress=lz4/g' /boot/cmdline.txt || :
-                fi
+                for PARM in "compress=" "compress-force="; do
+                    p=$(awk -v a=".*$PARM" -v b="$PARM" "/$PARM/"'{ sub(a,b); print $1 }' /proc/cmdline 2>/dev/null)
+                    [ -z "$p" ] || { sed -i "s/compress=lzo/$p/g" /boot/cmdline.txt || :; break; }
+                done
 
                 grep -q ^"initial_turbo" /boot/config.txt || echo "initial_turbo=3" >> /boot/config.txt
         
