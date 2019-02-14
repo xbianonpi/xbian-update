@@ -35,6 +35,13 @@ upstart_jobs () {
 do_stop () {
 	OMITPIDS=
 
+	# We have to wait until upstart job progress-shutdown is ready for
+	# being killable. If we would not wait, strange behavior while shutdown
+	# is guaranteed due to race conditions
+	if [ -x /sbin/initctl ]; then
+		start wait-for-state WAIT_FOR=progress-shutdown WAITER=sendsigs WAIT_STATE=stopped ACT=no TIMEOUT=30 || :
+	fi
+
 	for omitfile in /run/sendsigs.omit; do
 		if [ -e $omitfile ]; then
 			for pid in $(cat $omitfile); do
