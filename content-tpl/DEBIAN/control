@@ -4,7 +4,7 @@ Version: __DATE__
 Section: update
 Essential: Yes
 Priority: optional
-Pre-Depends: udisks, kbd, libcurl3, patch, openbsd-inetd, openssh-server, xbian-package-repo, xbian-package-config-shell (>=20190101-0), xbian-package-splash
+Pre-Depends: kbd, libcurl3, patch, openbsd-inetd, openssh-server, xbian-package-repo, xbian-package-config-shell (>=20190101-0), xbian-package-splash
 Depends: iptables, autofs, nfs-common, dosfstools, sudo, ifplugd, ir-keytable, crda, upstart, avahi-daemon, ntfs-3g, pv, usbutils,
   libafpclient0, libnss-mdns, libxdamage1, console-setup, cifs-utils, exfat-utils, hdparm, hfsplus, hfsprogs, hfsutils,
   wireless-tools, wpasupplicant, bc, python-sqlite, lsof, ntp, unattended-upgrades, cec-utils,
