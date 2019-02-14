@@ -958,7 +958,7 @@ if [ $1 == "configure" ]; then
 
                         # keep vnc, ip, cnet, cma and root parameter
                         parms=''
-                        for PARM in "vnc" "cma=" "ip=" "cnet="; do
+                        for PARM in "vnc" "cma=" "ip=" "cnet=" "modules-load="; do
                             p=$(awk -v a=".*$PARM" -v b="$PARM" "/$PARM/"'{ sub(a,b); print $1 }' /boot/cmdline.txt.old 2>/dev/null)
                             [ -z "$p" ] || parms="$parms$p "
                         done

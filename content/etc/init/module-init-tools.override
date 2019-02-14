@@ -24,6 +24,21 @@ pre-start script
         fi
     fi
 
+    modules=$(awk '/modules-load/{ sub(".*modules-load=",""); print $1 }' /proc/cmdline 2>/dev/null | tr ',' '\n')
+    echo "$modules" | sed "s/[=:;]/ /g" | while read module args; do
+        [ "$module" ] || continue
+        p=''; argl=''
+        for a in $args; do
+            if [ -z "$p" ]; then
+                p=$a
+            else
+                argl="$argl $p=$a"
+                p=''
+            fi
+        done
+        modprobe $module$argl || :
+    done
+
     [ -e /etc/modules.xbian ] || exit 0
     grep '^[^#]' /etc/modules.xbian |
         while read module args
