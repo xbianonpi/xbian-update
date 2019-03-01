@@ -1,2 +1,6 @@
 start on started tty1
 stop on stopping tty1
+
+pre-start script
+	setterm --cursor on > /dev/tty2
+end script
