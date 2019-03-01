@@ -2,5 +2,6 @@ start on (started xbian-net and stopped xbmc-preload) or xbmc-failed-start or fa
 stop on runlevel [06]
 
 pre-start script
-    dmesg -D || :
+	setterm --clear all > /dev/tty1 || :
+	dmesg -D || :
 end script
