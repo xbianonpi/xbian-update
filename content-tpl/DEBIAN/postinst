@@ -721,10 +721,10 @@ version102x() {
         grep -v ^$ /etc/fstab > /etc/fstab.new
         mv /etc/fstab.new /etc/fstab
 
-        if test -e /etc/dhcp/dhclient.conf; then
-            sed -i 's%^initial-interval .*%initial-interval 1;%' /etc/dhcp/dhclient.conf
-            sed -i 's%^reboot .*%reboot 4;%' /etc/dhcp/dhclient.conf
-            sed -i 's%^script .*%script "/etc/xbian-udhcpc/dhclient-script-xbian";%' /etc/dhcp/dhclient.conf
+        if [ -e /etc/dhcp/dhclient.conf ]; then
+            sed -i 's%^#initial-interval %initial-interval %;s%^initial-interval .*%initial-interval 1;%' /etc/dhcp/dhclient.conf
+            sed -i 's%^#reboot %reboot %;s%^reboot .*%reboot 4;%' /etc/dhcp/dhclient.conf
+            sed -i 's%^#script %script %;s%^script .*%script "/etc/xbian-udhcpc/xbian-dhclient";%' /etc/dhcp/dhclient.conf
         fi
 
         rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd
