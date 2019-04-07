@@ -29,8 +29,10 @@ case "$1" in
 	deconfig)
 		echo "Deconfiguring $interface"
 		if command -v ip >/dev/null; then
+			ip link set dev $interface up
 			ip addr flush dev $interface
 		else
+			ifconfig $interface up
 			ifconfig $interface 0.0.0.0
 		fi
 		;;
