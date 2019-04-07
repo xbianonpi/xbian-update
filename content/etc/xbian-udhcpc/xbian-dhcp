@@ -1,99 +1,86 @@
 #!/bin/sh
-# Xbian dhcp script.
 #
-# Based on the busybox example scripts
+# XBian dhcp script for udhcpc client
+# based on busybox examples/udhcp/simple.script
+#
+# udhcpc script edited by Tim Riker <Tim@Rikers.org>
+#
+
+[ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
+
+if [ "$(awk -Floglevel= '{printf "%d", $2}' /proc/cmdline)" -gt 0 ]; then
+	echo "------------------------------------" >> /run/xbian-dhcp.log
+	echo "$(date "+%b %d %T:") $@" >> /run/xbian-dhcp.log
+	echo "------------------------------------" >> /run/xbian-dhcp.log
+	env | grep -E ^"(subnet|router|domain|interface|siaddr|dns|serverid|boot_file|broadcast|ip|mask|ntpsrv|opt|search)" | sort >> /run/xbian-dhcp.log
+fi
 
 RESOLV_CONF="/etc/resolv.conf"
-. /etc/xbian-initramfs/cnvres-code.sh 
+NETMASK=""
+if command -v ip >/dev/null; then
+	[ -n "$subnet" ] && NETMASK="/$subnet"
+else
+	[ -n "$subnet" ] && NETMASK="netmask $subnet"
+fi
+BROADCAST="broadcast +"
+[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
 
-ifdwn() {
-    ip link set ${interface} down || :
-    return 0
-}
+case "$1" in
+	deconfig)
+		echo "Deconfiguring $interface"
+		if command -v ip >/dev/null; then
+			ip addr flush dev $interface
+		else
+			ifconfig $interface 0.0.0.0
+		fi
+		;;
 
-case $1 in
-    bound|renew)
+	renew|bound)
+		echo "Setting IP address $ip on $interface"
+		if command -v ip >/dev/null; then
+			ip addr add $ip$NETMASK $BROADCAST dev $interface
+		else
+			ifconfig $interface $ip $NETMASK $BROADCAST
+		fi
 
-        [ "$1" = renew ] || ip link set ${interface} up || :
+		if [ -n "$router" ] ; then
+			echo "Deleting routers"
+			while route del default gw 0.0.0.0 dev $interface 2>/dev/null; do
+				:
+			done
 
-        [ -z "$METHOD" ] && METHOD=dhcp
-        [ -z "$dhcp_hostname" ] && dhcp_hostname=$(hostname -s)
-        echo DHCPDISCOVER >&2
-        # <client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
-        if [ "$1" = renew ]; then
-            tmout=240
-            IPPREV=$(awk -F'=' '$1 ~ /IPV4ADDR/ {print $2}' /run/net-$interface.conf | tr -d "'" )
-        else
-            tmout=60
-            IPPREV=''
-        fi
-        ipconfig -t $tmout "${IPPREV}::::${dhcp_hostname}:${interface}:${METHOD}"  1>/dev/null || \
-            ip link set $interface down; 
-            ipconfig -t $((tmout * 2)) "${IPPREV}::::${dhcp_hostname}:${interface}:${METHOD}" 1>/dev/null
-        [ $? -eq 124 ] && { echo Terminated >&2; ip link set $interface down || :; exit 1; }
-        echo bound >&2
-        sed -i '/127.0.2.1/d' /etc/hosts
+			metric=0
+			for i in $router ; do
+				echo "Adding router $i"
+				if [ "$subnet" = "255.255.255.255" ]; then
+	# special case for /32 subnets:
+	# /32 instructs kernel to always use routing for all outgoing packets
+	# (they can never be sent to local subnet - there is no local subnet for /32).
+	# Used in datacenters, avoids the need for private ip-addresses between two hops.
+					ip route add $i dev $interface
+				fi
+				route add default gw $i dev $interface metric $metric
+				metric=$((metric+1))
+			done
+		fi
 
-        R=$(update_resolv)
-        if echo $R | grep -q nameserver; then 
-            if [ -x /sbin/resolvconf ]; then
-                echo "$R" | resolvconf -a "${interface}.udhcpc"
-            else
-                echo "$R" > "$RESOLV_CONF"
-            fi
-        fi
-        leasetime=$(cat /run/net-$interface.conf | grep DHCPLEASETIME | awk -F'=' '{print $2}' |tr -d "'")
-        dnshostname=$(awk -F'=' '$1 ~ /HOSTNAME/ {print $2}' /run/net-$interface.conf | tr -d "'" )
-        if [ -n "$dnshostname" ]; then
-            dnsdomain=$(awk -F'=' '$1 ~ /DNSDOMAIN/ {print $2}' /run/net-$interface.conf | tr -d "'" )
-            [ -z "$dnsdomain" ] || dnshostname=$dnshostname.$dnsdomain
-            hostname "$dnshostname"
-            if grep -q 127.0.2.1 /etc/hosts; then
-                sed -i "s%127.0.2.1.*%127.0.2.1 $dnshostname $(hostname -s)%" /etc/hosts
-            else
-                echo "127.0.2.1 $dnshostname $(hostname -s)" >> /etc/hosts
-            fi
-        fi
-	;;
-
-    deconfig)
-	interface=${interface} ifdwn
-	if [ -x /sbin/resolvconf ]; then
-	    resolvconf -d "${interface}.udhcpc"
-	fi
-	#[ -f "$pidfile" ] && rm -fr $pidfile
-	exit 0
-	;;
-
-    leasefail)
-	echo "$0: Lease failed: $message"
-	;;
-
-    nak)
-	echo "$0: Received a NAK: $message"
-	;;
-
-    slp)
-        ;;
-
-    *)
-	echo "$0: Unknown udhcpc command: $1";
-	exit 1;
-	;;
+		echo "Recreating $RESOLV_CONF"
+		# If the file is a symlink somewhere (like /etc/resolv.conf
+		# pointing to /run/resolv.conf), make sure things work.
+		realconf=$(readlink -f "$RESOLV_CONF" 2>/dev/null || echo "$RESOLV_CONF")
+		tmpfile="$realconf-$$"
+		> "$tmpfile"
+		if [ -n "$domain" ]; then
+		    echo "domain $domain" >> "$tmpfile"
+		    [ -z "$search" ] && echo "search $domain" >> "$tmpfile"
+		fi
+		[ -n "$search" ] && echo "search $search" >> "$tmpfile"
+		for i in $dns ; do
+			echo " Adding DNS server $i"
+			echo "nameserver $i" >> "$tmpfile"
+		done
+		mv "$tmpfile" "$realconf"
+		;;
 esac
 
-if [ "$1" = bound ]; then
-    pidfile=$pidfile interface=$interface leasetime=$leasetime $0 slp &
-    exit 0
-fi
-
-trap 'ifdwn' USR2 KILL TERM
-sleep $((leasetime - 50)) & spid=$! && echo $spid > $pidfile
-
-if wait "$spid"; then
-    pidfile="$pidfile" interface="$interface" exec $0 renew
-else
-    pds="$(cat /run/wpa_supplicant.$interface.pid 2>/dev/null)"; [ -z "$pds" ] || kill "$pds" || :
-    rm -fr "/run/wpa_supplicant.$interface.pid"
-    pidfile="$pidfile" interface="$interface" $0 deconfig
-fi
+exit 0
