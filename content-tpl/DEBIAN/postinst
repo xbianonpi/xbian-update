@@ -886,9 +886,9 @@ EOF
 	    echo "Error: 001-invoke-rc.d.patch can't be applied" >> /home/xbian/xbian-update.log
 	fi
 
-	ln -s ../init.d/mountdevsubfs.sh /etc/rcS.d/S04mountdevsubfs &>/dev/null || :
-	ln -s ../init.d/mountkernfs.sh   /etc/rcS.d/S04mountkernfs   &>/dev/null || :
-	ln -s ../init.d/checkroot.sh     /etc/rcS.d/S04checkroot     &>/dev/null || :
+	for s in mountdevsubfs mountkernfs mtab checkroot; do
+	    ln -fs ../init.d/$s.sh /etc/rcS.d/S04$s 2>/dev/null || :
+	done
 }
 
 ############################## 2017 END   ###################################
@@ -906,7 +906,7 @@ updates_2018() {
         done
 }
 
-############################## 2017 END   ###################################
+############################## 2018 END   ###################################
 
 if [ $1 == "configure" ]; then
 
