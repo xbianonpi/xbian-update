@@ -206,6 +206,7 @@ rmUnusedServices() {
 	 fake-hwclock \
 	 udev-mtab \
 	 autofs \
+	 elogind \
 	 urandom; do
 		rm -fr /etc/init.d/$f
 		ln -s /lib/init/upstart-job /etc/init.d/$f
@@ -561,7 +562,7 @@ version102x() {
 
         xbian-snapper destroy root/@safe &>/dev/null; xbian-snapper destroy home/@safe &>/dev/null
 
-        find /etc -iname \*.dpkg-new | xargs -L1 rm -f
+        pgrep -f "apt-get dist-upgrade" >/dev/null || find /etc -iname \*.dpkg-new | xargs -L1 rm -f
         find /var/tmp/xbian_update/files_to_overwrite -type l -printf "/%P\n" | xargs -L1 rm -f
         cp -arP --remove-destination /var/tmp/xbian_update/files_to_overwrite/* /
 
@@ -647,7 +648,7 @@ version102x() {
         fi
 
         chmod -x /etc/network/if-up.d/mountnfs
-        chmod -x /etc/network/if-up.d/openssh-server
+        chmod -x /etc/network/if-up.d/openssh-server 2>/dev/null
         chmod -x /etc/network/if-up.d/upstart
 
         echo "patching files"
@@ -908,6 +909,33 @@ updates_2018() {
 
 ############################## 2018 END   ###################################
 
+################################# 2019 ######################################
+
+updates_2019() {
+
+	cat <<\EOF > /tmp/001-init-d-script.patch
+--- /lib/init/init-d-script.old  2019-02-14 21:33:13.000000000 +0100
++++ /lib/init/init-d-script     2019-08-07 17:21:12.750882158 +0200
+@@ -131,6 +131,7 @@
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
++	:
+ }
+ 
+ do_force_reload() {
+EOF
+	patch --batch --dry-run /lib/init/init-d-script < /tmp/001-init-d-script.patch &>/dev/null
+	if [ $? == 0 ]; then
+	    patch -r- /lib/init/init-d-script < /tmp/001-init-d-script.patch &>/dev/null
+	    echo "Success: applied 001-init-d-script.patch" >> /home/xbian/xbian-update.log
+	else
+	    echo "Error: 001-init-d-script.patch can't be applied" >> /home/xbian/xbian-update.log
+	fi
+}
+
+############################## 2019 END   ###################################
+
 if [ $1 == "configure" ]; then
 
 	rm -f /home/xbian/xbian-update.log >/dev/null 2>&1
@@ -939,6 +967,7 @@ if [ $1 == "configure" ]; then
 
         updates_2017
         updates_2018
+        updates_2019
 
         case $PLATFORM in
             RPI)
