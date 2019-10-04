@@ -30,11 +30,12 @@ rmlibshairport() {
 }
 
 xbianGroups() {
-	grep -wq input /etc/group || groupadd input || :
-	grep -wq video /etc/group || groupadd video || :
-	grep -wq audio /etc/group || groupadd audio || :
-
-	usermod -a -G audio,video,input xbian
+	# add groups if not exist, add xbian user to it
+	grps="input audio cdrom video render"
+	for g in $grps; do
+	    grep -wq $g /etc/group || groupadd --system $g || :
+	    usermod -G $g -a xbian || :
+	done
 }
 
 superRepo() {
