@@ -30,5 +30,8 @@ KERNEL=="vcsm" MODE="0660", GROUP="video"
 KERNEL=="argon-*" MODE="0660", GROUP="video"
 KERNEL=="rpivid-*" MODE="0660", GROUP="video"
 
+KERNEL=="rpivid-hevcmem", ACTION=="add|change", RUN+="/bin/ln -sf /dev/rpivid-hevcmem /dev/argon-hevcmem"
+KERNEL=="rpivid-intcmem", ACTION=="add|change", RUN+="/bin/ln -sf /dev/rpivid-intcmem /dev/argon-intcmem"
+
 #KERNEL=="busfreq.13", ACTION=="add|change", ATTR{enable}="0"
 
