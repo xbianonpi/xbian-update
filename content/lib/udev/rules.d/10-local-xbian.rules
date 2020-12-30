@@ -27,6 +27,7 @@ KERNEL=="vchiq" MODE="0660", GROUP="video"
 KERNEL=="vcio" MODE="0660", GROUP="video"
 KERNEL=="vc-mem" MODE="0660", GROUP="video"
 KERNEL=="vcsm" MODE="0660", GROUP="video"
+KERNEL=="vcsm-cma", GROUP="video", MODE="0660"
 KERNEL=="argon-*" MODE="0660", GROUP="video"
 KERNEL=="rpivid-*" MODE="0660", GROUP="video"
 
@@ -35,3 +36,5 @@ KERNEL=="rpivid-intcmem", ACTION=="add|change", RUN+="/bin/ln -sf /dev/rpivid-in
 
 #KERNEL=="busfreq.13", ACTION=="add|change", ATTR{enable}="0"
 
+SUBSYSTEM=="dma_heap", KERNEL=="linux*", GROUP="video", MODE="0660"
+SUBSYSTEM=="dma_heap", KERNEL=="system", GROUP="video", MODE="0660"
