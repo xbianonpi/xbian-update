@@ -47,6 +47,12 @@ patch_configxbmc()
             sed -i "s/StringCompare/String.IsEqual/g" $file
         done
     fi
+
+    # Starting with Kodi v19, xbmc.python backwards-compatibility has been raised to 3.0.0
+    if [ "$(dpkg-query -s xbian-package-xbmc 2>/dev/null | grep -m1 Version | awk '{ print $2 '})" \> "19" ]; then
+        sed -i 's%<import addon="xbmc.python" version="2.*%<import addon="xbmc.python" version="3.0.0"/>%g' /usr/local/share/kodi/addons/plugin.xbianconfig/addon.xml
+        sed -i 's%<import addon="xbmc.python" version="2.*%<import addon="xbmc.python" version="3.0.0"/>%g' /usr/local/share/kodi/addons/script.service.xbian.upstart-bridge/addon.xml
+    fi
 }
 
 kodi_sendmsg()
