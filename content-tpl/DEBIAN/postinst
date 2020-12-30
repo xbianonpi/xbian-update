@@ -198,7 +198,7 @@ rmUnusedServices() {
 	 cron \
 	 ssh \
 	 kmod \
-	 lirc \
+	 lirc lircd lircmd \
 	 motd \
 	 openbsd-inetd \
 	 procps \
@@ -208,6 +208,7 @@ rmUnusedServices() {
 	 udev-mtab \
 	 autofs \
 	 elogind \
+	 bluetooth \
 	 urandom; do
 		rm -fr /etc/init.d/$f
 		ln -s /lib/init/upstart-job /etc/init.d/$f
