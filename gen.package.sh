@@ -35,7 +35,7 @@ done
 
 # Do not owerwrite files in /etc/modprobe.d
 for f in $(find content/etc/modprobe.d/ -type f -name "*.conf" -printf "%f\n"); do
-    echo etc/modprobe.d/$f >> content/DEBIAN/conffiles
+    echo /etc/modprobe.d/$f >> content/DEBIAN/conffiles
 done
 
 # calculate size dynamically. remove first any entry, then add the actual 
