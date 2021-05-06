@@ -35,11 +35,15 @@ deployconfig()
 
 patch_configxbmc()
 {
-    # Starting with Kodi v18 SubString and StringCompare as boolean conditions are not longer available. We have to use
-    # String.Contains and String.IsEqual, introduced with Kodi v17, instead. Note: needed for postinst of package
-    # xbmc-package-xbmc and xbian-package-config-xbmc. May be removed when dropping backward compatibility
+    # Note: needed for postinst of package xbmc-package-xbmc and xbian-package-config-xbmc.
+    # May be removed when dropping backward compatibility
+
     local file
-    if [ "$(dpkg-query -s xbian-package-xbmc 2>/dev/null | grep -m1 Version | awk '{ print $2 '})" \> "18" ]; then
+    local kver="$(dpkg-query -s xbian-package-xbmc 2>/dev/null | grep -m1 Version | awk '{ print $2 '})"
+
+    # Starting with Kodi v18 SubString and StringCompare as boolean conditions are not longer available. We have to use
+    # String.Contains and String.IsEqual, introduced with Kodi v17, instead.
+    if [ "$kver" \> "18" ]; then
         for file in $(grep -m1 -r SubString /usr/local/share/kodi/addons/plugin.xbianconfig/* 2>/dev/null | cut -d ':' -f 1); do
             sed -i "s/SubString/String.Contains/g" $file
         done
@@ -49,10 +53,19 @@ patch_configxbmc()
     fi
 
     # Starting with Kodi v19, xbmc.python backwards-compatibility has been raised to 3.0.0
-    if [ "$(dpkg-query -s xbian-package-xbmc 2>/dev/null | grep -m1 Version | awk '{ print $2 '})" \> "19" ]; then
+    if [ "$kver" \> "19" ]; then
         sed -i 's%<import addon="xbmc.python" version="2.*%<import addon="xbmc.python" version="3.0.0"/>%g' /usr/local/share/kodi/addons/plugin.xbianconfig/addon.xml
         sed -i 's%<import addon="xbmc.python" version="2.*%<import addon="xbmc.python" version="3.0.0"/>%g' /usr/local/share/kodi/addons/script.service.xbian.upstart-bridge/addon.xml
     fi
+
+    # Starting with Kodi v20, xbmc.translatePath has been moved to xbmcvfs.translatePath
+    if [ "$kver" \> "20" ]; then
+        for file in $(grep -m1 -r xbmc.translatePath /usr/local/share/kodi/addons/plugin.xbianconfig/* 2>/dev/null | cut -d ':' -f 1); do
+            sed -i "s/xbmc.translatePath/xbmcvfs.translatePath/g" $file
+            grep -q 'import xbmcvfs' $file || sed -i "s/import xbmc$/import xbmc\nimport xbmcvfs/g" $file
+        done
+    fi
+
 }
 
 kodi_sendmsg()
