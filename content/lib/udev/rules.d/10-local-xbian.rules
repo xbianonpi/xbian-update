@@ -38,3 +38,38 @@ KERNEL=="rpivid-intcmem", ACTION=="add|change", RUN+="/bin/ln -sf /dev/rpivid-in
 
 SUBSYSTEM=="dma_heap", KERNEL=="linux*", GROUP="video", MODE="0660"
 SUBSYSTEM=="dma_heap", KERNEL=="system", GROUP="video", MODE="0660"
+
+KERNEL=="ttyAMA0", PROGRAM="/bin/sh -c '\
+        ALIASES=/proc/device-tree/aliases; \
+        if cmp -s $$ALIASES/uart0 $$ALIASES/serial0; then \
+                echo 0;\
+        elif cmp -s $$ALIASES/uart0 $$ALIASES/serial1; then \
+                echo 1; \
+        else \
+                exit 1; \
+        fi; #/sbin/initctl emit -n bluetooth\
+'", SYMLINK+="serial%c", RUN+="/sbin/initctl emit -n bt-ready"
+
+KERNEL=="ttyAMA1", PROGRAM="/bin/sh -c '\
+        ALIASES=/proc/device-tree/aliases; \
+        if [ -e /dev/ttyAMA0 ]; then \
+                exit 1; \
+        elif cmp -s $$ALIASES/uart0 $$ALIASES/serial0; then \
+                echo 0;\
+        elif cmp -s $$ALIASES/uart0 $$ALIASES/serial1; then \
+                echo 1; \
+        else \
+                exit 1; \
+        fi; #/sbin/initctl emit -n bluetooth\
+'", SYMLINK+="serial%c", RUN+="/sbin/initctl emit -n bt-ready"
+
+KERNEL=="ttyS0", PROGRAM="/bin/sh -c '\
+        ALIASES=/proc/device-tree/aliases; \
+        if cmp -s $$ALIASES/uart1 $$ALIASES/serial0; then \
+                echo 0; \
+        elif cmp -s $$ALIASES/uart1 $$ALIASES/serial1; then \
+                echo 1; \
+        else \
+                exit 1; \
+        fi; #/sbin/initctl emit -n bluetooth \
+'", SYMLINK+="serial%c", RUN+="/sbin/initctl emit -n bt-ready"
