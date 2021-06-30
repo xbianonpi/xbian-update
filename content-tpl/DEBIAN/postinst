@@ -783,6 +783,8 @@ EOF
 
         patchPolkit
         update-rc.d -f samba remove >/dev/null 2>&1; rm -f /etc/init.d/samba
+        update-rc.d -f nmbd remove >/dev/null 2>&1; rm -f /etc/init.d/nmbd
+        update-rc.d -f smbd remove >/dev/null 2>&1; rm -f /etc/init.d/smbd
 
         [ -e /usr/lib/avahi/avahi-daemon-check-dns.sh ] && sed -i 's%^#PATH%PATH%' /usr/lib/avahi/avahi-daemon-check-dns.sh 2>/dev/null || :
 }
