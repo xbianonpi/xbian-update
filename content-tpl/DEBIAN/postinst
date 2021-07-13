@@ -38,25 +38,6 @@ xbianGroups() {
 	done
 }
 
-superRepo() {
-        KODI="$(dpkg-query -W --showformat='${Package} %%${Origin}%% %%${Status}%% %%${Description}%%\n'  | grep -i '%%XBian%%' | grep '%%XBMC (' | grep -w '%%install ok installed%%' | cut -f 7 -d ' ' | tr -d '()' | cut -f 2 -d '/')"
-        [ -z "$KODI" ] && KODI="jarvis"
-        for SOURCESXML in $(find /home/xbian -name sources.xml); do
-           if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" $SOURCESXML | wc -l) -eq 0 ]; then
-               sed -i --follow-symlinks "s|<files>|<files>\n\t<default pathversion=\"1\"></default>\n\t<source>\n\t\t<name>SuperRepo.org Virtual Disk</name>\n\t\t<path pathversion=\"1\">http://srp.nu/${KODI}/</path>\n\t</source>|g" $SOURCESXML
-               if [ $(grep "<name>SuperRepo.org Virtual Disk</name>" $SOURCESXML | wc -l) -eq 1 ]; then
-                   echo "Success: changed Fusion to SuperRepo in $SOURCESXML" >> /home/xbian/xbian-update.log;
-               else
-                   echo "Error: failed to change Fusion to SuperRepo $SOURCESXML" >> /home/xbian/xbian-update.log;
-               fi
-           else
-               echo "Notice: Updating SuperRepo URL in $SOURCESXML" >> /home/xbian/xbian-update.log;
-               sed -i -r "s|http://(use\|mirrors).superrepo.org/.*</path>|http://srp.nu/${KODI}/</path>|g" $SOURCESXML
-               sed -i "s|http://srp.nu/.*</path>|http://srp.nu/${KODI}/</path>|g" $SOURCESXML
-           fi
-        done
-}
-
 adaptAdvancedSettings() {
 	if [ "$(stat --printf="%s" /home/xbian/.xbmc/userdata/advancedsettings.xml)" -eq 0 ]; then
 cat << \EOF > /home/xbian/.xbmc/userdata/advancedsettings.xml
@@ -283,7 +264,7 @@ version1011() {
 
 	echo "7) Adding SuperRepo"
 
-	superRepo
+	:   # SuperRepo removed for Kodi compliancy
 	
 	echo "8) Modifying avahi-deamon defaults"
 
@@ -960,7 +941,7 @@ if [ $1 == "configure" ]; then
 
         rmlibshairport
         
-        superRepo
+        :   # SuperRepo removed for Kodi compliancy
 
 	if [ -e /dev/rtc0 ]; then
 	    grep -q "UTC" /etc/default/rcS || echo -e "\nUTC=yes\n" >> /etc/default/rcS
