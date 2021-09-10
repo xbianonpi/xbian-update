@@ -3,3 +3,10 @@ KERNEL=="uinput", GROUP="input", MODE="0664"
 SUBSYSTEM=="input", KERNEL=="mouse*|mice|event*", GROUP="input", MODE="0660"
 SUBSYSTEM=="net", ACTION=="add", ENV{INTERFACE}=="eth[0-9]|wlan[0-9]|ra[0-9]", RUN+="/usr/local/sbin/xbian-addnet %E{INTERFACE}"
 
+SUBSYSTEM=="bcm2835-gpiomem", GROUP="gpio", MODE="0660"
+SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"
+SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c '\
+        chown -R root:gpio /sys/class/gpio && chmod -R 770 /sys/class/gpio;\
+        chown -R root:gpio /sys/devices/virtual/gpio && chmod -R 770 /sys/devices/virtual/gpio;\
+        chown -R root:gpio /sys$devpath && chmod -R 770 /sys$devpath\
+'"
