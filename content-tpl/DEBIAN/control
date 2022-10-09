@@ -9,7 +9,7 @@ Depends: iptables, autofs, nfs-common, dosfstools, sudo, ifplugd, ir-keytable, c
   libafpclient0, libnss-mdns, libxdamage1, console-setup, cifs-utils, exfat-utils, hdparm, hfsplus, hfsprogs, hfsutils,
   wireless-tools, wpasupplicant, bc, lsof, ntp, unattended-upgrades, cec-utils,
   xbian-package-xbmc-scripts (>=1.8.0), xbian-package-lirc, xbian-package-vnc-server (>=1.0.0-2), xbian-package-samba (>=20210908),
-  xbian-package-initramfs-tools (>=20150918), xbian-package-usbmount (>=1.0.4-7), xbian-package-zram-swap (>=1.0-4.3)
+  xbian-package-initramfs-tools (>=20220701), xbian-package-usbmount (>=1.0.4-7), xbian-package-zram-swap (>=1.0-4.3)
 Replaces: xbian-package-initramfs-tools, update-notifier-common, rpcbind, raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi-bin,
   libraspberrypi-dev, console-tools, rpi-update, base-files, upstart, util-linux, openbsd-inetd, nfs-common
 Conflicts: dphys-swapfile, raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi-bin, console-tools, rpi-update, udhcpc, dhcpcd
