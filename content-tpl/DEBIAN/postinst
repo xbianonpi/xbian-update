@@ -711,8 +711,6 @@ version102x() {
             sed -i 's%^#script %script %;s%^script .*%script "/etc/xbian-udhcpc/xbian-dhclient";%' /etc/dhcp/dhclient.conf
         fi
 
-        rm -f /usr/bin/vchiq_test /usr/bin/vcdbg /usr/bin/vcgencmd
-
         grep -q ^"ssh " /etc/inetd.conf || echo "
 ssh  stream  tcp  nowait  root   /usr/sbin/tcpd /usr/sbin/sshd -i
 " >> /etc/inetd.conf
