@@ -584,12 +584,12 @@ version102x() {
             mountall-bootclean.sh mountall.sh mountdevsubfs.sh mountkernfs.sh mtab.sh kbd switch_cpu_governor
 
         #rc2.d
-        insrem ifplugd bootlogs cron anacron ntp ssh nrg-tools iguanaIR rsync avahi-daemon console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
+        insrem ifplugd bootlogs cron anacron ntp ntpsec ssh nrg-tools iguanaIR rsync avahi-daemon console-setup mountnfs.sh motd openbsd-inetd  > /dev/null 2>&1
         insrem loadcpufreq cpufrequtils hdparm hwclock.sh plymouth-log udev-mtab urandom sudo plymouth rmnologin > /dev/null 2>&1
          #rc6.d
         insrem /etc/init.d/kexec /etc/init.d/kexec-load > /dev/null 2>&1
         insrem /etc/init.d/kbd xbian-waiter fake-hwclock autofs > /dev/null 2>&1
-        insrem rsync ntp anacron networking > /dev/null 2>&1
+        insrem rsync ntp ntpsec anacron networking > /dev/null 2>&1
         insrem triggerhappy > /dev/null 2>&1
         insserv -f -d sendsigs >/dev/null 2>&1
 
