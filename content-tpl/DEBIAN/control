@@ -15,6 +15,6 @@ Replaces: xbian-package-initramfs-tools, update-notifier-common, rpcbind, raspbe
 Conflicts: dphys-swapfile, raspberrypi-artwork, raspberrypi-bootloader, libraspberrypi-bin, console-tools, rpi-update, udhcpc, dhcpcd
 Suggests: isc-dhcp-client
 Breaks: xbian-package-config-xbmc (<<1.1.4-6), xbian-package-xbmc-scripts (<<1.2.5)
-Architecture: armhf
+Architecture: all
 Maintainer: mk01 <development@xbian.org>
 Description: Updater package to XBian __DATE__
