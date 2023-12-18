@@ -968,9 +968,13 @@ if [ $1 == "configure" ]; then
                         [ -z "$subvolume" ] && subvolume=root
                         sed -i "s%rootflags=subvol=root\/@%rootflags=subvol=$subvolume\/@$snap%" /boot/cmdline.new
 
-                        # keep partswap, vnc, ip, cnet, cma, modules-load  and root parameter
+                        # keep partswap, vnc, ip, cnet, cma, modules-load and root parameter
+                        # fetch them from file /etc/default/xbian-internals now, this allows
+                        # user to add args
+                        . /etc/default/xbian-internals
+                        [ -n "$OPT_CMDLINE_ARGS" ] || OPT_CMDLINE_ARGS='partswap vnc cma= ip= cnet= modules-load= usb-storage.quirks='
                         parms=''
-                        for PARM in "partswap" "vnc" "cma=" "ip=" "cnet=" "modules-load="; do
+                        for PARM in $OPT_CMDLINE_ARGS; do
                             p=$(awk -v a=".*$PARM" -v b="$PARM" "/$PARM/"'{ sub(a,b); print $1 }' /boot/cmdline.txt.old 2>/dev/null)
                             [ -z "$p" ] || parms="$parms$p "
                         done
