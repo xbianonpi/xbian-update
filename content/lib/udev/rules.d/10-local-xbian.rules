@@ -36,8 +36,9 @@ KERNEL=="rpivid-intcmem", ACTION=="add|change", RUN+="/bin/ln -sf /dev/rpivid-in
 
 #KERNEL=="busfreq.13", ACTION=="add|change", ATTR{enable}="0"
 
-SUBSYSTEM=="dma_heap", KERNEL=="linux*", GROUP="video", MODE="0660"
-SUBSYSTEM=="dma_heap", KERNEL=="system", GROUP="video", MODE="0660"
+SUBSYSTEM=="dma_heap", GROUP="video", MODE="0660"
+SUBSYSTEM=="dma_heap", KERNEL=="system", PROGRAM="/bin/grep -q \"^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F]4[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]$$\" /proc/cpuinfo", SYMLINK+="dma_heap/vidbuf_cached"
+SUBSYSTEM=="dma_heap", KERNEL=="linux,cma", SYMLINK+="dma_heap/vidbuf_cached", OPTIONS+="link_priority=-50"
 
 KERNEL=="ttyAMA[0-9]*|ttyS[0-9]*", PROGRAM="/bin/sh -c '\
         ALIASES=/proc/device-tree/aliases; \
