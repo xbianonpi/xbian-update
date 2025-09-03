@@ -641,10 +641,12 @@ version102x() {
             fi
         done
 
-        while read line; do
-            [ -n "$line" ] && grep -v "$line" /etc/sysctl.conf > /etc/sysctl.conf.new
-            mv /etc/sysctl.conf.new /etc/sysctl.conf
-        done < /var/tmp/xbian_update/pchanges/sysctl.conf
+        if [ -e /etc/sysctl.conf ]; then
+            while read line; do
+                [ -n "$line" ] && grep -v "$line" /etc/sysctl.conf > /etc/sysctl.conf.new
+                mv /etc/sysctl.conf.new /etc/sysctl.conf
+            done < /var/tmp/xbian_update/pchanges/sysctl.conf
+        fi
         find /etc/ -iname \*~ | xargs -L1 rm -f > /dev/null 2>&1
 
         sed -i "s%# UNCONFIGURED.*%#\n# Configured /etc/fstab for XBian system\n#%g" /etc/fstab
